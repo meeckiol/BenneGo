@@ -1,0 +1,1 @@
+ALTER TABLE `job_locations` ADD `expiresAt` timestamp NOT NULL;
