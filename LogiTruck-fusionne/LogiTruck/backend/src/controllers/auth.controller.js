@@ -28,15 +28,29 @@ const generateToken = (userId, role) => {
 /**
  * POST /api/auth/register
  * Inscription d'un nouveau client ou chauffeur
+ * Champs obligatoires : phone, prenom, nom, date_naissance, adresse, password
+ * Champs optionnels  : email, role (défaut: client)
  */
 const register = async (req, res, next) => {
   try {
-    const { phone, full_name, email, password, role = 'client' } = req.body;
+    const {
+      phone,
+      prenom,
+      nom,
+      date_naissance,
+      adresse,
+      email,
+      password,
+      role = 'client',
+    } = req.body;
 
     // Validation du rôle (on ne peut pas s'inscrire comme admin)
     if (!['client', 'driver'].includes(role)) {
       throw new AppError('Rôle invalide', 400);
     }
+
+    // Construire le full_name à partir de prenom + nom
+    const full_name = `${prenom.trim()} ${nom.trim()}`;
 
     // Vérifier si le numéro existe déjà
     const existing = await query(
@@ -50,12 +64,12 @@ const register = async (req, res, next) => {
     // Hacher le mot de passe
     const password_hash = await bcrypt.hash(password, 12);
 
-    // Créer l'utilisateur
+    // Créer l'utilisateur avec tous les champs profil
     const result = await query(
-      `INSERT INTO users (phone, full_name, email, role, password_hash)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, phone, full_name, email, role, created_at`,
-      [phone, full_name, email || null, role, password_hash]
+      `INSERT INTO users (phone, full_name, prenom, nom, date_naissance, adresse, email, role, password_hash)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, phone, full_name, prenom, nom, date_naissance, adresse, email, role, created_at`,
+      [phone, full_name, prenom.trim(), nom.trim(), date_naissance || null, adresse || null, email || null, role, password_hash]
     );
 
     const user = result.rows[0];
@@ -68,6 +82,10 @@ const register = async (req, res, next) => {
         id: user.id,
         phone: user.phone,
         full_name: user.full_name,
+        prenom: user.prenom,
+        nom: user.nom,
+        date_naissance: user.date_naissance,
+        adresse: user.adresse,
         email: user.email,
         role: user.role,
       },
@@ -137,10 +155,11 @@ const login = async (req, res, next) => {
 const getMe = async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT u.id, u.phone, u.full_name, u.email, u.role,
-              u.profile_photo_url, u.is_verified, u.created_at,
+      `SELECT u.id, u.phone, u.full_name, u.prenom, u.nom, u.date_naissance, u.adresse,
+              u.email, u.role, u.profile_photo_url, u.is_verified, u.created_at,
               dp.truck_type, dp.truck_plate, dp.truck_capacity_m3,
-              dp.is_available, dp.rating, dp.total_trips, dp.momo_number, dp.momo_provider
+              dp.is_available, dp.rating, dp.total_trips, dp.momo_number, dp.momo_provider,
+              dp.date_naissance AS driver_date_naissance, dp.adresse AS driver_adresse
        FROM users u
        LEFT JOIN driver_profiles dp ON dp.user_id = u.id
        WHERE u.id = $1`,
@@ -162,6 +181,7 @@ const createDriverProfile = async (req, res, next) => {
     const {
       truck_type, truck_capacity_m3, truck_plate,
       license_number, momo_number, momo_provider,
+      date_naissance, adresse,
     } = req.body;
 
     // Vérifier que c'est bien un chauffeur
@@ -181,19 +201,21 @@ const createDriverProfile = async (req, res, next) => {
         `UPDATE driver_profiles SET
           truck_type = $1, truck_capacity_m3 = $2, truck_plate = $3,
           license_number = $4, momo_number = $5, momo_provider = $6,
+          date_naissance = $7, adresse = $8,
           updated_at = NOW()
-         WHERE user_id = $7`,
+         WHERE user_id = $9`,
         [truck_type, truck_capacity_m3, truck_plate, license_number,
-         momo_number, momo_provider, req.user.id]
+         momo_number, momo_provider, date_naissance || null, adresse || null, req.user.id]
       );
     } else {
       // Création
       await query(
         `INSERT INTO driver_profiles
-          (user_id, truck_type, truck_capacity_m3, truck_plate, license_number, momo_number, momo_provider)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          (user_id, truck_type, truck_capacity_m3, truck_plate, license_number,
+           momo_number, momo_provider, date_naissance, adresse)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [req.user.id, truck_type, truck_capacity_m3, truck_plate,
-         license_number, momo_number, momo_provider]
+         license_number, momo_number, momo_provider, date_naissance || null, adresse || null]
       );
     }
 
