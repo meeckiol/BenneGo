@@ -72,9 +72,12 @@ router.get('/orders', async (req, res, next) => {
 router.get('/drivers', async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT u.id, u.full_name, u.phone, u.is_active,
+      `SELECT u.id, u.full_name, u.prenom, u.nom, u.phone,
+              u.date_naissance, u.adresse, u.is_active,
               dp.truck_type, dp.truck_plate, dp.is_available,
               dp.total_trips, dp.rating, dp.rating_count,
+              dp.date_naissance AS driver_date_naissance,
+              dp.adresse AS driver_adresse,
               CASE WHEN dp.momo_number IS NULL THEN NULL ELSE '****' || RIGHT(dp.momo_number, 4) END AS momo_number,
               dp.momo_provider
        FROM users u
@@ -91,7 +94,8 @@ router.get('/drivers', async (req, res, next) => {
 router.get('/clients', async (req, res, next) => {
   try {
     const result = await query(
-      `SELECT id, phone, full_name, email, is_active, is_verified, created_at
+      `SELECT id, phone, full_name, prenom, nom, date_naissance, adresse,
+              email, is_active, is_verified, created_at
        FROM users WHERE role = 'client'
        ORDER BY created_at DESC`
     );

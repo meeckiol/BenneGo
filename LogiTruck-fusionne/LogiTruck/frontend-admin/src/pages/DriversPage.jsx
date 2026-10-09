@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 
+const fmtDate = (d) =>
+  d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+
 export default function DriversPage() {
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [toggling, setToggling] = useState(null);
+  const [selected, setSelected] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -37,8 +41,11 @@ export default function DriversPage() {
     (d) =>
       search === '' ||
       d.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      d.prenom?.toLowerCase().includes(search.toLowerCase()) ||
+      d.nom?.toLowerCase().includes(search.toLowerCase()) ||
       d.phone?.includes(search) ||
-      d.truck_plate?.toLowerCase().includes(search.toLowerCase())
+      d.truck_plate?.toLowerCase().includes(search.toLowerCase()) ||
+      d.adresse?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -61,7 +68,7 @@ export default function DriversPage() {
       <div style={s.tableCard}>
         <div style={s.tableHeader}>
           <input
-            placeholder="🔍 Nom, téléphone, plaque..."
+            placeholder="🔍 Nom, prénom, téléphone, plaque, adresse..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={s.searchInput}
@@ -73,21 +80,28 @@ export default function DriversPage() {
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
-                {['Chauffeur', 'Téléphone', 'Camion', 'Plaque', 'Courses', 'Note', 'MoMo', 'Dispo', 'Statut', ''].map((h) => (
+                {['Prénom', 'Nom', 'Téléphone', 'Date naiss.', 'Adresse', 'Camion', 'Plaque', 'Courses', 'Note', 'MoMo', 'Dispo', 'Statut', ''].map((h) => (
                   <th key={h} style={s.th}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={10} style={s.empty}>Chargement...</td></tr>
+                <tr><td colSpan={13} style={s.empty}>Chargement...</td></tr>
               )}
               {filtered.map((driver) => (
-                <tr key={driver.id} style={s.tr}>
-                  <td style={s.td}>
-                    <div style={s.driverName}>{driver.full_name}</div>
+                <tr key={driver.id} style={s.tr} onClick={() => setSelected(driver)}>
+                  <td style={{ ...s.td, fontWeight: '600', color: 'white' }}>
+                    {driver.prenom || driver.full_name?.split(' ')[0] || '—'}
+                  </td>
+                  <td style={{ ...s.td, fontWeight: '600', color: '#FF6B00' }}>
+                    {driver.nom || driver.full_name?.split(' ').slice(1).join(' ') || '—'}
                   </td>
                   <td style={{ ...s.td, color: '#94a3b8' }}>{driver.phone}</td>
+                  <td style={{ ...s.td, color: '#64748b' }}>{fmtDate(driver.date_naissance)}</td>
+                  <td style={{ ...s.td, color: '#64748b', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {driver.adresse || driver.driver_adresse || '—'}
+                  </td>
                   <td style={s.td}>
                     <span style={s.truckType}>
                       {driver.truck_type === 'double_benne' ? '🟠 Double benne' :
@@ -125,7 +139,7 @@ export default function DriversPage() {
                       {driver.is_active ? 'Actif' : 'Inactif'}
                     </span>
                   </td>
-                  <td style={s.td}>
+                  <td style={s.td} onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => toggleActive(driver)}
                       disabled={toggling === driver.id}
@@ -142,12 +156,53 @@ export default function DriversPage() {
                 </tr>
               ))}
               {!loading && filtered.length === 0 && (
-                <tr><td colSpan={10} style={s.empty}>Aucun chauffeur trouvé</td></tr>
+                <tr><td colSpan={13} style={s.empty}>Aucun chauffeur trouvé</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Modal détail conducteur */}
+      {selected && (
+        <div style={s.overlay} onClick={() => setSelected(null)}>
+          <div style={s.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={s.modalHeader}>
+              <h3 style={{ color: 'white', margin: 0 }}>
+                🚛 {selected.prenom || ''} {selected.nom || selected.full_name}
+              </h3>
+              <button onClick={() => setSelected(null)} style={s.closeBtn}>✕</button>
+            </div>
+            <div style={s.modalBody}>
+              <SectionTitle>Informations personnelles</SectionTitle>
+              <InfoRow label="Prénom" value={selected.prenom || '—'} />
+              <InfoRow label="Nom" value={selected.nom || '—'} />
+              <InfoRow label="Téléphone" value={selected.phone} />
+              <InfoRow label="Date de naissance" value={fmtDate(selected.date_naissance)} />
+              <InfoRow label="Adresse" value={selected.adresse || selected.driver_adresse || '—'} />
+
+              <SectionTitle>Informations véhicule</SectionTitle>
+              <InfoRow label="Type de camion"
+                value={selected.truck_type === 'double_benne' ? 'Double benne'
+                  : selected.truck_type === 'simple_benne' ? 'Benne simple'
+                  : 'Plateau'} />
+              <InfoRow label="Plaque" value={selected.truck_plate} />
+              <InfoRow label="Courses effectuées" value={selected.total_trips || 0} />
+              <InfoRow label="Note moyenne" value={`⭐ ${parseFloat(selected.rating || 5).toFixed(1)} (${selected.rating_count || 0} avis)`} />
+
+              <SectionTitle>Mobile Money</SectionTitle>
+              <InfoRow label="Opérateur"
+                value={selected.momo_provider === 'mtn' ? 'MTN Mobile Money'
+                  : selected.momo_provider === 'moov' ? 'Moov Money' : '—'} />
+              <InfoRow label="Numéro" value={selected.momo_number || '—'} />
+
+              <SectionTitle>Statut</SectionTitle>
+              <InfoRow label="Disponible" value={selected.is_available ? '🟢 Oui' : '🔴 Non'} />
+              <InfoRow label="Compte" value={selected.is_active ? '✅ Actif' : '❌ Inactif'} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -164,25 +219,49 @@ function SummaryCard({ icon, label, value, color = '#FF6B00' }) {
   );
 }
 
+function SectionTitle({ children }) {
+  return (
+    <div style={{ background: '#0f172a', borderRadius: '6px', padding: '6px 10px', marginTop: '14px', marginBottom: '4px' }}>
+      <span style={{ color: '#FF6B00', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid #1e293b' }}>
+      <span style={{ color: '#64748b', fontSize: '13px' }}>{label}</span>
+      <span style={{ color: 'white', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
+    </div>
+  );
+}
+
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
   summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' },
   summaryCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center' },
   tableCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' },
-  tableHeader: { padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', gap: '12px', alignItems: 'center' },
-  searchInput: { flex: 1, maxWidth: '360px', padding: '9px 14px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
+  tableHeader: { padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
+  searchInput: { flex: 1, minWidth: '200px', maxWidth: '420px', padding: '9px 14px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
   refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
   tableWrapper: { overflow: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', minWidth: '900px' },
+  table: { width: '100%', borderCollapse: 'collapse', minWidth: '1100px' },
   thead: { background: '#0f172a' },
   th: { padding: '10px 12px', color: '#64748b', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #0f172a' },
+  tr: { borderBottom: '1px solid #0f172a', cursor: 'pointer' },
   td: { padding: '12px', color: '#cbd5e1', fontSize: '13px', verticalAlign: 'middle' },
-  driverName: { fontWeight: '600', color: 'white' },
   truckType: { fontSize: '12px' },
   rating: { fontSize: '13px', color: '#F59E0B', fontWeight: '600' },
   momoInfo: { display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '12px', fontWeight: '600' },
   badge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
   toggleBtn: { padding: '5px 10px', border: '1px solid', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
   empty: { padding: '32px', textAlign: 'center', color: '#475569' },
+  // Modal
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  modal: { background: '#1e293b', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto' },
+  modalHeader: { padding: '20px 24px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f172a', borderRadius: '16px 16px 0 0', position: 'sticky', top: 0 },
+  modalBody: { padding: '20px 24px' },
+  closeBtn: { background: 'none', border: 'none', color: '#64748b', fontSize: '18px', cursor: 'pointer' },
 };
