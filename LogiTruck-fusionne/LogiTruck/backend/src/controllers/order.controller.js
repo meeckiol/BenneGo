@@ -3,6 +3,7 @@ const { AppError } = require('../middlewares/error.middleware');
 const { calculateRoute, calculatePrice } = require('../services/pricing.service');
 const payments = require('../services/payment.service');
 const events = require('../services/order-events');
+const { generateReceiptPDF } = require('../services/receipt.service');
 
 /**
  * Génère un numéro de commande unique
@@ -418,6 +419,98 @@ const getTracking = async (req, res, next) => {
   }
 };
 
+/**
+ * Requête SQL commune pour récupérer une commande avec toutes les infos
+ * nécessaires à la génération d'un reçu.
+ */
+const fetchOrderForReceipt = async (orderId) => {
+  const result = await query(
+    `SELECT
+       o.*,
+       -- Client
+       u_c.full_name  AS client_full_name,
+       u_c.prenom     AS client_prenom,
+       u_c.nom        AS client_nom,
+       u_c.phone      AS client_phone,
+       u_c.email      AS client_email,
+       u_c.date_naissance AS client_date_naissance,
+       u_c.adresse    AS client_adresse,
+       -- Conducteur
+       u_d.full_name  AS driver_full_name,
+       u_d.phone      AS driver_phone,
+       u_d.prenom     AS driver_prenom,
+       u_d.nom        AS driver_nom,
+       -- Profil conducteur
+       dp.truck_type,
+       dp.truck_plate,
+       dp.momo_number AS driver_momo_number,
+       dp.momo_provider AS driver_momo_provider,
+       dp.date_naissance AS driver_date_naissance,
+       dp.adresse     AS driver_adresse,
+       -- Matériau
+       mt.name        AS material_name
+     FROM orders o
+     LEFT JOIN users u_c ON u_c.id = o.client_id
+     LEFT JOIN users u_d ON u_d.id = o.driver_id
+     LEFT JOIN driver_profiles dp ON dp.user_id = o.driver_id
+     LEFT JOIN material_types mt ON mt.id = o.material_type_id
+     WHERE o.id = $1`,
+    [orderId]
+  );
+  return result.rows[0] || null;
+};
+
+/**
+ * GET /api/orders/:id/receipt
+ * Reçu client exportable en PDF.
+ * Accessible par : le client propriétaire ou un admin.
+ */
+const getReceiptClient = async (req, res, next) => {
+  try {
+    const order = await fetchOrderForReceipt(req.params.id);
+    if (!order) throw new AppError('Commande introuvable', 404);
+
+    // Contrôle d'accès : client propriétaire ou admin
+    if (req.user.role === 'driver') {
+      throw new AppError('Accès refusé. Utilisez /receipt/driver pour votre reçu.', 403);
+    }
+    if (req.user.role === 'client' && order.client_id !== req.user.id) {
+      throw new AppError('Accès refusé', 403);
+    }
+
+    generateReceiptPDF(res, order, 'client');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/orders/:id/receipt/driver
+ * Reçu conducteur exportable en PDF (avec détail commission).
+ * Accessible par : le conducteur assigné ou un admin.
+ */
+const getReceiptDriver = async (req, res, next) => {
+  try {
+    const order = await fetchOrderForReceipt(req.params.id);
+    if (!order) throw new AppError('Commande introuvable', 404);
+
+    // Contrôle d'accès : conducteur assigné ou admin
+    if (req.user.role === 'client') {
+      throw new AppError('Accès refusé. Utilisez /receipt pour votre reçu.', 403);
+    }
+    if (req.user.role === 'driver' && order.driver_id !== req.user.id) {
+      throw new AppError('Accès refusé', 403);
+    }
+    if (!order.driver_id) {
+      throw new AppError('Aucun conducteur assigné à cette commande', 400);
+    }
+
+    generateReceiptPDF(res, order, 'driver');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   estimatePrice,
   createOrder,
@@ -428,4 +521,6 @@ module.exports = {
   confirmDelivery,
   cancelOrder,
   getTracking,
+  getReceiptClient,
+  getReceiptDriver,
 };

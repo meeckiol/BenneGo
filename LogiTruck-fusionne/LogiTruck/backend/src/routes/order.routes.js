@@ -3,6 +3,7 @@ const { body, param } = require('express-validator');
 const {
   estimatePrice, createOrder, getOrders, getOrder,
   acceptOrder, updateOrderStatus, confirmDelivery, cancelOrder, getTracking,
+  getReceiptClient, getReceiptDriver,
 } = require('../controllers/order.controller');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
 const { validateRequest } = require('../middlewares/validate.middleware');
@@ -67,5 +68,15 @@ router.post('/:id/cancel', requireRole('client'), [
 router.get('/:id/tracking', [
   param('id').isUUID(),
 ], validateRequest, getTracking);
+
+// GET /api/orders/:id/receipt - Reçu client (PDF téléchargeable)
+router.get('/:id/receipt', [
+  param('id').isUUID(),
+], validateRequest, getReceiptClient);
+
+// GET /api/orders/:id/receipt/driver - Reçu conducteur (PDF téléchargeable)
+router.get('/:id/receipt/driver', [
+  param('id').isUUID(),
+], validateRequest, getReceiptDriver);
 
 module.exports = router;
