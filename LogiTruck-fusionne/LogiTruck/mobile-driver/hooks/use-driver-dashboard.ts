@@ -6,17 +6,35 @@ import { isActiveJobStatus, type JobStatus } from "@/shared/logitruck";
 
 export type JobBucket = "offered" | "active" | "completed";
 
+/**
+ * Réponse étendue de /drivers/me/summary.
+ * Inclut désormais les données de profil camion (truck_plate, truck_type, etc.)
+ * pour éviter un second appel à /auth/me.
+ */
 type Summary = {
   is_available: boolean;
   rating: number | null;
   rating_count: number;
   total_trips: number;
   earnings: { paid: number; pending_payout: number; awaiting_confirmation: number };
+  // Profil camion
+  truck_plate: string | null;
+  truck_type: string | null;
+  truck_capacity_m3: number | null;
+  momo_provider: string | null;
+  has_momo: boolean;
 };
 
-/** Courses visibles du chauffeur : celles à prendre (déjà payées par les clients) + les siennes. */
+/**
+ * Courses visibles du chauffeur : celles à prendre (déjà payées) + les siennes.
+ *
+ * Optimisation batterie/connexion :
+ * - Aucun polling : les invalidations viennent de useSocket (new_order / order_taken /
+ *   order_status). Fallback : staleTime 30s + pull-to-refresh manuel.
+ */
 export function useJobs(bucket: JobBucket) {
   const { user } = useAuth();
+
   return useQuery({
     queryKey: ["jobs", bucket, user?.id],
     queryFn: async () => {
@@ -27,7 +45,9 @@ export function useJobs(bucket: JobBucket) {
       if (bucket === "active") return mine.filter((j) => isActiveJobStatus(j.status));
       return mine.filter((j) => j.status === "validated" || j.status === "completed");
     },
-    refetchInterval: bucket === "offered" ? 15000 : false,
+    // Aucun polling : Socket.IO invalide les queries au bon moment.
+    // staleTime de 30s évite les refetch inutiles lors de navigations entre onglets.
+    staleTime: 30_000,
   });
 }
 
@@ -36,7 +56,10 @@ export function useJob(id: string | undefined) {
     queryKey: ["job", id],
     enabled: !!id,
     queryFn: async () => toJob((await api.get(`/orders/${id}`)).data.order),
-    refetchInterval: 10000, // le statut peut changer côté client (confirmation de réception)
+    // Pas de refetchInterval : le statut ne change que sur action chauffeur ou
+    // confirmation client (à venir via Socket.IO).
+    // Refetch explicite après chaque action dans MissionDetailScreen.
+    staleTime: 30_000,
   });
 }
 
@@ -47,30 +70,38 @@ export function useDriverDashboard() {
   const dashboard = useQuery({
     queryKey: ["dashboard", user?.id],
     queryFn: async () => {
-      const [me, summary, orders] = await Promise.all([
-        api.get("/auth/me"),
+      // Un seul appel réseau au lieu de deux (/auth/me + /drivers/me/summary).
+      // /drivers/me/summary a été étendu pour inclure truck_plate, truck_type, etc.
+      const [summary, orders] = await Promise.all([
         api.get<Summary>("/drivers/me/summary"),
         api.get("/orders", { params: { limit: 100 } }),
       ]);
-      const u = me.data.user;
-      if (!u.truck_plate) throw new Error("Complétez votre profil camion (plaque, permis, Mobile Money) pour recevoir des courses.");
+
+      if (!summary.data.truck_plate) {
+        throw new Error(
+          "Complétez votre profil camion (plaque, permis, Mobile Money) pour recevoir des courses.",
+        );
+      }
+
       const jobs: JobLike[] = orders.data.orders.map(toJob);
       return {
         profile: {
           isAvailable: summary.data.is_available,
-          truckPlate: u.truck_plate as string,
-          truckType: u.truck_type as string | null,
-          capacityM3: u.truck_capacity_m3 as number | null,
-          momoProvider: u.momo_provider as string | null,
-          hasMomo: !!u.momo_number,
+          truckPlate: summary.data.truck_plate,
+          truckType: summary.data.truck_type,
+          capacityM3: summary.data.truck_capacity_m3,
+          momoProvider: summary.data.momo_provider,
+          hasMomo: summary.data.has_momo,
         },
-        activeJob: jobs.find((j) => j.driverId === user?.id && isActiveJobStatus(j.status)) ?? null,
+        activeJob:
+          jobs.find((j) => j.driverId === user?.id && isActiveJobStatus(j.status)) ?? null,
         metrics: {
           validatedTrips: summary.data.total_trips,
           rating: summary.data.rating,
           ratingCount: summary.data.rating_count,
           paid: summary.data.earnings.paid,
-          pending: summary.data.earnings.pending_payout + summary.data.earnings.awaiting_confirmation,
+          pending:
+            summary.data.earnings.pending_payout + summary.data.earnings.awaiting_confirmation,
         },
       };
     },
@@ -86,11 +117,15 @@ export function useDriverDashboard() {
   };
 
   const setAvailabilityMutation = useMutation({
-    mutationFn: (available: boolean) => api.patch("/drivers/availability", { is_available: available }),
+    mutationFn: (available: boolean) =>
+      api.patch("/drivers/availability", { is_available: available }),
   });
-  const acceptMutation = useMutation({ mutationFn: (id: string) => api.patch(`/orders/${id}/accept`) });
+  const acceptMutation = useMutation({
+    mutationFn: (id: string) => api.patch(`/orders/${id}/accept`),
+  });
   const advanceMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: JobStatus }) => api.patch(`/orders/${id}/status`, { status }),
+    mutationFn: ({ id, status }: { id: string; status: JobStatus }) =>
+      api.patch(`/orders/${id}/status`, { status }),
   });
   const locationMutation = useMutation({
     mutationFn: ({ jobId, latitude, longitude }: { jobId: string; latitude: number; longitude: number }) =>
@@ -100,10 +135,23 @@ export function useDriverDashboard() {
   return {
     dashboard,
     refresh,
-    isWorking: setAvailabilityMutation.isPending || acceptMutation.isPending || advanceMutation.isPending || locationMutation.isPending,
-    setAvailability: async (available: boolean) => { await setAvailabilityMutation.mutateAsync(available); await refresh(); },
-    acceptJob: async (id: string) => { await acceptMutation.mutateAsync(id); await refresh(); },
-    advanceJob: async (id: string, status: JobStatus) => { await advanceMutation.mutateAsync({ id, status }); await refresh(); },
+    isWorking:
+      setAvailabilityMutation.isPending ||
+      acceptMutation.isPending ||
+      advanceMutation.isPending ||
+      locationMutation.isPending,
+    setAvailability: async (available: boolean) => {
+      await setAvailabilityMutation.mutateAsync(available);
+      await refresh();
+    },
+    acceptJob: async (id: string) => {
+      await acceptMutation.mutateAsync(id);
+      await refresh();
+    },
+    advanceJob: async (id: string, status: JobStatus) => {
+      await advanceMutation.mutateAsync({ id, status });
+      await refresh();
+    },
     recordLocation: (jobId: string, latitude: number, longitude: number) =>
       locationMutation.mutateAsync({ jobId, latitude, longitude }),
   };

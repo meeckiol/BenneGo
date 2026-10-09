@@ -65,11 +65,19 @@ router.patch('/location', requireRole('driver'), [
   }
 });
 
-// GET /api/drivers/me/summary - Gains et statistiques du chauffeur
+// GET /api/drivers/me/summary - Profil camion + gains + statistiques du chauffeur
+// Remplace le double appel /auth/me + /drivers/me/summary côté mobile : une seule requête.
 router.get('/me/summary', requireRole('driver'), async (req, res, next) => {
   try {
     const [profile, earnings] = await Promise.all([
-      query('SELECT is_available, rating, rating_count, total_trips FROM driver_profiles WHERE user_id = $1', [req.user.id]),
+      query(
+        `SELECT dp.is_available, dp.rating, dp.rating_count, dp.total_trips,
+                dp.truck_plate, dp.truck_type, dp.truck_capacity_m3,
+                dp.momo_number, dp.momo_provider
+         FROM driver_profiles dp
+         WHERE dp.user_id = $1`,
+        [req.user.id]
+      ),
       query(
         `SELECT
            COALESCE(SUM(driver_amount) FILTER (WHERE payment_status = 'released'), 0) AS paid,
@@ -82,6 +90,7 @@ router.get('/me/summary', requireRole('driver'), async (req, res, next) => {
     const p = profile.rows[0] || {};
     const e = earnings.rows[0];
     res.json({
+      // Statistiques / disponibilité
       is_available: !!p.is_available,
       rating: p.rating === null || p.rating === undefined ? null : Number(p.rating),
       rating_count: p.rating_count || 0,
@@ -91,6 +100,12 @@ router.get('/me/summary', requireRole('driver'), async (req, res, next) => {
         pending_payout: Number(e.pending_payout),
         awaiting_confirmation: Number(e.awaiting_confirmation),
       },
+      // Profil camion (évite un second appel à /auth/me côté mobile)
+      truck_plate: p.truck_plate || null,
+      truck_type: p.truck_type || null,
+      truck_capacity_m3: p.truck_capacity_m3 ? Number(p.truck_capacity_m3) : null,
+      momo_provider: p.momo_provider || null,
+      has_momo: !!p.momo_number,
     });
   } catch (error) {
     next(error);

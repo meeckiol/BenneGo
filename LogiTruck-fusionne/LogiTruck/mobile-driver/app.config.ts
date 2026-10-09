@@ -29,7 +29,11 @@ const config: ExpoConfig = {
     bundleIdentifier: env.iosBundleId,
     "infoPlist": {
       "ITSAppUsesNonExemptEncryption": false,
-      "NSLocationWhenInUseUsageDescription": "LogiTruck utilise votre position uniquement lorsque vous la partagez pendant une mission active."
+      "NSLocationWhenInUseUsageDescription": "LogiTruck utilise votre position uniquement pendant une mission active.",
+      // Requis pour le tracking background (watchPositionAsync en background)
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "LogiTruck suit votre position en arrière-plan pendant une mission afin que le client puisse voir votre camion en temps réel.",
+      "NSLocationAlwaysUsageDescription": "LogiTruck suit votre position en arrière-plan pendant une mission afin que le client puisse voir votre camion en temps réel.",
+      "UIBackgroundModes": ["location"]
     }
   },
   android: {
@@ -39,7 +43,14 @@ const config: ExpoConfig = {
     },
     predictiveBackGestureEnabled: false,
     package: env.androidPackage,
-    permissions: ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
+    permissions: [
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_FINE_LOCATION",
+      // Requis pour continuer le suivi GPS quand l'écran est verrouillé
+      "ACCESS_BACKGROUND_LOCATION",
+      "FOREGROUND_SERVICE",
+      "FOREGROUND_SERVICE_LOCATION",
+    ],
   },
   web: {
     bundler: "metro",
@@ -52,7 +63,10 @@ const config: ExpoConfig = {
     [
       "expo-location",
       {
-        "locationWhenInUsePermission": "LogiTruck utilise votre position uniquement lorsque vous la partagez pendant une mission active."
+        "locationWhenInUsePermission": "LogiTruck utilise votre position uniquement pendant une mission active.",
+        "locationAlwaysAndWhenInUsePermission": "LogiTruck suit votre position en arrière-plan pendant une mission afin que le client puisse voir votre camion en temps réel.",
+        "isAndroidBackgroundLocationEnabled": true,
+        "isAndroidForegroundServiceEnabled": true
       }
     ],
     [
