@@ -204,6 +204,16 @@ ALTER TABLE orders ALTER COLUMN status SET DEFAULT 'awaiting_payment';
 ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0;
 ALTER TABLE driver_profiles ALTER COLUMN rating DROP DEFAULT;
 
+-- Champs profil complet (clients & chauffeurs)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS prenom VARCHAR(80);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS nom VARCHAR(80);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS date_naissance DATE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS adresse TEXT;
+
+-- Champs profil complet conducteurs
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS date_naissance DATE;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS adresse TEXT;
+
 -- Un statut de paiement / de commande ne peut prendre que des valeurs connues
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
 ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN (
