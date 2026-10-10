@@ -1,11 +1,79 @@
-node_modules/
+# ──────────────────────────────────────────────────────────────────────────────
+# LogiTruck — .gitignore
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ─── Secrets & variables d'environnement ─────────────────────────────────────
 .env
-.env.local
-.env.production
-.env.*.local
-dist/
-build/
-coverage/
+.env.*
+!.env.example
+!.env.prod.example
+
+# ─── Dépendances Node ─────────────────────────────────────────────────────────
+node_modules/
+**/node_modules/
+
+# ─── Builds de production (régénérés par CI/CD) ───────────────────────────────
+frontend-client/dist/
+frontend-driver/dist/
+frontend-admin/dist/
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── Couverture de tests ──────────────────────────────────────────────────────
+coverage/
+**/coverage/
+
+# ─── Cache Vite & outils de build ────────────────────────────────────────────
+.vite/
+**/.vite/
+dist-ssr/
+
+# ─── IDEs & éditeurs ─────────────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+# Fichiers backup éditeur (vim, gedit, etc.)
+*.orig
+*.bak
+**/*~
+**/*.orig
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
 .DS_Store
-.expo/
+Thumbs.db
+desktop.ini
+
+# ─── Docker (données persistantes locales) ───────────────────────────────────
+docker/volumes/
+postgres_data/
+
+# ─── Certificats SSL (gérés par certbot sur le serveur) ──────────────────────
+docker/certbot/
+letsencrypt/
+
+# ─── Mobile (Expo) ────────────────────────────────────────────────────────────
+mobile-driver/.expo/
+mobile-driver/node_modules/
+mobile-driver/dist/
+
+# ─── Divers ──────────────────────────────────────────────────────────────────
+*.pid
+*.seed
+*.pid.lock
+.npm/
+.eslintcache
+.stylelintcache
+.pnpm-store/

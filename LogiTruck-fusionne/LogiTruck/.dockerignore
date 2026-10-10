@@ -1,0 +1,50 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# LogiTruck — .dockerignore
+# Exclut du contexte de build Docker ce qui n'est pas utile dans les images
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Contrôle de version
+.git/
+.gitignore
+
+# Secrets locaux (jamais dans une image)
+.env
+.env.*
+!.env.example
+
+# Dépendances (réinstallées dans l'image)
+node_modules/
+**/node_modules/
+
+# Builds frontends (montés en volume depuis l'hôte en prod)
+frontend-client/dist/
+frontend-driver/dist/
+frontend-admin/dist/
+
+# Tests
+**/coverage/
+**/*.test.js
+**/*.spec.js
+backend/tests/
+
+# Logs
+logs/
+*.log
+
+# Docs & fichiers de développement
+docs/
+README.md
+*.md
+docker-compose.yml
+docker-compose.prod.yml
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Mobile (pas dans le build serveur)
+mobile-driver/

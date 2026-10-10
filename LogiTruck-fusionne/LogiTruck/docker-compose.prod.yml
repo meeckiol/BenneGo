@@ -1,0 +1,127 @@
+# Production — nécessite un fichier .env.prod (copiez .env.prod.example)
+# Usage : docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+
+services:
+
+  # ─── Base de données ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: logitruck_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-logitruck_db}
+      POSTGRES_USER: ${POSTGRES_USER:-logitruck_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env.prod}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # En production, PostgreSQL n'est PAS exposé sur l'hôte.
+    # Seul le backend (réseau interne) peut s'y connecter.
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-logitruck_user} -d ${POSTGRES_DB:-logitruck_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - internal
+
+  # ─── API Backend ────────────────────────────────────────────────────────────
+  backend:
+    image: node:20-alpine
+    container_name: logitruck_backend_prod
+    restart: always
+    working_dir: /app
+    # Monte uniquement le code source du backend (pas node_modules de la racine)
+    volumes:
+      - ./backend:/app:ro
+      - backend_modules:/app/node_modules
+    command: sh -c "npm install --omit=dev && node src/server.js"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-logitruck_db}
+      DB_USER: ${POSTGRES_USER:-logitruck_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Définissez JWT_SECRET dans .env.prod}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:?Définissez CORS_ORIGIN dans .env.prod}
+      TRUST_PROXY: "1"
+      PLATFORM_COMMISSION_RATE: ${PLATFORM_COMMISSION_RATE:-0.10}
+      KKIAPAY_PUBLIC_KEY: ${KKIAPAY_PUBLIC_KEY}
+      KKIAPAY_PRIVATE_KEY: ${KKIAPAY_PRIVATE_KEY}
+      KKIAPAY_SECRET: ${KKIAPAY_SECRET}
+      KKIAPAY_WEBHOOK_SECRET: ${KKIAPAY_WEBHOOK_SECRET}
+      KKIAPAY_SANDBOX: ${KKIAPAY_SANDBOX:-false}
+      PAYOUT_MODE: ${PAYOUT_MODE:-manual}
+      PAYOUT_WEBHOOK_URL: ${PAYOUT_WEBHOOK_URL:-}
+      PAYOUT_WEBHOOK_TOKEN: ${PAYOUT_WEBHOOK_TOKEN:-}
+      OSRM_URL: ${OSRM_URL:-https://router.project-osrm.org}
+    expose:
+      - "3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - internal
+
+  # ─── Reverse proxy + SSL ────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: logitruck_nginx_prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      # Frontends buildés
+      - ./frontend-client/dist:/var/www/client:ro
+      - ./frontend-driver/dist:/var/www/driver:ro
+      - ./frontend-admin/dist:/var/www/admin:ro
+      # Certificats Let's Encrypt (gérés par certbot)
+      - letsencrypt_certs:/etc/letsencrypt:ro
+      - letsencrypt_www:/var/www/certbot:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+      - external
+
+  # ─── Certbot (renouvellement SSL automatique) ───────────────────────────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: logitruck_certbot
+    restart: unless-stopped
+    volumes:
+      - letsencrypt_certs:/etc/letsencrypt
+      - letsencrypt_www:/var/www/certbot
+    # Vérifie le renouvellement toutes les 12h
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+    networks:
+      - external
+
+volumes:
+  postgres_data:
+  backend_modules:
+  letsencrypt_certs:
+  letsencrypt_www:
+
+networks:
+  internal:
+    driver: bridge
+    internal: true   # PostgreSQL et backend inaccessibles depuis Internet
+  external:
+    driver: bridge   # Nginx ↔ Internet
