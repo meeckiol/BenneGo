@@ -4,6 +4,10 @@ import useDriverAuthStore from '../store/authStore';
 
 let socketInstance = null;
 
+// En prod (Vercel) : VITE_SOCKET_URL=https://logitruck-backend.onrender.com
+// En dev local    : '/' (même origine, proxy Vite gère /socket.io)
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '/';
+
 /**
  * Hook WebSocket pour le chauffeur
  * Gère la connexion, la disponibilité et l'envoi de position GPS
@@ -16,7 +20,7 @@ const useDriverSocket = ({ onNewOrder = null, onOrderCancelled = null, onOrderTa
     if (!token) return;
 
     // Créer la connexion Socket.IO
-    socketInstance = io('/', {
+    socketInstance = io(SOCKET_URL, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
