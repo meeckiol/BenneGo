@@ -5,6 +5,7 @@ import useAdminStore from '../store/adminStore';
 const NAV_ITEMS = [
   { path: '/',          icon: '📊', label: 'Tableau de bord' },
   { path: '/orders',    icon: '📦', label: 'Commandes' },
+  { path: '/b2b',       icon: '🏢', label: 'B2B & Séquestre' },
   { path: '/drivers',   icon: '🚛', label: 'Chauffeurs' },
   { path: '/clients',   icon: '👥', label: 'Clients' },
   { path: '/payments',  icon: '💰', label: 'Paiements' },

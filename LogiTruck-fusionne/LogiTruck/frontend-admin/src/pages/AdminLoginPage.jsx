@@ -24,6 +24,21 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleDemoAccess = () => {
+    useAdminStore.setState({
+      user: {
+        id: '00000000-0000-0000-0000-000000000001',
+        full_name: 'Superviseur LogiTruck Admin',
+        phone: '+22997000001',
+        role: 'admin',
+      },
+      token: 'demo-admin-token-123',
+      isAuthenticated: true,
+    });
+    toast.success('Mode Démo Administrateur activé !');
+    navigate('/');
+  };
+
   return (
     <div style={s.container}>
       <div style={s.card}>
@@ -46,6 +61,13 @@ export default function AdminLoginPage() {
           <button type="submit" disabled={loading} style={s.btn}>
             {loading ? 'Connexion...' : 'Accéder au dashboard'}
           </button>
+          <button
+            type="button"
+            onClick={handleDemoAccess}
+            style={s.demoBtn}
+          >
+            ⚡ Accès Démo Administrateur
+          </button>
         </form>
       </div>
     </div>
@@ -64,4 +86,5 @@ const s = {
   label: { color: '#94a3b8', fontSize: '13px', fontWeight: '600' },
   input: { padding: '12px 14px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: 'white', fontSize: '15px', outline: 'none' },
   btn: { padding: '14px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '4px' },
+  demoBtn: { padding: '12px', background: '#1e3a8a', color: '#93c5fd', border: '1px solid #3b82f6', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 };

@@ -10,6 +10,21 @@ export default function LoginPage() {
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
 
+  const handleDemoAccess = () => {
+    useAuthStore.setState({
+      user: {
+        id: '11111111-2222-3333-4444-555555555555',
+        full_name: 'Ing. Koffi (Entreprise BTP)',
+        phone: '+22997000000',
+        role: 'client',
+      },
+      token: 'demo-token-123',
+      isAuthenticated: true,
+    });
+    toast.success('Mode Démo activé : Bienvenue sur LogiTruck !');
+    navigate('/');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -60,6 +75,14 @@ export default function LoginPage() {
 
           <button type="submit" disabled={loading} style={styles.button}>
             {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDemoAccess}
+            style={styles.demoButton}
+          >
+            ⚡ Accès Démo Direct (Voir le Dashboard)
           </button>
         </form>
 
@@ -113,6 +136,16 @@ const styles = {
     fontWeight: '700',
     cursor: 'pointer',
     marginTop: '8px',
+  },
+  demoButton: {
+    padding: '12px',
+    background: '#0F172A',
+    color: '#FFB74D',
+    border: '1px solid #FF6B00',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
   },
   footer: { textAlign: 'center', marginTop: '24px', color: '#666', fontSize: '14px' },
   link: { color: '#FF6B00', fontWeight: '600', textDecoration: 'none' },

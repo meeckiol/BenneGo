@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { path: '/drivers',   icon: '🚛', label: 'Chauffeurs' },
   { path: '/clients',   icon: '👥', label: 'Clients' },
   { path: '/payments',  icon: '💰', label: 'Paiements' },
+  { path: '/reviews',   icon: '⭐', label: 'Avis' },
 ];
 
 export default function AdminLayout({ children }) {

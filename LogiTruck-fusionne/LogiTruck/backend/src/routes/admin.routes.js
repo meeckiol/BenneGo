@@ -162,4 +162,145 @@ router.patch('/users/:id/activate', async (req, res, next) => {
   }
 });
 
+// =============================================
+// B2B & GRANDS COMPTES (ADMINISTRATION SÉQUESTRE)
+// =============================================
+
+// GET /api/admin/companies - Liste des entreprises B2B partenaires
+router.get('/companies', async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT c.*,
+              COUNT(DISTINCT p.id) AS total_projects,
+              COUNT(DISTINCT o.id) AS total_orders,
+              COALESCE(SUM(o.total_amount) FILTER (WHERE o.payment_status IN ('escrow_held', 'payout_pending', 'released')), 0) AS total_volume_xof
+       FROM companies c
+       LEFT JOIN projects_chantiers p ON p.company_id = c.id
+       LEFT JOIN orders o ON o.project_id = p.id
+       GROUP BY c.id
+       ORDER BY c.created_at DESC`
+    );
+    res.json({ companies: result.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/admin/bulk-orders - Liste des commandes groupées (Proformas B2B)
+router.get('/bulk-orders', async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT o.bulk_group_id, o.proforma_invoice_number,
+              c.name AS company_name, pc.name AS project_name,
+              COUNT(o.id) AS orders_count,
+              SUM(o.total_amount) AS total_amount,
+              SUM(o.commission_amount) AS total_commission,
+              o.payment_status,
+              MIN(o.created_at) AS created_at
+       FROM orders o
+       LEFT JOIN projects_chantiers pc ON pc.id = o.project_id
+       LEFT JOIN companies c ON c.id = pc.company_id
+       WHERE o.is_bulk_order = true
+       GROUP BY o.bulk_group_id, o.proforma_invoice_number, c.name, pc.name, o.payment_status
+       ORDER BY MIN(o.created_at) DESC`
+    );
+    res.json({ bulk_orders: result.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/bulk-orders/:bulkGroupId/validate-escrow
+// Validation manuelle du virement bancaire ou chèque reçu sur le compte séquestre LogiTruck
+// Débloque les sous-commandes pour les chauffeurs (statut pending + escrow_held)
+router.post('/bulk-orders/:bulkGroupId/validate-escrow', async (req, res, next) => {
+  const { getClient } = require('../config/database');
+  const db = await getClient();
+  try {
+    await db.query('BEGIN');
+    const { bulkGroupId } = req.params;
+    const { payment_reference = 'VIR-BANQUE-SEQUESTRE', bank_note = 'Virement bancaire certifié' } = req.body;
+
+    const ordersRes = await db.query(
+      `SELECT id, order_number, total_amount, client_id FROM orders
+       WHERE bulk_group_id = $1 AND payment_status = 'unpaid' FOR UPDATE`,
+      [bulkGroupId]
+    );
+
+    if (!ordersRes.rows.length) {
+      throw new Error('Aucune commande en attente de paiement trouvée pour ce groupe de proforma');
+    }
+
+    const orders = ordersRes.rows;
+
+    // Débloquer toutes les commandes
+    await db.query(
+      `UPDATE orders
+       SET payment_status = 'escrow_held',
+           status = 'pending',
+           payment_method = 'bank_transfer_escrow',
+           payment_reference = $1,
+           payment_at = NOW(),
+           updated_at = NOW()
+       WHERE bulk_group_id = $2 AND payment_status = 'unpaid'`,
+      [payment_reference, bulkGroupId]
+    );
+
+    // Enregistrer les transactions de séquestre
+    for (const order of orders) {
+      await db.query(
+        `INSERT INTO transactions (order_id, type, amount, provider, provider_reference, status, metadata)
+         VALUES ($1, 'escrow_hold', $2, 'bank_escrow', $3, 'success', $4)
+         ON CONFLICT DO NOTHING`,
+        [order.id, order.total_amount, `${payment_reference}-${order.order_number}`, JSON.stringify({ note: bank_note, admin_id: req.user.id })]
+      );
+    }
+
+    await db.query('COMMIT');
+
+    // Notifier via Socket.IO
+    const io = req.app.get('io');
+    const events = require('../services/order-events');
+    if (io) {
+      for (const order of orders) {
+        events.notifyNewOrder(io, order);
+      }
+    }
+
+    res.json({
+      message: `Paiement en séquestre validé avec succès ! ${orders.length} courses ont été débloquées pour les chauffeurs.`,
+      orders_count: orders.length,
+      bulk_group_id: bulkGroupId,
+    });
+  } catch (error) {
+    await db.query('ROLLBACK');
+    next(error);
+  } finally {
+    db.release();
+  }
+});
+
+// GET /api/admin/route-deviations - Alertes de déviation GPS (>15%) pour surveillance de détournement
+router.get('/route-deviations', async (req, res, next) => {
+  try {
+    const result = await query(
+      `SELECT o.id, o.order_number, o.order_type, o.pickup_address, o.delivery_address,
+              o.route_deviation_alert, o.route_deviation_details,
+              uc.full_name AS client_name, uc.phone AS client_phone,
+              ud.full_name AS driver_name, ud.phone AS driver_phone,
+              dp.truck_plate
+       FROM orders o
+       JOIN users uc ON uc.id = o.client_id
+       LEFT JOIN users ud ON ud.id = o.driver_id
+       LEFT JOIN driver_profiles dp ON dp.user_id = o.driver_id
+       WHERE o.route_deviation_alert = true
+       ORDER BY o.updated_at DESC LIMIT 100`
+    );
+    res.json({ deviations: result.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
+

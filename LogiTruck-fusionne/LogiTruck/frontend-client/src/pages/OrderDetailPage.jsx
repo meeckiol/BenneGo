@@ -105,16 +105,22 @@ export default function OrderDetailPage() {
   };
 
   const confirmReception = async () => {
-    const ok = window.confirm(
-      `Confirmer que vous avez bien reçu votre commande ?\n\n` +
-      `Le paiement sera libéré : ${fcfa(order.driver_amount)} pour le chauffeur ` +
-      `et ${fcfa(order.commission_amount)} de frais de service LogiTruck.`
-    );
-    if (!ok) return;
+    let confirmMsg = `Confirmer la réception de vos matériaux ?\n\nLe paiement séquestré de ${fcfa(order.driver_amount)} sera libéré au chauffeur.`;
+    let endpoint = `/orders/${id}/confirm-delivery`;
+
+    if (order.order_type === 'RENTAL') {
+      confirmMsg = `Valider que l'engin a bien travaillé sur votre chantier pour la durée convenue (${order.duration_hours || 4} heures) ?\n\nLe paiement séquestré de ${fcfa(order.driver_amount)} sera transmis au propriétaire de la machine.`;
+      endpoint = `/orders/${id}/confirm-rental`;
+    } else if (order.order_type === 'EVACUATION') {
+      confirmMsg = `Valider que votre chantier est entièrement propre et que les gravats ont été évacués ?\n\nLe paiement séquestré de ${fcfa(order.driver_amount)} sera libéré au chauffeur.`;
+      endpoint = `/orders/${id}/confirm-evacuation`;
+    }
+
+    if (!window.confirm(confirmMsg)) return;
     setBusy(true);
     try {
-      await api.post(`/orders/${id}/confirm-delivery`);
-      toast.success('Réception confirmée. Merci ! Vous pouvez maintenant noter votre chauffeur.');
+      const { data } = await api.post(endpoint);
+      toast.success(data.message || 'Validation effectuée avec succès !');
       await fetchOrder();
     } catch { /* message affiché par l'intercepteur */ } finally {
       setBusy(false);
@@ -154,10 +160,23 @@ export default function OrderDetailPage() {
       </header>
 
       <div style={styles.content}>
+        {/* Alerte Déviation GPS Certifié (Anti-détournement / anti-vol) */}
+        {order.route_deviation_alert && (
+          <div style={styles.deviationAlert}>
+            <div style={styles.deviationTitle}>⚠️ ALERTE GPS CERTIFIÉ : Détournement Potentiel Détecté</div>
+            <p style={styles.deviationText}>
+              Le camion s'est écarté de plus de 15% de l'itinéraire optimal calculé par OSRM.
+              Vérifiez sa position en direct pour prévenir toute revente frauduleuse de marchandise.
+            </p>
+          </div>
+        )}
+
         {order.payment_status === 'escrow_held' && !confirmed && (
           <div style={styles.secure}>
-            🔒 Votre paiement de <strong>{fcfa(order.total_amount)}</strong> est bloqué en sécurité.
-            Le chauffeur n'est payé qu'après votre confirmation de réception.
+            🔒 Votre paiement de <strong>{fcfa(order.total_amount)}</strong> est bloqué en sécurité sur LogiTruck.
+            {order.order_type === 'RENTAL' && ' Les fonds sont libérés uniquement après validation des heures de l\'engin sur le chantier.'}
+            {order.order_type === 'EVACUATION' && ' Les fonds sont libérés uniquement après confirmation de la propreté de votre site.'}
+            {(!order.order_type || order.order_type === 'MATERIAL') && ' Le chauffeur n\'est payé qu\'après déchargement et vérification des matériaux.'}
           </div>
         )}
 
@@ -166,10 +185,10 @@ export default function OrderDetailPage() {
         {/* Suivi du trajet en direct */}
         {isLive && (
           <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Suivi du chauffeur en direct</h3>
+            <h3 style={styles.cardTitle}>Suivi GPS certifié en direct</h3>
             <TrackingMap pickup={pickup} delivery={delivery} driver={driverPos} route={route} />
             <p style={styles.mapHint}>
-              {driverPos ? 'Position mise à jour en temps réel.' : 'En attente de la première position du chauffeur…'}
+              {driverPos ? 'Position mise à jour en temps réel via Socket.IO.' : 'En attente de la première position du chauffeur…'}
             </p>
           </div>
         )}
@@ -177,7 +196,7 @@ export default function OrderDetailPage() {
         {/* Progression */}
         {!cancelled && (
           <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Suivi de la commande</h3>
+            <h3 style={styles.cardTitle}>Suivi de la mission</h3>
             <div style={styles.steps}>
               {STEPS.map((step, idx) => (
                 <div key={step.key} style={styles.step}>
@@ -197,30 +216,45 @@ export default function OrderDetailPage() {
 
         {/* Détails */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Détails</h3>
-          <InfoRow label="De" value={order.pickup_address} />
-          <InfoRow label="Vers" value={order.delivery_address} />
-          <InfoRow label="Matériau" value={order.material_description || order.material_name} />
-          <InfoRow label="Distance" value={`${order.distance_km} km`} />
-          {order.driver_name && <InfoRow label="Chauffeur" value={order.driver_name} />}
+          <h3 style={styles.cardTitle}>Détails de la mission</h3>
+          <InfoRow
+            label="Service"
+            value={
+              order.order_type === 'RENTAL' ? '🚜 Location d\'Engin Lourd' :
+              order.order_type === 'EVACUATION' ? '📦 Évacuation de Gravats' :
+              '🏗️ Transport de Matériaux'
+            }
+            bold
+          />
+          {order.project_name && <InfoRow label="Chantier rattaché" value={order.project_name} />}
+          <InfoRow label="Point de ramassage / départ" value={order.pickup_address} />
+          <InfoRow label="Chantier de livraison / décharge" value={order.delivery_address} />
+          {order.material_description || order.material_name ? (
+            <InfoRow label="Matériau" value={order.material_description || order.material_name} />
+          ) : null}
+          {order.vehicle_name && <InfoRow label="Véhicule / Engin" value={order.vehicle_name} />}
+          {order.duration_hours && <InfoRow label="Durée de location" value={`${order.duration_hours} heures`} />}
+          {order.evacuation_debris_type && <InfoRow label="Type de débris" value={order.evacuation_debris_type} />}
+          {order.distance_km > 0 && <InfoRow label="Distance calculée" value={`${order.distance_km} km`} />}
+          {order.driver_name && <InfoRow label="Prestataire assigné" value={order.driver_name} />}
           {order.driver_name && order.driver_rating_count > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ color: '#666', fontSize: 14 }}>Note du chauffeur</span>
+              <span style={{ color: '#666', fontSize: 14 }}>Note du prestataire</span>
               <span style={{ fontSize: 13 }}>
                 <StarRating value={Math.round(order.driver_rating_avg)} size={16} label="Note du chauffeur" /> {Number(order.driver_rating_avg).toFixed(1)} ({order.driver_rating_count})
               </span>
             </div>
           )}
-          {order.driver_phone && <InfoRow label="Tel. chauffeur" value={order.driver_phone} />}
+          {order.driver_phone && <InfoRow label="Tel. prestataire" value={order.driver_phone} />}
         </div>
 
         {/* Prix */}
         <div style={styles.card}>
-          <h3 style={styles.cardTitle}>Paiement</h3>
-          <InfoRow label="Total" value={fcfa(order.total_amount)} bold />
-          <InfoRow label="Part chauffeur (90 %)" value={fcfa(order.driver_amount)} />
-          <InfoRow label="Frais de service LogiTruck (10 %)" value={fcfa(order.commission_amount)} />
-          <InfoRow label="Statut" value={PAYMENT_LABELS[order.payment_status] || order.payment_status} />
+          <h3 style={styles.cardTitle}>Paiement & Séquestre</h3>
+          <InfoRow label="Montant Total" value={fcfa(order.total_amount)} bold />
+          <InfoRow label="Part Prestataire" value={fcfa(order.driver_amount)} />
+          <InfoRow label="Frais de service LogiTruck" value={fcfa(order.commission_amount)} />
+          <InfoRow label="Statut Paiement" value={PAYMENT_LABELS[order.payment_status] || order.payment_status} />
         </div>
 
         {/* Actions */}
@@ -232,7 +266,11 @@ export default function OrderDetailPage() {
 
         {order.status === 'delivered' && (
           <button onClick={confirmReception} disabled={busy} style={styles.successBtn}>
-            {busy ? 'Validation…' : '✓ Confirmer la réception de ma commande'}
+            {busy ? 'Validation en cours…' : (
+              order.order_type === 'RENTAL' ? '✓ Valider les heures travaillées de l\'engin (Libérer le séquestre)' :
+              order.order_type === 'EVACUATION' ? '✓ Valider la propreté du chantier (Libérer le séquestre)' :
+              '✓ Confirmer la réception des matériaux (Libérer le séquestre)'
+            )}
           </button>
         )}
 
@@ -270,9 +308,12 @@ const styles = {
   stepDot: { width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0 },
   stepLabel: { fontSize: '14px' },
   primaryBtn: { padding: '16px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', width: '100%' },
-  secure: { background: '#E8F5E9', border: '1px solid #A5D6A7', color: '#1B5E20', borderRadius: '12px', padding: '14px 16px', fontSize: '14px' },
+  secure: { background: '#E8F5E9', border: '1px solid #A5D6A7', color: '#1B5E20', borderRadius: '12px', padding: '14px 16px', fontSize: '14px', lineHeight: '1.5' },
   cancelled: { background: '#FFEBEE', border: '1px solid #EF9A9A', color: '#B71C1C', borderRadius: '12px', padding: '14px 16px', fontSize: '14px' },
   mapHint: { margin: '10px 0 0', fontSize: '13px', color: '#666' },
   linkBtn: { background: 'none', border: 'none', color: '#B71C1C', textDecoration: 'underline', cursor: 'pointer', fontSize: '14px', padding: '8px' },
   successBtn: { padding: '16px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', width: '100%' },
+  deviationAlert: { background: '#FEF2F2', border: '2px solid #EF4444', borderRadius: '12px', padding: '16px', color: '#991B1B' },
+  deviationTitle: { fontWeight: '800', fontSize: '15px', marginBottom: '6px' },
+  deviationText: { fontSize: '13.5px', lineHeight: '1.5', margin: 0 },
 };

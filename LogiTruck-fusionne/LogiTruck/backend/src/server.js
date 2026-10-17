@@ -13,6 +13,7 @@ const orderRoutes = require('./routes/order.routes');
 const driverRoutes = require('./routes/driver.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminRoutes = require('./routes/admin.routes');
+const companyRoutes = require('./routes/company.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
 const reviewRoutes = require('./routes/review.routes');
 const { setupSocketIO } = require('./services/socket.service');
@@ -76,6 +77,8 @@ app.use('/api/drivers', driverRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/vehicle-types', companyRoutes);
 
 // =============================================
 // WebSocket pour tracking temps réel

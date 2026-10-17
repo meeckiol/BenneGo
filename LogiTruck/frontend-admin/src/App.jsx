@@ -8,6 +8,7 @@ import OrdersPage from './pages/OrdersPage';
 import DriversPage from './pages/DriversPage';
 import ClientsPage from './pages/ClientsPage';
 import PaymentsPage from './pages/PaymentsPage';
+import ReviewsPage from './pages/ReviewsPage';
 
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = useAdminStore((s) => s.isAuthenticated);
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/drivers" element={<PrivateRoute><DriversPage /></PrivateRoute>} />
       <Route path="/clients" element={<PrivateRoute><ClientsPage /></PrivateRoute>} />
       <Route path="/payments" element={<PrivateRoute><PaymentsPage /></PrivateRoute>} />
+      <Route path="/reviews" element={<PrivateRoute><ReviewsPage /></PrivateRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

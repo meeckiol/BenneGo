@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { payOrder } from '../services/kkiapay';
 
 // Cotonou comme centre par défaut
 const DEFAULT_PICKUP = { lat: 6.3703, lng: 2.3912, address: 'Carrière de Tori-Bossito' };
@@ -46,16 +47,25 @@ export default function NewOrderPage() {
     }
   };
 
+  // Commande + paiement en une seule étape : l'argent est bloqué sur LogiTruck, pas versé au chauffeur
   const confirmOrder = async () => {
     setLoading(true);
+    let orderId;
     try {
       const { data } = await api.post('/orders', form);
-      toast.success('Commande créée ! Un chauffeur va accepter sous peu.');
-      navigate(`/orders/${data.order.id}`);
+      orderId = data.order.id;
+      const res = await payOrder(orderId);
+      if (res.ok) {
+        toast.success('Paiement sécurisé ! Un chauffeur va accepter sous peu.');
+      } else {
+        toast('Paiement non finalisé : vous pouvez le reprendre depuis votre commande.', { icon: 'ℹ️' });
+      }
     } catch (err) {
-      // géré
+      // erreurs réseau/validation affichées par l'intercepteur ; sinon message du module de paiement
+      if (err?.message && !err.response) toast.error(err.message);
     } finally {
       setLoading(false);
+      if (orderId) navigate(`/orders/${orderId}`);
     }
   };
 
@@ -164,10 +174,11 @@ export default function NewOrderPage() {
             </div>
 
             <div style={styles.paymentInfo}>
-              <p><strong>Paiement sécurisé via KKiaPay</strong></p>
+              <p><strong>Paiement sécurisé via KKiaPay — vous payez maintenant</strong></p>
               <p style={styles.paymentSub}>
-                L'argent est bloqué via KKiaPay jusqu'à votre validation de livraison.
-                MTN MoMo et Moov Money acceptés.
+                Votre argent est bloqué sur LogiTruck : il ne va PAS directement au chauffeur.
+                Vous suivez le camion en direct, puis vous confirmez la réception : seulement alors
+                le chauffeur est payé (90 %) et LogiTruck prélève ses 10 %. MTN MoMo et Moov Money acceptés.
               </p>
             </div>
 
@@ -176,7 +187,7 @@ export default function NewOrderPage() {
                 ← Modifier
               </button>
               <button onClick={confirmOrder} disabled={loading} style={styles.primaryBtn}>
-                {loading ? 'Création...' : 'Confirmer la commande'}
+                {loading ? 'Paiement en cours…' : `Commander et payer ${estimate.total_amount?.toLocaleString('fr-FR')} FCFA`}
               </button>
             </div>
           </div>

@@ -15,37 +15,97 @@ function MapCenter({ position }) {
   return null;
 }
 
-// Étapes de livraison avec les actions possibles
-const DELIVERY_STEPS = [
-  {
-    status: 'accepted',
-    next: 'driver_en_route_pickup',
-    label: 'Partir vers la carrière',
-    color: '#2196F3',
-    description: 'Appuyez quand vous quittez votre position',
-  },
-  {
-    status: 'driver_en_route_pickup',
-    next: 'loading',
-    label: 'Confirmer l\'arrivée à la carrière',
-    color: '#FF9800',
-    description: 'Appuyez quand vous êtes à la carrière',
-  },
-  {
-    status: 'loading',
-    next: 'driver_en_route_delivery',
-    label: 'Chargement terminé - Partir livrer',
-    color: '#9C27B0',
-    description: 'Appuyez quand le camion est chargé',
-  },
-  {
-    status: 'driver_en_route_delivery',
-    next: 'delivered',
-    label: 'Confirmer la livraison',
-    color: '#4CAF50',
-    description: 'Appuyez quand vous avez déversé la marchandise',
-  },
-];
+// Étapes de livraison dynamiques selon le type de service
+const getDeliverySteps = (orderType) => {
+  if (orderType === 'RENTAL') {
+    return [
+      {
+        status: 'accepted',
+        next: 'driver_en_route_pickup',
+        label: 'Acheminer l\'engin vers le chantier',
+        color: '#2196F3',
+        description: 'Appuyez au départ du camion porte-char',
+      },
+      {
+        status: 'driver_en_route_pickup',
+        next: 'machine_operating',
+        label: 'Arrivé sur site - Démarrer les travaux',
+        color: '#FF9800',
+        description: 'Appuyez pour lancer le décompte des heures de travail',
+      },
+      {
+        status: 'machine_operating',
+        next: 'delivered',
+        label: 'Fin des heures - Confirmer l\'opération',
+        color: '#4CAF50',
+        description: 'Appuyez quand le temps de location est accompli',
+      },
+    ];
+  }
+  if (orderType === 'EVACUATION') {
+    return [
+      {
+        status: 'accepted',
+        next: 'driver_en_route_pickup',
+        label: 'Partir vers le chantier à nettoyer',
+        color: '#2196F3',
+        description: 'Appuyez quand vous prenez la route',
+      },
+      {
+        status: 'driver_en_route_pickup',
+        next: 'loading',
+        label: 'Arrivé au chantier - Chargement des gravats',
+        color: '#FF9800',
+        description: 'Appuyez dès que le chargement débute',
+      },
+      {
+        status: 'loading',
+        next: 'driver_en_route_delivery',
+        label: 'Camion chargé - Partir vers la décharge',
+        color: '#9C27B0',
+        description: 'Appuyez au départ vers la décharge autorisée',
+      },
+      {
+        status: 'driver_en_route_delivery',
+        next: 'delivered',
+        label: 'Confirmer le déversement à la décharge',
+        color: '#4CAF50',
+        description: 'Appuyez après déversement des gravats',
+      },
+    ];
+  }
+  // Standard MATERIAL
+  return [
+    {
+      status: 'accepted',
+      next: 'driver_en_route_pickup',
+      label: 'Partir vers la carrière',
+      color: '#2196F3',
+      description: 'Appuyez quand vous quittez votre position',
+    },
+    {
+      status: 'driver_en_route_pickup',
+      next: 'loading',
+      label: 'Confirmer l\'arrivée à la carrière',
+      color: '#FF9800',
+      description: 'Appuyez quand vous êtes à la carrière',
+    },
+    {
+      status: 'loading',
+      next: 'driver_en_route_delivery',
+      label: 'Chargement terminé - Partir livrer',
+      color: '#9C27B0',
+      description: 'Appuyez quand le camion est chargé',
+    },
+    {
+      status: 'driver_en_route_delivery',
+      next: 'delivered',
+      label: 'Confirmer la livraison',
+      color: '#4CAF50',
+      description: 'Appuyez quand vous avez déversé la marchandise',
+    },
+  ];
+};
 
 export default function ActiveDeliveryPage() {
   const { orderId } = useParams();
@@ -56,8 +116,8 @@ export default function ActiveDeliveryPage() {
 
   const { sendLocation } = useDriverSocket();
 
-  // GPS actif uniquement pendant la course (le client suit le camion en direct)
-  const tracking = !!order && ['accepted', 'driver_en_route_pickup', 'loading', 'driver_en_route_delivery'].includes(order.status);
+  // GPS actif pendant la course (le client suit le camion en direct)
+  const tracking = !!order && ['accepted', 'driver_en_route_pickup', 'loading', 'driver_en_route_delivery', 'machine_operating'].includes(order.status);
   const { position, error: gpsError, accuracy } = useGPS({
     enabled: tracking,
     onPosition: useCallback((pos) => {
@@ -82,9 +142,11 @@ export default function ActiveDeliveryPage() {
     }
   };
 
+  const deliverySteps = getDeliverySteps(order?.order_type);
+
   const advanceStatus = async () => {
     if (!order) return;
-    const step = DELIVERY_STEPS.find((s) => s.status === order.status);
+    const step = deliverySteps.find((s) => s.status === order.status);
     if (!step) return;
 
     setUpdating(true);
@@ -93,7 +155,13 @@ export default function ActiveDeliveryPage() {
       await loadOrder();
 
       if (step.next === 'delivered') {
-        toast.success('Livraison enregistrée. Le client doit confirmer la réception pour libérer votre paiement.');
+        toast.success(
+          order.order_type === 'RENTAL'
+            ? 'Fin des travaux enregistrée. Le client doit valider les heures pour libérer votre paiement séquestre.'
+            : order.order_type === 'EVACUATION'
+            ? 'Décharge enregistrée. Le client doit valider la propreté du chantier pour libérer votre paiement.'
+            : 'Livraison enregistrée. Le client doit confirmer la réception pour libérer votre paiement.'
+        );
       } else {
         toast.success('Statut mis à jour ✓');
       }
@@ -112,7 +180,7 @@ export default function ActiveDeliveryPage() {
 
   if (!order) return null;
 
-  const currentStep = DELIVERY_STEPS.find((s) => s.status === order.status);
+  const currentStep = deliverySteps.find((s) => s.status === order.status);
   const isDelivered = order.status === 'delivered' || order.status === 'validated' || order.status === 'completed';
 
   const mapCenter = position

@@ -15,7 +15,8 @@ export default function DriverDashboard() {
   const [isAvailable, setIsAvailable] = useState(user?.is_available || false);
   const [pendingOrder, setPendingOrder] = useState(null); // Alerte nouvelle commande
   const [activeOrder, setActiveOrder] = useState(null);   // Commande en cours
-  const [earnings, setEarnings] = useState({ today: 0, total: 0, trips: 0 });
+  const [earnings, setEarnings] = useState({ today: 0, pending: 0, paid: 0 });
+  const [summary, setSummary] = useState(null);
   const [toggling, setToggling] = useState(false);
 
   // Ref pour eviter les closures dans les callbacks socket
@@ -39,13 +40,14 @@ export default function DriverDashboard() {
   const { setAvailable, setUnavailable, sendLocation } = useDriverSocket({
     onNewOrder: handleNewOrder,
     onOrderCancelled: handleOrderCancelled,
+    onOrderTaken: (d) => setPendingOrder((cur) => (cur && cur.order_id === d.order_id ? null : cur)),
   });
 
   // GPS actif seulement quand disponible ou en course
   const { position, error: gpsError, accuracy } = useGPS({
     enabled: isAvailable || !!activeOrder,
     onPosition: useCallback((pos) => {
-      sendLocation(pos, activeOrder?.order_id || null);
+      sendLocation(pos, activeOrder && activeOrder.status !== 'delivered' ? (activeOrder.id || activeOrder.order_id) : null);
     }, [sendLocation, activeOrder]),
     interval: 5000,
   });
@@ -58,27 +60,33 @@ export default function DriverDashboard() {
 
   const loadStats = async () => {
     try {
-      const { data } = await api.get('/orders?status=completed&limit=100');
+      const [sum, list] = await Promise.all([
+        api.get('/drivers/me/summary'),
+        api.get('/orders?limit=100'),
+      ]);
+      setSummary(sum.data);
       const today = new Date().toDateString();
-      const todayOrders = data.orders.filter(
-        (o) => new Date(o.validated_at || o.created_at).toDateString() === today
-      );
+      const todayTotal = list.data.orders
+        .filter((o) => o.driver_id === user?.id && ['validated', 'completed'].includes(o.status)
+          && new Date(o.validated_at || o.created_at).toDateString() === today)
+        .reduce((sum2, o) => sum2 + Number(o.driver_amount || 0), 0);
       setEarnings({
-        today: todayOrders.reduce((sum, o) => sum + parseFloat(o.driver_amount || 0), 0),
-        total: user?.total_trips || 0,
-        trips: data.pagination?.total || 0,
+        today: todayTotal,
+        paid: sum.data.earnings.paid,
+        pending: sum.data.earnings.pending_payout + sum.data.earnings.awaiting_confirmation,
       });
     } catch {
       // ignore
     }
   };
 
+  // Course en cours, quel que soit son avancement (et pas seulement "acceptée")
   const loadActiveOrder = async () => {
     try {
-      const { data } = await api.get('/orders?status=accepted&limit=1');
-      if (data.orders.length > 0) {
-        setActiveOrder(data.orders[0]);
-      }
+      const { data } = await api.get('/orders?limit=50');
+      const active = data.orders.find((o) => o.driver_id === user?.id
+        && ['accepted', 'driver_en_route_pickup', 'loading', 'driver_en_route_delivery', 'delivered'].includes(o.status));
+      if (active) setActiveOrder(active);
     } catch {
       // ignore
     }
@@ -219,11 +227,15 @@ export default function DriverDashboard() {
         />
         <StatCard
           label="Courses totales"
-          value={user?.total_trips || 0}
+          value={summary?.total_trips ?? 0}
         />
         <StatCard
           label="Note"
-          value={`${user?.rating || '5.0'}/5`}
+          value={summary?.rating ? `${summary.rating.toFixed(1)}/5 (${summary.rating_count})` : 'Pas encore noté'}
+        />
+        <StatCard
+          label="En attente de paiement"
+          value={`${earnings.pending.toLocaleString('fr-FR')} FCFA`}
         />
         <StatCard
           label="Historique"

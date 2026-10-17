@@ -6,6 +6,8 @@ export const JOB_STATUSES = [
   "driver_en_route_pickup",
   "loading",
   "driver_en_route_delivery",
+  "machine_operating",
+  "dumping",
   "delivered",
   "validated",
   "completed",
@@ -14,12 +16,16 @@ export const JOB_STATUSES = [
 
 export type JobStatus = (typeof JOB_STATUSES)[number];
 
-/** Statuts pendant lesquels le chauffeur est en course (le suivi GPS n'est actif que pour les 4 premiers). */
+export type OrderType = "MATERIAL" | "RENTAL" | "EVACUATION";
+
+/** Statuts pendant lesquels le chauffeur est en course (le suivi GPS est actif pendant les opérations). */
 export const ACTIVE_JOB_STATUSES = [
   "accepted",
   "driver_en_route_pickup",
   "loading",
   "driver_en_route_delivery",
+  "machine_operating",
+  "dumping",
   "delivered",
 ] as const satisfies readonly JobStatus[];
 
@@ -28,6 +34,8 @@ export const TRACKED_JOB_STATUSES = [
   "driver_en_route_pickup",
   "loading",
   "driver_en_route_delivery",
+  "machine_operating",
+  "dumping",
 ] as const satisfies readonly JobStatus[];
 
 /**
@@ -39,26 +47,32 @@ export const NEXT_JOB_STATUS: Partial<Record<JobStatus, JobStatus>> = {
   driver_en_route_pickup: "loading",
   loading: "driver_en_route_delivery",
   driver_en_route_delivery: "delivered",
+  machine_operating: "delivered",
+  dumping: "delivered",
 };
 
 export const JOB_STATUS_LABELS: Record<JobStatus, string> = {
   awaiting_payment: "En attente de paiement",
   pending: "À prendre",
   accepted: "Acceptée",
-  driver_en_route_pickup: "Vers le chargement",
-  loading: "Chargement",
-  driver_en_route_delivery: "Vers la livraison",
-  delivered: "Livrée · confirmation client",
+  driver_en_route_pickup: "Vers le site / carrière",
+  loading: "Chargement en cours",
+  driver_en_route_delivery: "En route vers livraison / décharge",
+  machine_operating: "Engin en cours d'opération",
+  dumping: "Déchargement à la décharge",
+  delivered: "Terminée · en attente validation client",
   validated: "Confirmée par le client",
   completed: "Payée",
   cancelled: "Annulée",
 };
 
 export const JOB_STATUS_ACTIONS: Partial<Record<JobStatus, string>> = {
-  accepted: "Partir vers le chargement",
-  driver_en_route_pickup: "Confirmer le chargement",
-  loading: "Partir vers la livraison",
-  driver_en_route_delivery: "Confirmer la livraison",
+  accepted: "Partir vers le site",
+  driver_en_route_pickup: "Confirmer l'arrivée sur site",
+  loading: "Partir livrer / décharger",
+  driver_en_route_delivery: "Confirmer la livraison / décharge",
+  machine_operating: "Terminer les heures de travail",
+  dumping: "Confirmer la décharge",
 };
 
 export function isActiveJobStatus(status: JobStatus) {

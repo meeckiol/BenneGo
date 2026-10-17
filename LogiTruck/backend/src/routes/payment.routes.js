@@ -1,132 +1,111 @@
 const express = require('express');
+const { param, body } = require('express-validator');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
-const {
-  createEscrowPayment,
-  verifyTransaction,
-  releaseFundsToDriver,
-  handleKKiaPayWebhook,
-} = require('../services/payment.service');
+const { validateRequest } = require('../middlewares/validate.middleware');
+const payments = require('../services/payment.service');
+const events = require('../services/order-events');
 const { query } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 
 const router = express.Router();
 
-// POST /api/payments/orders/:orderId/pay
-// Client initie le paiement escrow via KKiaPay
-router.post('/orders/:orderId/pay', authenticate, requireRole('client'), async (req, res, next) => {
-  try {
-    const { orderId } = req.params;
-    const { payment_method = 'mtn_momo' } = req.body;
+// POST /api/payments/webhook/kkiapay — appelé par KKiaPay (authentifié par x-kkiapay-secret)
+router.post('/webhook/kkiapay', payments.handleKKiaPayWebhook);
 
-    const orderResult = await query(
-      'SELECT * FROM orders WHERE id = $1 AND client_id = $2',
-      [orderId, req.user.id]
-    );
+router.use(authenticate);
 
-    if (!orderResult.rows.length) {
-      throw new AppError('Commande introuvable', 404);
-    }
-
-    const order = orderResult.rows[0];
-
-    if (order.payment_status !== 'unpaid') {
-      throw new AppError('Cette commande a déjà été payée', 409);
-    }
-
-    // Créer le paiement KKiaPay
-    const payment = await createEscrowPayment(
-      order.id,
-      order.total_amount,
-      req.user.phone,
-      req.user.full_name
-    );
-
-    // Sauvegarder la méthode et la référence
-    await query(
-      `UPDATE orders SET
-        payment_method = $1,
-        payment_reference = $2,
-        updated_at = NOW()
-       WHERE id = $3`,
-      [payment_method, payment.reference, orderId]
-    );
-
-    res.json({
-      message: 'Lien de paiement KKiaPay généré',
-      payment_url: payment.payment_url,
-      transaction_id: payment.transaction_id,
-      amount: order.total_amount,
-      instructions: 'Ouvrez ce lien sur votre téléphone et payez via MTN MoMo ou Moov Money',
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// GET /api/payments/orders/:orderId/verify
-// Vérifie le statut d'un paiement KKiaPay
-router.get('/orders/:orderId/verify', authenticate, async (req, res, next) => {
-  try {
-    const orderResult = await query(
-      'SELECT payment_reference, payment_status FROM orders WHERE id = $1',
-      [req.params.orderId]
-    );
-
-    if (!orderResult.rows.length) {
-      throw new AppError('Commande introuvable', 404);
-    }
-
-    const { payment_reference, payment_status } = orderResult.rows[0];
-
-    if (!payment_reference) {
-      return res.json({ payment_status: 'unpaid', verified: false });
-    }
-
-    // Vérifier directement auprès de KKiaPay
-    const kkiaStatus = await verifyTransaction(payment_reference);
-
-    res.json({
-      payment_status,
-      kkiapay_status: kkiaStatus.status,
-      verified: kkiaStatus.status === 'SUCCESS',
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// POST /api/payments/webhook/kkiapay
-// Webhook KKiaPay — appelé automatiquement par KKiaPay après chaque paiement
-router.post(
-  '/webhook/kkiapay',
-  express.raw({ type: 'application/json' }),
-  (req, res, next) => {
-    // Convertir le buffer en objet si nécessaire
-    if (Buffer.isBuffer(req.body)) {
-      try { req.body = JSON.parse(req.body.toString()); } catch { req.body = {}; }
-    }
-    next();
-  },
-  handleKKiaPayWebhook
-);
-
-// POST /api/payments/orders/:orderId/release
-// Admin libère manuellement les fonds vers le chauffeur
-router.post(
-  '/orders/:orderId/release',
-  authenticate,
-  requireRole('admin'),
-  async (req, res, next) => {
+// GET /api/payments/orders/:orderId/checkout
+// Paramètres du widget KKiaPay : le client paie en même temps qu'il commande.
+router.get('/orders/:orderId/checkout', requireRole('client'),
+  [param('orderId').isUUID()], validateRequest, async (req, res, next) => {
     try {
-      const result = await releaseFundsToDriver(req.params.orderId);
-      res.json({
-        message: 'Fonds libérés via KKiaPay vers le chauffeur',
-        ...result,
-      });
+      res.json(await payments.getCheckoutConfig(req.params.orderId, req.user));
     } catch (error) {
       next(error);
     }
+  });
+
+// POST /api/payments/orders/:orderId/confirm  { transaction_id }
+// Après le paiement : l'argent est bloqué en séquestre et la commande est publiée aux chauffeurs.
+router.post('/orders/:orderId/confirm', requireRole('client'), [
+  param('orderId').isUUID(),
+  body('transaction_id').isString().trim().notEmpty().isLength({ max: 100 }),
+], validateRequest, async (req, res, next) => {
+  try {
+    const { order, alreadyConfirmed } = await payments.confirmEscrow(
+      req.params.orderId, req.body.transaction_id, { clientId: req.user.id }
+    );
+    if (!alreadyConfirmed) {
+      const io = req.app.get('io');
+      events.notifyPaymentSecured(io, order);
+      events.notifyNewOrder(io, order);
+    }
+    res.json({
+      message: 'Paiement sécurisé. Votre argent est bloqué sur LogiTruck jusqu\'à la confirmation de la livraison.',
+      payment_status: order.payment_status,
+      status: order.status,
+    });
+  } catch (error) {
+    next(error);
   }
-);
+});
+
+// GET /api/payments/orders/:orderId/status — état du paiement (propriétaire ou admin)
+router.get('/orders/:orderId/status', [param('orderId').isUUID()], validateRequest, async (req, res, next) => {
+  try {
+    const { rows } = await query(
+      'SELECT client_id, status, payment_status, total_amount, commission_amount, driver_amount FROM orders WHERE id = $1',
+      [req.params.orderId]
+    );
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    const o = rows[0];
+    if (req.user.role !== 'admin' && o.client_id !== req.user.id) throw new AppError('Accès refusé', 403);
+    res.json({
+      status: o.status,
+      payment_status: o.payment_status,
+      total_amount: Number(o.total_amount),
+      commission_amount: Number(o.commission_amount),
+      driver_amount: Number(o.driver_amount),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ----- Administration -----
+
+// POST /api/payments/orders/:orderId/refund — remboursement (litige / chauffeur absent)
+router.post('/orders/:orderId/refund', requireRole('admin'), [param('orderId').isUUID()],
+  validateRequest, async (req, res, next) => {
+    try {
+      await payments.refundEscrow(req.params.orderId, { actor: req.user, reason: req.body.reason });
+      res.json({ message: 'Client remboursé' });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+// POST /api/payments/orders/:orderId/retry-payout — relance d'un reversement chauffeur échoué
+router.post('/orders/:orderId/retry-payout', requireRole('admin'), [param('orderId').isUUID()],
+  validateRequest, async (req, res, next) => {
+    try {
+      res.json(await payments.settlePayout(req.params.orderId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+// POST /api/payments/orders/:orderId/mark-paid { reference } — reversement manuel effectué
+router.post('/orders/:orderId/mark-paid', requireRole('admin'), [
+  param('orderId').isUUID(),
+  body('reference').isString().trim().notEmpty().isLength({ max: 100 }),
+], validateRequest, async (req, res, next) => {
+  try {
+    await payments.markPayoutPaid(req.params.orderId, req.body.reference);
+    res.json({ message: 'Reversement enregistré, commande terminée' });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

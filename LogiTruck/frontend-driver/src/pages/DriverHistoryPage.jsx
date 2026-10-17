@@ -56,7 +56,7 @@ export default function DriverHistoryPage() {
                 ...styles.badge,
                 color: order.status === 'completed' || order.status === 'validated' ? '#4CAF50' : '#FF9800',
               }}>
-                {order.status === 'completed' || order.status === 'validated' ? 'Livré' : 'En cours'}
+                {order.payment_status === 'released' ? 'Payé' : order.status === 'completed' || order.status === 'validated' ? 'Paiement en cours' : 'Attente confirmation client'}
               </span>
             </div>
             <p style={styles.cardAddr}>{order.delivery_address}</p>

@@ -8,7 +8,7 @@ let socketInstance = null;
  * Hook WebSocket pour le chauffeur
  * Gère la connexion, la disponibilité et l'envoi de position GPS
  */
-const useDriverSocket = ({ onNewOrder = null, onOrderCancelled = null } = {}) => {
+const useDriverSocket = ({ onNewOrder = null, onOrderCancelled = null, onOrderTaken = null } = {}) => {
   const token = useDriverAuthStore((s) => s.token);
   const socketRef = useRef(null);
 
@@ -43,6 +43,11 @@ const useDriverSocket = ({ onNewOrder = null, onOrderCancelled = null } = {}) =>
     // Commande annulée par le client
     socketInstance.on('order_cancelled', (data) => {
       if (onOrderCancelled) onOrderCancelled(data);
+    });
+
+    // Commande prise par un autre chauffeur
+    socketInstance.on('order_taken', (data) => {
+      if (onOrderTaken) onOrderTaken(data);
     });
 
     // Confirmation validation livraison

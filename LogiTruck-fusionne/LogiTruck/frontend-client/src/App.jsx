@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import NewOrderPage from './pages/NewOrderPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import EnterprisePage from './pages/EnterprisePage';
 
 // Guard pour les routes protégées
 const PrivateRoute = ({ children }) => {
@@ -28,6 +29,7 @@ function App() {
       <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
       <Route path="/orders/new" element={<PrivateRoute><NewOrderPage /></PrivateRoute>} />
       <Route path="/orders/:id" element={<PrivateRoute><OrderDetailPage /></PrivateRoute>} />
+      <Route path="/enterprise" element={<PrivateRoute><EnterprisePage /></PrivateRoute>} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />

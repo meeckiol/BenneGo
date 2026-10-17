@@ -1,8 +1,11 @@
- const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// NUMERIC/DECIMAL (montants FCFA, coordonnées, notes) → nombres JS, pas des chaînes "50000.00"
+types.setTypeParser(1700, (value) => (value === null ? null : parseFloat(value)));
 
 const pool = new Pool({
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
+  port: parseInt(process.env.DB_PORT, 10) || 5432,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,

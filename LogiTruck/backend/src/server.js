@@ -14,13 +14,19 @@ const driverRoutes = require('./routes/driver.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminRoutes = require('./routes/admin.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
+const reviewRoutes = require('./routes/review.routes');
 const { setupSocketIO } = require('./services/socket.service');
+const { validateEnv, allowedOrigins } = require('./config/env');
+
+validateEnv();
+const origins = allowedOrigins();
 
 const app = express();
+if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: origins,
     methods: ['GET', 'POST'],
   },
 });
@@ -29,16 +35,14 @@ const io = new Server(server, {
 // Middlewares de sécurité
 // =============================================
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true,
-}));
+app.use(cors({ origin: origins }));
 
 // Rate limiting global
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  message: { error: 'Trop de requêtes, réessayez dans 15 minutes.' },
+  max: 1000, // le suivi GPS de l'appli mobile envoie une position toutes les ~10 s
+  message: { error: 'Trop de requêtes, réessayez dans quelques minutes.' },
+  skip: () => process.env.NODE_ENV === 'test',
 });
 app.use(limiter);
 
@@ -47,15 +51,17 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Trop de tentatives de connexion.' },
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 // =============================================
 // Middlewares généraux
 // =============================================
 app.use(compression());
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
+app.use(express.json({ limit: '100kb' }));
 
 // =============================================
 // Routes
@@ -68,6 +74,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 
 // =============================================
@@ -90,10 +97,10 @@ app.use(errorHandler);
 // Démarrage du serveur
 // =============================================
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`LogiTruck API démarrée sur le port ${PORT}`);
-  console.log(`Environnement: ${process.env.NODE_ENV}`);
-  console.log(`Base de données: ${process.env.DB_NAME}@${process.env.DB_HOST}`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`LogiTruck API démarrée sur le port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+  });
+}
 
-module.exports = { app, server };
+module.exports = { app, server, io };

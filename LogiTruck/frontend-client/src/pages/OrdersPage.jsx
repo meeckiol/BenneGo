@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const STATUS_LABELS = {
-  pending: { label: 'En attente', color: '#FF9800', bg: '#FFF3E0' },
+  awaiting_payment: { label: 'À payer', color: '#B71C1C', bg: '#FFEBEE' },
+  pending: { label: 'Payée · recherche chauffeur', color: '#FF9800', bg: '#FFF3E0' },
   accepted: { label: 'Acceptée', color: '#2196F3', bg: '#E3F2FD' },
   driver_en_route_pickup: { label: 'Chauffeur en route', color: '#9C27B0', bg: '#F3E5F5' },
   loading: { label: 'Chargement', color: '#FF5722', bg: '#FBE9E7' },
@@ -60,7 +61,7 @@ export default function OrdersPage() {
                   <br />Livraison : {order.delivery_address}
                 </p>
                 <div style={styles.orderFooter}>
-                  <span style={styles.amount}>{order.total_amount?.toLocaleString()} FCFA</span>
+                  <span style={styles.amount}>{Number(order.total_amount).toLocaleString('fr-FR')} FCFA</span>
                   <span style={styles.date}>
                     {new Date(order.created_at).toLocaleDateString('fr-FR')}
                   </span>

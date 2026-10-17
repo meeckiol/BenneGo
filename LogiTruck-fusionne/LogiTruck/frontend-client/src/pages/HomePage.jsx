@@ -1,11 +1,19 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import api from '../services/api';
 
 export default function HomePage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
+  const [companyInfo, setCompanyInfo] = useState(null);
+
+  useEffect(() => {
+    api.get('/companies/my-company')
+      .then(({ data }) => setCompanyInfo(data))
+      .catch(() => {});
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -13,6 +21,7 @@ export default function HomePage() {
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <span style={styles.logo}>LogiTruck</span>
+          <span style={styles.badge}>B2B & BTP Bénin</span>
         </div>
         <div style={styles.headerRight}>
           <span style={styles.userName}>{user?.full_name}</span>
@@ -24,140 +33,231 @@ export default function HomePage() {
       <main style={styles.main}>
         <div style={styles.welcome}>
           <h2 style={styles.welcomeTitle}>
-            Bonjour, {user?.full_name?.split(' ')[0]}
+            Bonjour, {user?.full_name?.split(' ')[0]} 👋
           </h2>
           <p style={styles.welcomeSub}>
-            Que souhaitez-vous livrer aujourd'hui ?
+            Sélectionnez votre besoin logistique de chantier avec paiement bloqué en séquestre :
           </p>
         </div>
 
-        {/* Actions rapides */}
-        <div style={styles.actions}>
-          <button
-            onClick={() => navigate('/orders/new')}
-            style={styles.primaryBtn}
+        {/* 🏗️ 3 GROS BOUTONS D'ACTION (SERVICES LOGITRUCK B2B) */}
+        <div style={styles.servicesGrid}>
+          {/* Service 1 : Transport de Matériaux */}
+          <div
+            onClick={() => navigate('/orders/new?type=MATERIAL')}
+            style={{ ...styles.serviceCard, borderColor: '#FF6B00' }}
           >
-            Passer une commande
-          </button>
-          <button
-            onClick={() => navigate('/orders')}
-            style={styles.secondaryBtn}
+            <div style={styles.serviceIconContainer}>
+              <span style={styles.serviceEmoji}>🏗️</span>
+              <span style={{ ...styles.serviceTag, background: '#FFF3E0', color: '#E65100' }}>
+                Service Cœur
+              </span>
+            </div>
+            <h3 style={styles.serviceTitle}>Transport de Matériaux</h3>
+            <p style={styles.serviceDesc}>
+              Livraison de sable (mer, carrière), gravier concassé, latérite, ciment ou briques par camions bennes (10m³, 16m³) et plateaux.
+            </p>
+            <div style={styles.serviceFooter}>
+              <span style={styles.servicePrice}>À partir de 35 000 FCFA</span>
+              <span style={styles.serviceArrow}>Commander →</span>
+            </div>
+          </div>
+
+          {/* Service 2 : Location d'Engins Lourds */}
+          <div
+            onClick={() => navigate('/orders/new?type=RENTAL')}
+            style={{ ...styles.serviceCard, borderColor: '#1976D2' }}
           >
-            Mes commandes
-          </button>
+            <div style={styles.serviceIconContainer}>
+              <span style={styles.serviceEmoji}>🚜</span>
+              <span style={{ ...styles.serviceTag, background: '#E3F2FD', color: '#0D47A1' }}>
+                Service Premium
+              </span>
+            </div>
+            <h3 style={styles.serviceTitle}>Location d'Engins Lourds</h3>
+            <p style={styles.serviceDesc}>
+              Mise à disposition à l'heure ou à la journée de pelles mécaniques, bulldozers, chargeuses, compacteurs et niveleuses pour terrassement.
+            </p>
+            <div style={styles.serviceFooter}>
+              <span style={styles.servicePrice}>Dès 25 000 FCFA / heure</span>
+              <span style={{ ...styles.serviceArrow, color: '#1976D2' }}>Réserver →</span>
+            </div>
+          </div>
+
+          {/* Service 3 : Évacuation de Gravats */}
+          <div
+            onClick={() => navigate('/orders/new?type=EVACUATION')}
+            style={{ ...styles.serviceCard, borderColor: '#388E3C' }}
+          >
+            <div style={styles.serviceIconContainer}>
+              <span style={styles.serviceEmoji}>📦</span>
+              <span style={{ ...styles.serviceTag, background: '#E8F5E9', color: '#1B5E20' }}>
+                Service Évacuation
+              </span>
+            </div>
+            <h3 style={styles.serviceTitle}>Logistique d'Évacuation</h3>
+            <p style={styles.serviceDesc}>
+              Nettoyage de chantiers, évacuation rapide de gravats de démolition et transport de terre excédentaire vers sites de remblai autorisés.
+            </p>
+            <div style={styles.serviceFooter}>
+              <span style={styles.servicePrice}>Prise en charge dès 25 000 FCFA</span>
+              <span style={{ ...styles.serviceArrow, color: '#388E3C' }}>Évacuer →</span>
+            </div>
+          </div>
         </div>
 
-        {/* Matériaux disponibles */}
-        <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>Matériaux disponibles</h3>
-          <div style={styles.materialGrid}>
-            {MATERIALS.map((m) => (
-              <div key={m.name} style={styles.materialCard}
-                onClick={() => navigate('/orders/new')}>
-                <span style={styles.materialName}>{m.name}</span>
-                <span style={styles.materialPrice}>
-                  à partir de {m.price.toLocaleString()} FCFA
-                </span>
+        {/* 🏢 SECTION B2B GRANDS COMPTES (LOGITRUCK ENTERPRISE) */}
+        <section style={styles.enterpriseBanner}>
+          <div style={styles.enterpriseContent}>
+            <div style={styles.enterpriseBadge}>🏢 LogiTruck Enterprise B2B</div>
+            <h3 style={styles.enterpriseTitle}>
+              Grands Comptes, Promoteurs & Entreprises BTP
+            </h3>
+            <p style={styles.enterpriseDesc}>
+              Planifiez des rotations de 50 camions en proforma unique, bénéficiez du <strong>Suivi GPS Certifié</strong> (anti-détournement) et de commissions réduites (3% à 5%).
+            </p>
+            {companyInfo?.has_company && companyInfo?.company?.subscription_status === 'active' ? (
+              <div style={styles.enterpriseStatusActive}>
+                ✓ Entreprise active : <strong>{companyInfo.company.name}</strong> ({companyInfo.company.subscription_plan === 'monthly_saas' ? 'SaaS Mensuel' : 'Pack Chantier'})
               </div>
-            ))}
+            ) : null}
+          </div>
+          <div style={styles.enterpriseActions}>
+            <button
+              onClick={() => navigate('/enterprise')}
+              style={styles.enterpriseBtn}
+            >
+              Tableau de bord Chantiers & B2B →
+            </button>
+            <button
+              onClick={() => navigate('/orders')}
+              style={styles.historyBtn}
+            >
+              Mes courses en cours
+            </button>
           </div>
         </section>
 
-        {/* Info commission */}
-        <div style={styles.infoBox}>
-          <p><strong>Comment ça marche ?</strong></p>
-          <ol style={styles.steps}>
-            <li>Saisissez votre point de chargement et de livraison</li>
-            <li>Obtenez un prix instantané</li>
-            <li>Payez via MTN MoMo ou Moov Money</li>
-            <li>Un chauffeur accepte et livre en moins de 2h</li>
-            <li>Validez la livraison pour libérer le paiement</li>
-          </ol>
-        </div>
+        {/* Pourquoi le Séquestre LogiTruck ? */}
+        <section style={styles.escrowCard}>
+          <h4 style={styles.escrowTitle}>🛡️ Pourquoi le Séquestre LogiTruck change tout au Bénin ?</h4>
+          <div style={styles.escrowGrid}>
+            <div style={styles.escrowItem}>
+              <strong>1. Zéro Risque de Vol</strong>
+              <p>Votre argent reste bloqué sur la plateforme tant que la marchandise n'est pas vérifiée au déchargement.</p>
+            </div>
+            <div style={styles.escrowItem}>
+              <strong>2. Suivi GPS Certifié OSRM</strong>
+              <p>Alerte automatique transmise si le chauffeur s'écarte de plus de 15% de l'itinéraire prévu.</p>
+            </div>
+            <div style={styles.escrowItem}>
+              <strong>3. Facture Proforma Unique</strong>
+              <p>Pour vos chantiers d'envergure à Cotonou, Calavi, Ouidah ou Porto-Novo, réglez par virement bancaire.</p>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
 }
 
-const MATERIALS = [
-  { name: 'Sable de rivière', price: 50000 },
-  { name: 'Gravier concassé', price: 65000 },
-  { name: 'Latérite', price: 40000 },
-  { name: 'Terre de remblai', price: 35000 },
-];
-
 const styles = {
-  container: { minHeight: '100vh', background: '#f5f5f5' },
+  container: { minHeight: '100vh', background: '#F8F9FA' },
   header: {
-    background: '#FF6B00',
-    padding: '16px 20px',
+    background: '#1E293B',
+    padding: '16px 24px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     color: 'white',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
   },
-  headerLeft: {},
-  logo: { fontSize: '20px', fontWeight: '800' },
+  headerLeft: { display: 'flex', alignItems: 'center', gap: '12px' },
+  logo: { fontSize: '22px', fontWeight: '900', color: '#FF6B00', letterSpacing: '-0.5px' },
+  badge: { background: 'rgba(255,107,0,0.2)', color: '#FFB74D', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' },
   headerRight: { display: 'flex', alignItems: 'center', gap: '16px' },
-  userName: { fontSize: '14px' },
+  userName: { fontSize: '14px', fontWeight: '500' },
   logoutBtn: {
-    background: 'rgba(255,255,255,0.2)',
+    background: 'rgba(255,255,255,0.15)',
     border: 'none',
     color: 'white',
-    padding: '6px 12px',
+    padding: '6px 14px',
     borderRadius: '6px',
     cursor: 'pointer',
     fontSize: '13px',
+    fontWeight: '600',
   },
-  main: { padding: '20px', maxWidth: '600px', margin: '0 auto' },
-  welcome: { marginBottom: '24px' },
-  welcomeTitle: { fontSize: '24px', fontWeight: '800', color: '#333', margin: '0 0 8px' },
-  welcomeSub: { color: '#666', margin: 0 },
-  actions: { display: 'flex', gap: '12px', marginBottom: '32px' },
-  primaryBtn: {
-    flex: 1,
-    padding: '16px',
+  main: { padding: '28px 20px', maxWidth: '850px', margin: '0 auto' },
+  welcome: { marginBottom: '28px', textAlign: 'center' },
+  welcomeTitle: { fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 8px' },
+  welcomeSub: { color: '#64748B', fontSize: '15px', margin: 0 },
+  servicesGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '20px',
+    marginBottom: '32px',
+  },
+  serviceCard: {
+    background: 'white',
+    borderRadius: '16px',
+    padding: '24px',
+    border: '2px solid transparent',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    transition: 'transform 0.2s, box-shadow 0.2s',
+  },
+  serviceIconContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' },
+  serviceEmoji: { fontSize: '32px' },
+  serviceTag: { fontSize: '11px', fontWeight: '800', padding: '4px 8px', borderRadius: '6px', textTransform: 'uppercase' },
+  serviceTitle: { fontSize: '18px', fontWeight: '800', color: '#1E293B', margin: '0 0 8px' },
+  serviceDesc: { color: '#64748B', fontSize: '13.5px', lineHeight: '1.5', margin: '0 0 16px', flex: 1 },
+  serviceFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F1F5F9' },
+  servicePrice: { fontSize: '12px', fontWeight: '700', color: '#334155' },
+  serviceArrow: { fontSize: '13px', fontWeight: '800', color: '#FF6B00' },
+  enterpriseBanner: {
+    background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+    borderRadius: '16px',
+    padding: '28px',
+    color: 'white',
+    boxShadow: '0 8px 24px rgba(15,23,42,0.15)',
+    marginBottom: '32px',
+  },
+  enterpriseContent: { marginBottom: '20px' },
+  enterpriseBadge: { display: 'inline-block', background: 'rgba(255,107,0,0.25)', color: '#FF9E40', fontSize: '12px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', marginBottom: '10px' },
+  enterpriseTitle: { fontSize: '20px', fontWeight: '800', margin: '0 0 8px', color: '#F8FAFC' },
+  enterpriseDesc: { color: '#94A3B8', fontSize: '14px', lineHeight: '1.6', margin: 0 },
+  enterpriseStatusActive: { marginTop: '12px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ADE80', padding: '8px 12px', borderRadius: '8px', fontSize: '13px' },
+  enterpriseActions: { display: 'flex', gap: '14px', flexWrap: 'wrap' },
+  enterpriseBtn: {
     background: '#FF6B00',
     color: 'white',
     border: 'none',
-    borderRadius: '12px',
-    fontSize: '16px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  secondaryBtn: {
-    flex: 1,
-    padding: '16px',
-    background: 'white',
-    color: '#FF6B00',
-    border: '2px solid #FF6B00',
-    borderRadius: '12px',
-    fontSize: '16px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  section: { marginBottom: '32px' },
-  sectionTitle: { fontSize: '18px', fontWeight: '700', color: '#333', marginBottom: '16px' },
-  materialGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
-  materialCard: {
-    background: 'white',
-    borderRadius: '12px',
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    cursor: 'pointer',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-  },
-  materialName: { fontWeight: '600', color: '#333', fontSize: '14px' },
-  materialPrice: { color: '#FF6B00', fontSize: '12px', fontWeight: '600' },
-  infoBox: {
-    background: '#FFF3E0',
-    border: '1px solid #FFB74D',
-    borderRadius: '12px',
-    padding: '16px',
+    padding: '12px 20px',
+    borderRadius: '8px',
     fontSize: '14px',
-    color: '#333',
+    fontWeight: '700',
+    cursor: 'pointer',
   },
-  steps: { paddingLeft: '20px', margin: '8px 0 0', lineHeight: '1.8' },
+  historyBtn: {
+    background: 'rgba(255,255,255,0.1)',
+    color: 'white',
+    border: '1px solid rgba(255,255,255,0.2)',
+    padding: '12px 20px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  escrowCard: {
+    background: 'white',
+    borderRadius: '16px',
+    padding: '24px',
+    border: '1px solid #E2E8F0',
+  },
+  escrowTitle: { fontSize: '16px', fontWeight: '800', color: '#1E293B', margin: '0 0 16px' },
+  escrowGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' },
+  escrowItem: { fontSize: '13px', color: '#475569', lineHeight: '1.5' },
 };

@@ -1,0 +1,120 @@
+Contrairement à Gozem qui s'adresse au grand public (B2C) pour les déplacements quotidiens et les repas, LogiTruck est une plateforme B2B et industrielle hyper-spécialisée. Au Bénin, le secteur du BTP et de l'approvisionnement en matériaux souffre d'un manque de transparence, de vols et de retards.
+Voici la gamme de services précis et rentables que vous pouvez proposer sur LogiTruck pour vous démarquer et capter ce marché :
+
+🏗️ 1. Le Transport de Matériaux de Chantier (Service Cœur)
+
+C'est votre activité principale. Vous proposez la livraison de matériaux pondéreux facturés à la course ou au tonnage, avec l'argent bloqué en séquestre pour rassurer le client.
+
+Catégorie	Matériaux concernés	Type de camions associés
+Remblai & Fondation	Sable de mer, Sable de carrière, Terre jaune, Latérite	Camions bennes (10m³, 16m³, ou semi-remorques)
+Structure & Béton	Gravier (concassé), Granit, Ciment en vrac ou en sacs	Camions bennes ou Plateaux
+Second Œuvre	Briques, Parpaings, Carreaux, Pavés, Fer à béton	Camions plateaux ou Camions avec grue embarquée
+
+
+🚜 2. La Location d'Engins Lourds de Chantier (Service Premium)
+
+Les entrepreneurs qui achètent des matériaux ont souvent besoin d'engins pour les déplacer, terrasser ou creuser. Vous pouvez intégrer une section de mise en relation pour la location à la journée ou à l'heure.
+• Excavation & Terrassement : Location de pelles mécaniques (excavatrices), chargeuses, et bulldozers.
+• Compactage : Compacteurs (rouleaux compresseurs) pour préparer les sols avant de couler le béton.
+• Nivellement : Niveleuses pour les chantiers routiers ou les grands terrains à Cotonou, Calavi, ou Ouidah.
+
+📦 3. Logistique d'Évacuation (Service Retour)
+
+Un chantier ne fait pas que recevoir des matériaux, il en produit aussi. Vous pouvez proposer aux conducteurs de travaux de nettoyer leurs sites.
+• Évacuation de gravats : Enlèvement des débris après démolition ou fouille.
+• Évacuation de terre excédentaire : Transport de la terre excavée vers d'autres chantiers qui recherchent du remblai (ce qui permet de faire double profit).
+
+🏢 4. Abonnements et Services "Grands Comptes" (B2B)
+
+Pour attirer les grandes entreprises de BTP au Bénin (comme Sogea-Satom, Colas, ou les promoteurs immobiliers locaux) :
+• LogiTruck Enterprise : Un tableau de bord dédié aux ingénieurs pour planifier la livraison de 50 camions de sable sur une semaine, avec un système de facturation unique.
+• Suivi GPS certifié : Un accès en temps réel pour le chef de chantier pour savoir exactement à quel niveau de la route de Porto-Novo ou de Calavi se trouve sa livraison, évitant que le chauffeur ne revende une partie du sable en chemin.
+
+💡 Pourquoi ce positionnement est meilleur que de copier Gozem ?
+
+1. Le panier moyen est très élevé : Une course Gozem rapporte entre 500 et 5 000 FCFA. Une livraison de 16m³ de gravier ou de latérite vaut des dizaines ou centaines de milliers de FCFA. Votre commission de 3 % par ticket sera immédiatement très lucrative.
+2. Le paiement en séquestre prend tout son sens : Personne n'aime payer 150 000 FCFA de sable à un chauffeur indépendant sans être sûr que le camion va arriver ou que la qualité sera la bonne. Votre application résout le plus grand problème de confiance du BTP béninois.
+
+
+Pour ce type de service B2B (LogiTruck Enterprise), proposer un prix unique et fixe est une erreur, car la livraison de 50 camions de sable depuis la carrière d'Akassato vers un chantier à Cotonou ne coûte pas la même chose qu'un trajet vers Ouidah. De plus, le prix des matériaux (sable, gravier, latérite) fluctue au Bénin selon les saisons (saison des pluies vs saison sèche).
+Dans ce cas, vous devez dissocier le coût de la marchandise/transport (qui reste variable) et facturer l'accès à vos outils technologiques B2B (Tableau de bord, planification, suivi GPS certifié, rapports d'activité CSV) sous forme d'abonnement mensuel (SaaS) ou de frais de gestion fixes par chantier.
+Voici la stratégie tarifaire que je vous conseille de mettre en place pour le marché béninois :
+
+💳 1. Les Options de Tarification B2B LogiTruck
+
+
+Modèle de Facturation	Prix Conseillé (FCFA)	Ce qui est inclus / Idéal pour
+Abonnement Mensuel (SaaS)	45 000 FCFA / mois par entreprise	Accès illimité au tableau de bord pour 3 ingénieurs. Suivi GPS en direct de toutes les commandes. Export des reçus au format CSV.
+Frais Fixes par Chantier (Pack)	75 000 FCFA / chantier (durée max 6 mois)	Idéal pour les promoteurs immobiliers locaux ou particuliers qui construisent un immeuble précis et ne veulent pas d'un abonnement continu.
+Frais de Courtage de Matériaux	3 % à 5 % de commission sur le volume total	Si l'entreprise passe par vous pour négocier directement de gros volumes avec les carrières de sable/gravier au Bénin.
+
+
+🛠️ 2. Ce que vous devez faire concrètement dans votre code et votre produit
+
+Si vous choisissez d'intégrer ce service, voici comment adapter votre application :
+
+A. Côté Base de Données (docker/init.sql)
+
+Vous devez ajouter une table pour gérer les entreprises et leurs abonnements, ainsi qu'un système de liaison pour les chantiers.
+• Table companies : ID, Nom de l'entreprise (ex: Colas), IFU, Adresse du siège, Statut de l'abonnement (active, expired).
+• Table projects_chantiers : ID, company_id, Nom du chantier (ex: "Asphaltage Phase 2 - Calavi"), Coordonnées GPS du point de livraison central.
+• Modification orders : Ajouter une colonne project_id (nullable) pour regrouper les 50 camions sous un seul et même projet.
+
+B. Côté Backend API (backend/)
+
+• Route de Planification Massive (POST /api/orders/bulk) : Permettre à un ingénieur d'importer un fichier ou de remplir un formulaire pour planifier, par exemple, 10 rotations de camions par jour pendant 5 jours. L'API génère automatiquement les 50 sous-commandes en attente.
+• Système de Facturation Unique (Facture Proforma) : Au lieu de faire payer l'entreprise par Mobile Money à chaque voyage, l'API génère une facture globale. L'entreprise effectue un virement bancaire ou un chèque sur le compte de séquestre de LogiTruck. Vous validez manuellement le solde dans l'interface admin (frontend-admin), ce qui débloque les courses pour les chauffeurs.
+
+C. Côté Fonctionnalité GPS Certifié
+
+Le suivi en direct est déjà inclus via Socket.IO dans votre cahier des charges. Pour le rendre "certifié B2B", vous devez ajouter une alerte automatique (Webhook ou SMS) si le chauffeur s'éloigne de l'itinéraire optimal calculé par OSRM de plus de 15 % (signe potentiel de détournement de la marchandise).
+
+Pour intégrer ces trois services complémentaires (Livraison, Location d'engins, et Évacuation de gravats) sur LogiTruck, vous devez structurer votre application en découpant le travail en 4 étapes simples et progressives.
+Voici la feuille de route exacte pour coder et mettre en place cette offre de services :
+
+🗄️ Étape 1 : Structurer la Base de Données (docker/init.sql)
+
+Vous devez modifier votre schéma pour que la plateforme comprenne ce que le client commande (du sable, un engin ou une évacuation). Pour cela, on utilise le concept de Type de Commande et de Type de Véhicule/Engin.
+Voici comment organiser vos tables sous forme de listes d'attributs clés :
+• Table vehicle_types (Le catalogue de ce qui est disponible) :
+	• id : Identifiant unique.
+	• name : Nom (ex: "Camion Benne 16m³", "Pelle mécanique", "Benne à gravats").
+	• category : Catégorie principale (MATERIAL_TRANSPORT, HEAVY_MACHINERY, EVACUATION).
+	• capacity : Capacité ou tonnage (facultatif).
+• Table orders (Mise à jour pour gérer la flexibilité) :
+	• order_type : Type de service (MATERIAL, RENTAL, EVACUATION).
+	• vehicle_type_id : Lien vers le véhicule ou l'engin requis.
+	• duration_hours : Utile uniquement pour la location d'engins (ex: loué pour 8 heures).
+	• material_type : Le matériau acheté ou le type de débris à évacuer.
+
+🧮 Étape 2 : Créer l'Algorithme de Calcul des Prix (backend/)
+
+Le prix d'une course ne peut pas être magique. Vous devez créer une fonction de calcul dans votre backend (par exemple dans un fichier price.service.js). Le calcul dépendra du service choisi :
+
+Service	Formule de Calcul du Prix	Variables Clés
+1. Transport de Matériaux	Prix du Matériau + (Distance × Prix au Km du Camion)	Distance OSRM, Type de sable/gravier, Taille de la benne.
+2. Location d'Engins	Tarif Horaire de l'Engin × Nombre d'Heures	Type d'engin, Durée de réservation (forfait jour/heure).
+3. Logistique d'Évacuation	Prix Fixe de Prise en Charge + (Distance × Prix au Km)	Volume de gravats, Distance jusqu'à la décharge autorisée.
+
+
+🔀 Étape 3 : Adapter les Flux de l'Application et les Interfaces
+
+Pour que l'expérience utilisateur reste fluide selon le service, modifiez vos dossiers ainsi :
+
+Pour le Client (frontend-client/)
+
+Créer un écran d'accueil avec 3 gros boutons d'action. En fonction du bouton cliqué, le formulaire s'adapte :
+1. Bouton Matériaux : Demande le type de matériau, le volume (m³), l'adresse de livraison, et ouvre le widget KKiaPay.
+2. Bouton Louer un Engin : Demande le type d'engin, la date, le nombre d'heures ou de jours, et l'adresse du chantier.
+3. Bouton Évacuer des Gravats : Demande une photo des débris (optionnel), l'adresse de ramassage, et le nombre de camions estimés.
+
+Pour le Chauffeur / Propriétaire d'Engins (frontend-driver/ ou mobile-driver/)
+
+• Les chauffeurs de camions-bennes voient et reçoivent uniquement les alertes pour le Transport et l'Évacuation.
+• Les conducteurs ou propriétaires d'engins lourds (qui possèdent une Pelles ou un Bulldozer) reçoivent des demandes de Location avec l'adresse du chantier où ils doivent acheminer leur machine.
+
+🛡️ Étape 4 : Sécuriser l'argent en Séquestre (La Règle d'Or)
+
+Le système de paiement que vous avez conçu s'applique parfaitement aux trois services pour garantir une sécurité totale :
+• Pour la Location : L'argent du client reste bloqué tant que l'engin n'a pas travaillé sur le chantier pendant la durée convenue. Une fois les heures validées par le client, la plateforme prend ses 10 % et reverse 90 % au propriétaire de l'engin.
+• Pour l'Évacuation : L'argent est libéré uniquement lorsque le chauffeur confirme avoir déposé les gravats à la décharge et que le client valide sur son interface que le chantier est propre.

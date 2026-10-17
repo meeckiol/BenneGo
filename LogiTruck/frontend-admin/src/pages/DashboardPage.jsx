@@ -183,6 +183,7 @@ function KPICard({ icon, label, value, sub, color }) {
 }
 
 const STATUS_STYLES = {
+  awaiting_payment:          { label: 'À payer',        bg: '#EF444420', color: '#EF4444' },
   pending:                   { label: 'En attente',     bg: '#F59E0B20', color: '#F59E0B' },
   accepted:                  { label: 'Acceptée',       bg: '#3B82F620', color: '#3B82F6' },
   driver_en_route_pickup:    { label: 'En route',       bg: '#8B5CF620', color: '#8B5CF6' },

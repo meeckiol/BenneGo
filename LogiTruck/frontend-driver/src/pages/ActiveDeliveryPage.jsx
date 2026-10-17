@@ -56,9 +56,10 @@ export default function ActiveDeliveryPage() {
 
   const { sendLocation } = useDriverSocket();
 
-  // GPS actif en permanence pendant la livraison
+  // GPS actif uniquement pendant la course (le client suit le camion en direct)
+  const tracking = !!order && ['accepted', 'driver_en_route_pickup', 'loading', 'driver_en_route_delivery'].includes(order.status);
   const { position, error: gpsError, accuracy } = useGPS({
-    enabled: true,
+    enabled: tracking,
     onPosition: useCallback((pos) => {
       sendLocation(pos, orderId);
     }, [sendLocation, orderId]),
@@ -92,7 +93,7 @@ export default function ActiveDeliveryPage() {
       await loadOrder();
 
       if (step.next === 'delivered') {
-        toast.success('Livraison confirmée ! En attente de validation client.');
+        toast.success('Livraison enregistrée. Le client doit confirmer la réception pour libérer votre paiement.');
       } else {
         toast.success('Statut mis à jour ✓');
       }
@@ -201,9 +202,11 @@ export default function ActiveDeliveryPage() {
         {isDelivered ? (
           <div style={styles.completedBox}>
             <div style={styles.completedText}>
-              {order.status === 'validated'
-                ? `Livraison validée ! ${parseFloat(order.driver_amount).toLocaleString()} FCFA en route vers votre MoMo`
-                : 'Livraison confirmée. En attente de validation client...'}
+              {order.status === 'completed' && order.payment_status === 'released'
+                ? `Course terminée ! ${parseFloat(order.driver_amount).toLocaleString('fr-FR')} FCFA versés sur votre Mobile Money.`
+                : order.status === 'validated' || order.status === 'completed'
+                  ? `Le client a confirmé la réception ! ${parseFloat(order.driver_amount).toLocaleString('fr-FR')} FCFA vont vous être versés sur votre Mobile Money.`
+                  : `Livraison enregistrée. Dès que le client confirme la réception, vos ${parseFloat(order.driver_amount).toLocaleString('fr-FR')} FCFA vous sont versés.`}
             </div>
             <button onClick={() => navigate('/')} style={styles.homeBtn}>
               Retour à l'accueil

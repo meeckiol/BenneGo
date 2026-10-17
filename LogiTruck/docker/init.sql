@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS driver_profiles (
   current_lng DECIMAL(11, 8),
   last_position_at TIMESTAMP WITH TIME ZONE,
   total_trips INTEGER DEFAULT 0,
-  rating DECIMAL(3,2) DEFAULT 5.00,          -- Note moyenne /5
+  rating DECIMAL(3,2),                       -- Note moyenne /5 (NULL tant qu'aucun avis)
+  rating_count INTEGER DEFAULT 0,
   momo_number VARCHAR(20),                   -- Numéro Mobile Money pour paiements
   momo_provider VARCHAR(20),                 -- 'mtn' ou 'moov'
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -93,14 +94,16 @@ CREATE TABLE IF NOT EXISTS orders (
   driver_amount DECIMAL(12,2) NOT NULL,     -- 90% = part chauffeur
 
   -- Statut
-  status VARCHAR(30) DEFAULT 'pending',
-  -- pending → accepted → driver_en_route_pickup → loading →
-  -- driver_en_route_delivery → delivered → validated → completed
+  status VARCHAR(30) DEFAULT 'awaiting_payment',
+  -- awaiting_payment → (paiement séquestré) pending → accepted → driver_en_route_pickup →
+  -- loading → driver_en_route_delivery → delivered → (client confirme) validated → completed
   -- cancelled
 
   -- Paiement
   payment_status VARCHAR(20) DEFAULT 'unpaid',
-  -- unpaid → escrow_held → released → refunded
+  -- unpaid → escrow_held (argent bloqué sur la plateforme)
+  --   → payout_pending (client a confirmé, 10% prélevés, reversement chauffeur en cours)
+  --   → released (chauffeur payé)   |   escrow_held → refunded (remboursement client)
   payment_method VARCHAR(20),              -- 'mtn_momo', 'moov_money'
   payment_reference VARCHAR(100),          -- Référence FedaPay/KKiaPay
   payment_at TIMESTAMP WITH TIME ZONE,
@@ -115,6 +118,8 @@ CREATE TABLE IF NOT EXISTS orders (
 
   client_rating INTEGER CHECK (client_rating BETWEEN 1 AND 5),
   client_review TEXT,
+  rated_at TIMESTAMP WITH TIME ZONE,
+  released_at TIMESTAMP WITH TIME ZONE,
   driver_rating INTEGER CHECK (driver_rating BETWEEN 1 AND 5),
 
   notes TEXT,
@@ -178,6 +183,8 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id, i
 -- =============================================
 -- DONNÉES INITIALES: Types de matériaux
 -- =============================================
+CREATE UNIQUE INDEX IF NOT EXISTS uq_material_types_name ON material_types(name);
+
 INSERT INTO material_types (name, name_local, unit, base_price_per_unit) VALUES
   ('Sable de rivière fin', 'Sable', 'm3', 8000),
   ('Sable de rivière grossier', 'Sable grossier', 'm3', 7500),
@@ -186,13 +193,48 @@ INSERT INTO material_types (name, name_local, unit, base_price_per_unit) VALUES
   ('Latérite', 'Terre rouge', 'm3', 5000),
   ('Terre de remblai', 'Terre', 'm3', 4000),
   ('Cailloux', 'Cailloux', 'm3', 9000)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (name) DO NOTHING;
 
 -- =============================================
--- COMPTE ADMIN PAR DÉFAUT
+-- MIGRATIONS IDEMPOTENTES (base déjà existante)
 -- =============================================
--- Mot de passe: Admin@LogiTruck2024 (à changer en production)
-INSERT INTO users (phone, full_name, email, role, is_verified, password_hash) VALUES
-  ('+22900000000', 'Administrateur LogiTruck', 'admin@logitruck.bj', 'admin', true,
-   '$2b$10$rQZ5eVkQj8ZvXXXXXXXXXeXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
-ON CONFLICT DO NOTHING;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS rated_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS released_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE orders ALTER COLUMN status SET DEFAULT 'awaiting_payment';
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0;
+ALTER TABLE driver_profiles ALTER COLUMN rating DROP DEFAULT;
+
+-- Un statut de paiement / de commande ne peut prendre que des valeurs connues
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (status IN (
+  'awaiting_payment','pending','accepted','driver_en_route_pickup','loading',
+  'driver_en_route_delivery','delivered','validated','completed','cancelled'));
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_payment_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_payment_status_check CHECK (payment_status IN (
+  'unpaid','escrow_held','payout_pending','released','refunded'));
+
+-- =============================================
+-- TRANSACTIONS : idempotence garantie par la base
+-- =============================================
+-- Une seule transaction de chaque type par commande (escrow, payout, commission, refund)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_transactions_order_type ON transactions(order_id, type);
+-- Une même référence de paiement KKiaPay ne peut financer qu'une seule commande
+CREATE UNIQUE INDEX IF NOT EXISTS uq_transactions_escrow_ref
+  ON transactions(provider, provider_reference) WHERE type = 'escrow_hold';
+
+-- =============================================
+-- TABLE: platform_reviews (avis sur la plateforme)
+-- =============================================
+CREATE TABLE IF NOT EXISTS platform_reviews (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  order_id UUID REFERENCES orders(id) ON DELETE SET NULL,
+  rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_platform_reviews_created ON platform_reviews(created_at DESC);
+-- Au plus un avis plateforme par commande
+CREATE UNIQUE INDEX IF NOT EXISTS uq_platform_reviews_order ON platform_reviews(order_id) WHERE order_id IS NOT NULL;
+
+-- Le compte administrateur se crée avec : npm run create-admin (backend)

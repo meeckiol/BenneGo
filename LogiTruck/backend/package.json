@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "test": "jest --coverage",
+    "test": "jest --runInBand --coverage",
     "test:watch": "jest --watch",
-    "migrate": "node src/config/migrate.js",
-    "seed": "node src/config/seed.js"
+    "migrate": "node src/scripts/migrate.js",
+    "create-admin": "node src/scripts/create-admin.js"
   },
   "dependencies": {
+    "@kkiapay-org/nodejs-sdk": "^1.0.7",
+    "axios": "^1.6.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
@@ -23,15 +25,18 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.11.3",
-    "redis": "^4.6.11",
     "socket.io": "^4.6.2",
-    "uuid": "^9.0.1",
-    "axios": "^1.6.2",
-    "winston": "^3.11.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/setup-env.js"
+    ]
   }
 }

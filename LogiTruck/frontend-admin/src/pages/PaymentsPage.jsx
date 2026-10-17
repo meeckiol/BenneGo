@@ -1,43 +1,108 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 
+const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR');
+
 export default function PaymentsPage() {
   const [orders, setOrders] = useState([]);
+  const [payouts, setPayouts] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [totals, setTotals] = useState({ gmv: 0, commission: 0, escrow: 0, released: 0 });
+  const [busyId, setBusyId] = useState(null);
 
-  useEffect(() => {
-    api.get('/admin/orders?limit=100').then(({ data }) => {
-      const os = data.orders;
-      setOrders(os);
-      setTotals({
-        gmv: os.reduce((s, o) => s + parseFloat(o.total_amount || 0), 0),
-        commission: os
-          .filter((o) => ['released', 'validated', 'completed'].includes(o.payment_status))
-          .reduce((s, o) => s + parseFloat(o.commission_amount || 0), 0),
-        escrow: os
-          .filter((o) => o.payment_status === 'escrow_held')
-          .reduce((s, o) => s + parseFloat(o.total_amount || 0), 0),
-        released: os
-          .filter((o) => o.payment_status === 'released')
-          .reduce((s, o) => s + parseFloat(o.driver_amount || 0), 0),
-      });
-      setLoading(false);
-    });
-  }, []);
+  const load = async () => {
+    const [o, p, st] = await Promise.all([
+      api.get('/admin/orders?limit=100'),
+      api.get('/admin/payouts'),
+      api.get('/admin/stats'),
+    ]);
+    setOrders(o.data.orders);
+    setPayouts(p.data.payouts);
+    setStats(st.data.revenue);
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  // Reversement manuel : l'admin envoie l'argent en Mobile Money, puis enregistre la référence
+  const markPaid = async (payout) => {
+    const reference = window.prompt(
+      `Référence du transfert Mobile Money de ${fcfa(payout.driver_amount)} FCFA vers ${payout.driver_name} (${payout.momo_number}) :`
+    );
+    if (!reference || !reference.trim()) return;
+    setBusyId(payout.order_id);
+    try {
+      await api.post(`/payments/orders/${payout.order_id}/mark-paid`, { reference: reference.trim() });
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const retry = async (payout) => {
+    setBusyId(payout.order_id);
+    try {
+      await api.post(`/payments/orders/${payout.order_id}/retry-payout`);
+      await load();
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div style={s.page}>
       {/* KPI paiements */}
       <div style={s.kpiGrid}>
-        <PayKPI label="Volume total (GMV)" value={totals.gmv} color="#FF6B00" icon="📊"
-          sub="Toutes transactions" />
-        <PayKPI label="Commissions LogiTruck" value={totals.commission} color="#10B981" icon="💰"
-          sub="10% réalisés" />
-        <PayKPI label="En escrow (bloqué)" value={totals.escrow} color="#3B82F6" icon="🔒"
-          sub="En attente validation" />
-        <PayKPI label="Versé aux chauffeurs" value={totals.released} color="#8B5CF6" icon="🚛"
-          sub="Libéré via KKiaPay" />
+        <PayKPI label="Volume total (GMV)" value={Number(stats?.total_gmv || 0)} color="#FF6B00" icon="📊"
+          sub="Commandes payées" />
+        <PayKPI label="Commissions LogiTruck" value={Number(stats?.total_revenue || 0)} color="#10B981" icon="💰"
+          sub="10 % prélevés après confirmation client" />
+        <PayKPI label="En séquestre (bloqué)" value={Number(stats?.escrow_balance || 0)} color="#3B82F6" icon="🔒"
+          sub="En attente de confirmation de réception" />
+        <PayKPI label="À reverser aux chauffeurs" value={Number(stats?.payouts_due || 0)} color="#8B5CF6" icon="🚛"
+          sub="Confirmé par le client, pas encore versé" />
+      </div>
+
+      {/* Reversements à effectuer */}
+      <div style={s.tableCard}>
+        <div style={s.tableHeader}>
+          <h3 style={s.tableTitle}>🚛 Reversements chauffeurs à effectuer ({payouts.length})</h3>
+        </div>
+        <div style={s.tableWrapper}>
+          <table style={s.table}>
+            <thead>
+              <tr style={s.thead}>
+                {['Commande', 'Chauffeur', 'Mobile Money', 'À verser (90 %)', 'Commission (10 %)', 'Confirmé le', 'Action'].map((h) => (
+                  <th key={h} style={s.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {payouts.map((p) => (
+                <tr key={p.order_id} style={s.tr}>
+                  <td style={{ ...s.td, color: '#FF6B00', fontWeight: '600' }}>{p.order_number}</td>
+                  <td style={s.td}>{p.driver_name}</td>
+                  <td style={s.td}>{p.momo_number || '—'} {p.momo_provider ? `(${p.momo_provider.toUpperCase()})` : ''}</td>
+                  <td style={{ ...s.td, color: '#8B5CF6', fontWeight: '700' }}>{fcfa(p.driver_amount)}</td>
+                  <td style={{ ...s.td, color: '#10B981' }}>{fcfa(p.commission_amount)}</td>
+                  <td style={{ ...s.td, color: '#64748b' }}>{p.validated_at ? new Date(p.validated_at).toLocaleString('fr-FR') : '—'}</td>
+                  <td style={s.td}>
+                    <button disabled={busyId === p.order_id} onClick={() => markPaid(p)} style={s.actionBtn}>
+                      Marquer payé
+                    </button>
+                    {p.payout_status === 'failed' && (
+                      <button disabled={busyId === p.order_id} onClick={() => retry(p)} style={{ ...s.actionBtn, background: '#334155', marginLeft: 8 }}>
+                        Relancer
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {!loading && payouts.length === 0 && (
+                <tr><td colSpan={7} style={s.empty}>Aucun reversement en attente</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Tableau des paiements */}
@@ -108,7 +173,7 @@ function PayKPI({ label, value, color, icon, sub }) {
       <div style={{ ...s.kpiIcon, background: `${color}15`, color }}>{icon}</div>
       <div>
         <div style={{ fontSize: '20px', fontWeight: '800', color }}>
-          {value.toLocaleString()} <span style={{ fontSize: '12px', color: '#64748b' }}>FCFA</span>
+          {value.toLocaleString('fr-FR')} <span style={{ fontSize: '12px', color: '#64748b' }}>FCFA</span>
         </div>
         <div style={{ fontSize: '13px', color: '#94a3b8' }}>{label}</div>
         <div style={{ fontSize: '11px', color: '#475569' }}>{sub}</div>
@@ -118,8 +183,9 @@ function PayKPI({ label, value, color, icon, sub }) {
 }
 
 const PAY_STYLE = {
-  escrow_held: { label: '🔒 Escrow', color: '#3B82F6' },
-  released:    { label: '✅ Libéré', color: '#10B981' },
+  escrow_held: { label: '🔒 Séquestre', color: '#3B82F6' },
+  payout_pending: { label: '⏳ À reverser', color: '#F59E0B' },
+  released:    { label: '✅ Versé', color: '#10B981' },
   refunded:    { label: '↩ Remboursé', color: '#EF4444' },
 };
 
@@ -142,5 +208,6 @@ const s = {
   th: { padding: '10px 12px', color: '#64748b', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
   tr: { borderBottom: '1px solid #0f172a' },
   td: { padding: '12px', color: '#cbd5e1', fontSize: '13px', verticalAlign: 'middle' },
+  actionBtn: { background: '#10B981', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 12px', fontWeight: '700', cursor: 'pointer', fontSize: '12px' },
   empty: { padding: '32px', textAlign: 'center', color: '#475569' },
 };

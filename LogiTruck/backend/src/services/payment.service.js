@@ -1,300 +1,382 @@
-const axios = require('axios');
+/**
+ * Paiement avec séquestre (escrow) — LogiTruck
+ *
+ *   1. Le client paie en même temps que la commande      → confirmEscrow()
+ *      L'argent reste sur le compte plateforme, PAS chez le chauffeur (payment_status = escrow_held).
+ *   2. Le chauffeur livre, le client suit le trajet en direct.
+ *   3. Le client appuie sur "Confirmer la réception"      → confirmDelivery()
+ *      Seulement à ce moment : 10 % de commission plateforme + 90 % à reverser au chauffeur.
+ *   4. Reversement chauffeur                              → settlePayout() / markPayoutPaid()
+ *
+ * Toutes les opérations qui touchent à l'argent sont :
+ *   - verrouillées (SELECT ... FOR UPDATE) pour éviter les doubles clics / appels concurrents,
+ *   - idempotentes (index uniques en base : une seule transaction de chaque type par commande),
+ *   - recoupées auprès de KKiaPay (on ne fait jamais confiance au corps d'un webhook).
+ */
 const crypto = require('crypto');
 const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
+const kkiapay = require('../providers/kkiapay');
+const payout = require('./payout.service');
 
-// KKiaPay API - https://docs.kkiapay.me
-const KKIAPAY_BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://api.kkiapay.me'
-  : 'https://sandbox-api.kkiapay.me';
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Vérifie la signature HMAC d'un webhook KKiaPay
+ * KKiaPay joint à chaque webhook l'en-tête `x-kkiapay-secret` contenant le "secret hash"
+ * défini dans le tableau de bord (ce n'est PAS une signature HMAC du corps).
+ * Sans secret configuré, on refuse tout : jamais d'acceptation "par défaut".
  */
-const verifyKKiaPaySignature = (payload, signature) => {
-  const secret = process.env.KKIAPAY_SECRET;
-  if (!secret) return true; // sandbox sans secret configuré
+const verifyWebhookSecret = (headerValue) => {
+  const secret = process.env.KKIAPAY_WEBHOOK_SECRET;
+  if (!secret || typeof headerValue !== 'string') return false;
+  const provided = Buffer.from(headerValue);
+  const expected = Buffer.from(secret);
+  return provided.length === expected.length && crypto.timingSafeEqual(provided, expected);
+};
 
-  if (!signature || typeof signature !== 'string') {
-    return false;
-  }
-
-  const normalizedSignature = signature.replace(/^sha256=/i, '').trim();
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(payload))
-    .digest('hex');
-
-  const expectedBuffer = Buffer.from(expected, 'hex');
-  const providedBuffer = Buffer.from(normalizedSignature, 'hex');
-
-  if (expectedBuffer.length !== providedBuffer.length) {
-    return false;
-  }
-
+const extractOrderId = (event) => {
+  const raw = event?.stateData ?? event?.data;
+  if (!raw) return null;
+  if (typeof raw === 'string' && UUID_RE.test(raw)) return raw;
   try {
-    return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
-  } catch (error) {
-    return false;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return parsed && UUID_RE.test(parsed.order_id || '') ? parsed.order_id : null;
+  } catch {
+    return null;
   }
 };
 
-/**
- * Initie un paiement Mobile Money via KKiaPay (escrow)
- * Retourne un lien de paiement que le client ouvre sur son téléphone
- *
- * @param {string} orderId       - UUID de la commande
- * @param {number} amount        - Montant en FCFA
- * @param {string} customerPhone - Numéro MTN/Moov du client
- * @param {string} customerName  - Nom du client
- */
-const createEscrowPayment = async (orderId, amount, customerPhone, customerName) => {
-  try {
-    const response = await axios.post(
-      `${KKIAPAY_BASE_URL}/v1/payments`,
-      {
-        amount,
-        reason: `LogiTruck - Livraison de matériaux`,
-        phone: customerPhone,
-        name: customerName,
-        // URL de callback après paiement réussi/échoué
-        callback: `${process.env.API_BASE_URL}/api/payments/webhook/kkiapay`,
-        // Données personnalisées pour retrouver la commande dans le webhook
-        data: JSON.stringify({ order_id: orderId, type: 'escrow_hold' }),
-      },
-      {
-        headers: {
-          'x-private-key': process.env.KKIAPAY_PRIVATE_KEY,
-          'Content-Type': 'application/json',
-        },
-        timeout: 10000,
-      }
-    );
-
-    const { transactionId, paymentUrl } = response.data;
-
-    return {
-      transaction_id: transactionId,
-      payment_url: paymentUrl,
-      reference: transactionId,
-    };
-  } catch (error) {
-    console.error('KKiaPay erreur création paiement:', error.response?.data || error.message);
-    throw new AppError('Erreur lors de la création du paiement KKiaPay', 500);
+/** Paramètres du widget de paiement KKiaPay pour une commande du client connecté */
+const getCheckoutConfig = async (orderId, user) => {
+  const { rows } = await query('SELECT * FROM orders WHERE id = $1 AND client_id = $2', [orderId, user.id]);
+  if (!rows.length) throw new AppError('Commande introuvable', 404);
+  const order = rows[0];
+  if (order.payment_status !== 'unpaid' || order.status !== 'awaiting_payment') {
+    throw new AppError('Cette commande ne peut plus être payée', 409);
   }
+  return {
+    order_id: order.id,
+    order_number: order.order_number,
+    amount: Number(order.total_amount),
+    phone: user.phone,
+    name: user.full_name,
+    ...kkiapay.widgetConfig(),
+  };
 };
 
 /**
- * Vérifie le statut d'une transaction KKiaPay
- * Utilisé pour confirmer un paiement avant de libérer la commande
- *
- * @param {string} transactionId - ID de transaction KKiaPay
+ * ÉTAPE 1 — Bloque l'argent du client (escrow).
+ * Appelée après le paiement du widget (le client envoie l'id de transaction) ET par le webhook.
  */
-const verifyTransaction = async (transactionId) => {
-  try {
-    const response = await axios.get(
-      `${KKIAPAY_BASE_URL}/v1/payments/${transactionId}/verify`,
-      {
-        headers: { 'x-private-key': process.env.KKIAPAY_PRIVATE_KEY },
-        timeout: 10000,
-      }
-    );
-    return response.data; // { status, amount, transactionId, ... }
-  } catch (error) {
-    console.error('KKiaPay erreur vérification:', error.response?.data || error.message);
-    throw new AppError('Impossible de vérifier la transaction KKiaPay', 500);
+const confirmEscrow = async (orderId, transactionId, { clientId } = {}) => {
+  if (!transactionId || typeof transactionId !== 'string') {
+    throw new AppError('Identifiant de transaction requis', 400);
   }
-};
 
-/**
- * Effectue un virement (payout) vers le compte Mobile Money du chauffeur
- * via l'API KKiaPay Transfer
- *
- * @param {string} momoNumber   - Numéro Mobile Money du chauffeur
- * @param {string} momoProvider - 'mtn' ou 'moov'
- * @param {number} amount       - Montant en FCFA
- * @param {string} reason       - Libellé du virement
- */
-const payoutToDriver = async (momoNumber, momoProvider, amount, reason) => {
+  // Vérification directe auprès de KKiaPay : statut ET montant.
+  let result;
   try {
-    const response = await axios.post(
-      `${KKIAPAY_BASE_URL}/v1/transfers`,
-      {
-        amount,
-        phone: momoNumber,
-        network: momoProvider.toUpperCase(), // 'MTN' ou 'MOOV'
-        reason,
-      },
-      {
-        headers: {
-          'x-private-key': process.env.KKIAPAY_PRIVATE_KEY,
-          'Content-Type': 'application/json',
-        },
-        timeout: 15000,
-      }
-    );
-    return response.data;
+    result = await kkiapay.verify(transactionId);
   } catch (error) {
-    console.error('KKiaPay erreur payout:', error.response?.data || error.message);
-    throw new AppError('Erreur lors du virement vers le chauffeur', 500);
+    console.error('KKiaPay verify:', error.message);
+    throw new AppError('Paiement introuvable chez KKiaPay', 402);
   }
-};
+  if (!result || result.status !== 'SUCCESS') {
+    throw new AppError('Paiement non confirmé par KKiaPay', 402);
+  }
 
-/**
- * Libère les fonds vers le chauffeur après validation de la livraison par le client
- * Flux : escrow_held → payout 90% chauffeur + 10% plateforme
- */
-const releaseFundsToDriver = async (orderId) => {
-  const dbClient = await getClient();
+  const db = await getClient();
   try {
-    await dbClient.query('BEGIN');
+    await db.query('BEGIN');
+    const { rows } = await db.query('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    const order = rows[0];
 
-    const orderResult = await dbClient.query(
-      `SELECT o.*, dp.momo_number, dp.momo_provider, u.full_name AS driver_name
-       FROM orders o
-       JOIN driver_profiles dp ON dp.user_id = o.driver_id
-       JOIN users u ON u.id = o.driver_id
-       WHERE o.id = $1`,
-      [orderId]
-    );
+    if (clientId && order.client_id !== clientId) throw new AppError('Accès refusé', 403);
 
-    if (!orderResult.rows.length) {
-      throw new AppError('Commande introuvable', 404);
+    // Idempotent : webhook + confirmation client peuvent arriver tous les deux
+    if (order.payment_status === 'escrow_held' && order.payment_reference === transactionId) {
+      await db.query('COMMIT');
+      return { order, alreadyConfirmed: true };
+    }
+    if (order.payment_status !== 'unpaid' || order.status !== 'awaiting_payment') {
+      throw new AppError('Cette commande ne peut plus être payée', 409);
+    }
+    if (Number(result.amount) !== Number(order.total_amount)) {
+      throw new AppError('Le montant payé ne correspond pas au montant de la commande', 402);
     }
 
-    const order = orderResult.rows[0];
-
-    if (order.payment_status !== 'escrow_held') {
-      throw new AppError('Les fonds ne sont pas en escrow', 400);
-    }
-
-    // Effectuer le virement vers le chauffeur via KKiaPay
-    const payout = await payoutToDriver(
-      order.momo_number,
-      order.momo_provider,
-      order.driver_amount,
-      `LogiTruck - Course ${order.order_number || orderId}`
+    await db.query(
+      `INSERT INTO transactions (order_id, type, amount, provider, provider_reference, status, metadata)
+       VALUES ($1, 'escrow_hold', $2, 'kkiapay', $3, 'success', $4)`,
+      [order.id, order.total_amount, transactionId, JSON.stringify({ source: clientId ? 'client' : 'webhook' })]
     );
-
-    // Enregistrer la transaction de payout chauffeur
-    await dbClient.query(
-      `INSERT INTO transactions
-        (order_id, type, amount, provider, status, provider_reference, metadata)
-       VALUES ($1, 'driver_payout', $2, 'kkiapay', 'success', $3, $4)`,
-      [
-        orderId,
-        order.driver_amount,
-        payout.transactionId || null,
-        JSON.stringify({
-          momo_number: order.momo_number,
-          momo_provider: order.momo_provider,
-          driver_name: order.driver_name,
-        }),
-      ]
+    const updated = await db.query(
+      `UPDATE orders SET payment_status = 'escrow_held', payment_reference = $1, payment_at = NOW(),
+              status = 'pending', updated_at = NOW()
+       WHERE id = $2 RETURNING *`,
+      [transactionId, order.id]
     );
-
-    // Enregistrer la commission plateforme (10%)
-    await dbClient.query(
-      `INSERT INTO transactions
-        (order_id, type, amount, provider, status)
-       VALUES ($1, 'platform_fee', $2, 'kkiapay', 'success')`,
-      [orderId, order.commission_amount]
-    );
-
-    // Mettre à jour le statut de paiement
-    await dbClient.query(
-      `UPDATE orders SET
-        payment_status = 'released',
-        status = 'completed',
-        updated_at = NOW()
-       WHERE id = $1`,
-      [orderId]
-    );
-
-    // Remettre le chauffeur disponible et incrémenter ses stats
-    await dbClient.query(
-      `UPDATE driver_profiles SET
-        total_trips = total_trips + 1,
-        is_available = true,
-        updated_at = NOW()
-       WHERE user_id = $1`,
-      [order.driver_id]
-    );
-
-    await dbClient.query('COMMIT');
-
-    console.log(`Fonds libérés: ${order.driver_amount.toLocaleString()} FCFA → chauffeur ${order.driver_name}`);
-
-    return {
-      success: true,
-      driver_amount: order.driver_amount,
-      platform_fee: order.commission_amount,
-    };
+    await db.query('COMMIT');
+    return { order: updated.rows[0], alreadyConfirmed: false };
   } catch (error) {
-    await dbClient.query('ROLLBACK');
+    await db.query('ROLLBACK');
+    if (error.code === '23505') {
+      throw new AppError('Cette transaction a déjà été utilisée pour une autre commande', 409);
+    }
     throw error;
   } finally {
-    dbClient.release();
+    db.release();
   }
 };
 
 /**
- * Traite le webhook KKiaPay (callback après paiement client)
- * KKiaPay envoie un POST quand le paiement est confirmé ou échoué
+ * ÉTAPE 3 — Le client confirme la livraison.
+ * Prélève les 10 % (commission) et ouvre le reversement des 90 % au chauffeur.
  */
+const confirmDelivery = async (orderId, clientId) => {
+  const db = await getClient();
+  let order;
+  let alreadyDone = false;
+  try {
+    await db.query('BEGIN');
+    const { rows } = await db.query('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    order = rows[0];
+
+    if (order.client_id !== clientId) throw new AppError('Accès refusé', 403);
+
+    if (['validated', 'completed'].includes(order.status)) {
+      alreadyDone = true; // double clic / rejeu : rien à refaire
+    } else {
+      if (order.status !== 'delivered') {
+        throw new AppError('Le chauffeur n\'a pas encore marqué la commande comme livrée', 400);
+      }
+      if (order.payment_status !== 'escrow_held') {
+        throw new AppError('Aucun paiement en séquestre pour cette commande', 409);
+      }
+      const total = Number(order.total_amount);
+      const commission = Number(order.commission_amount);
+      const driverAmount = Number(order.driver_amount);
+      if (Math.abs(commission + driverAmount - total) > 0.01) {
+        throw new AppError('Incohérence de montants, contactez le support', 500);
+      }
+
+      const driver = await db.query(
+        'SELECT momo_number, momo_provider FROM driver_profiles WHERE user_id = $1', [order.driver_id]
+      );
+      const momo = driver.rows[0] || {};
+
+      await db.query(
+        `UPDATE orders SET status = 'validated', validated_at = NOW(),
+                payment_status = 'payout_pending', updated_at = NOW() WHERE id = $1`,
+        [order.id]
+      );
+      // 10 % : prélevés par la plateforme
+      await db.query(
+        `INSERT INTO transactions (order_id, type, amount, provider, status)
+         VALUES ($1, 'platform_fee', $2, 'kkiapay', 'success')`,
+        [order.id, commission]
+      );
+      // 90 % : à reverser au chauffeur
+      await db.query(
+        `INSERT INTO transactions (order_id, type, amount, provider, status, metadata)
+         VALUES ($1, 'driver_payout', $2, 'kkiapay', 'pending', $3)`,
+        [order.id, driverAmount, JSON.stringify({ momo_number: momo.momo_number, momo_provider: momo.momo_provider })]
+      );
+      await db.query(
+        'UPDATE driver_profiles SET total_trips = total_trips + 1, updated_at = NOW() WHERE user_id = $1',
+        [order.driver_id]
+      );
+    }
+    await db.query('COMMIT');
+  } catch (error) {
+    await db.query('ROLLBACK');
+    throw error;
+  } finally {
+    db.release();
+  }
+
+  const settlement = alreadyDone ? { status: 'already_done' } : await settlePayout(order.id);
+  return { orderId: order.id, driverId: order.driver_id, order, alreadyDone, settlement };
+};
+
+/** Termine la commande une fois le chauffeur effectivement payé. */
+const finalizeRelease = async (db, orderId, reference) => {
+  await db.query(
+    `UPDATE transactions SET status = 'success', provider_reference = COALESCE($2, provider_reference)
+     WHERE order_id = $1 AND type = 'driver_payout'`,
+    [orderId, reference]
+  );
+  await db.query(
+    `UPDATE orders SET payment_status = 'released', status = 'completed',
+            released_at = NOW(), updated_at = NOW() WHERE id = $1`,
+    [orderId]
+  );
+};
+
+/**
+ * Tente le reversement chauffeur. Le "claim" (pending/failed → processing) garantit
+ * qu'un seul appel concurrent peut déclencher le virement : pas de double versement.
+ */
+const settlePayout = async (orderId) => {
+  const claim = await query(
+    `UPDATE transactions SET status = 'processing'
+     WHERE order_id = $1 AND type = 'driver_payout' AND status IN ('pending', 'failed')
+     RETURNING amount, metadata`,
+    [orderId]
+  );
+  if (!claim.rows.length) return { status: 'already_processing_or_done' };
+
+  const tx = claim.rows[0];
+  const meta = tx.metadata || {};
+  const { rows } = await query('SELECT order_number FROM orders WHERE id = $1', [orderId]);
+
+  let outcome;
+  try {
+    outcome = await payout.execute({
+      orderId,
+      orderNumber: rows[0]?.order_number,
+      amount: Number(tx.amount),
+      momoNumber: meta.momo_number,
+      momoProvider: meta.momo_provider,
+    });
+  } catch (error) {
+    console.error(`Reversement échoué (commande ${orderId}):`, error.message);
+    await query(
+      `UPDATE transactions SET status = 'failed', metadata = metadata || $2::jsonb
+       WHERE order_id = $1 AND type = 'driver_payout'`,
+      [orderId, JSON.stringify({ last_error: String(error.message).slice(0, 300) })]
+    );
+    return { status: 'failed' };
+  }
+
+  if (outcome.status === 'success') {
+    const db = await getClient();
+    try {
+      await db.query('BEGIN');
+      await finalizeRelease(db, orderId, outcome.reference);
+      await db.query('COMMIT');
+    } catch (error) {
+      await db.query('ROLLBACK');
+      console.error(`CRITIQUE: virement envoyé mais base non mise à jour (commande ${orderId})`, error);
+      throw error;
+    } finally {
+      db.release();
+    }
+    return { status: 'released' };
+  }
+
+  // Mode manuel : en attente d'un versement par l'admin
+  await query(
+    `UPDATE transactions SET status = 'pending' WHERE order_id = $1 AND type = 'driver_payout'`,
+    [orderId]
+  );
+  return { status: 'pending' };
+};
+
+/** Admin : marque un reversement manuel comme effectué (référence Mobile Money obligatoire). */
+const markPayoutPaid = async (orderId, reference) => {
+  if (!reference || !String(reference).trim()) throw new AppError('Référence du versement requise', 400);
+  const db = await getClient();
+  try {
+    await db.query('BEGIN');
+    const { rows } = await db.query('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    if (rows[0].payment_status !== 'payout_pending') {
+      throw new AppError('Aucun reversement en attente pour cette commande', 409);
+    }
+    await finalizeRelease(db, orderId, String(reference).trim().slice(0, 100));
+    await db.query('COMMIT');
+    return { orderId };
+  } catch (error) {
+    await db.query('ROLLBACK');
+    throw error;
+  } finally {
+    db.release();
+  }
+};
+
+/**
+ * Remboursement du client (annulation avant livraison / litige).
+ * Réservé : au client tant qu'aucun chauffeur n'a accepté, à l'admin sinon.
+ */
+const refundEscrow = async (orderId, { actor, reason }) => {
+  const db = await getClient();
+  try {
+    await db.query('BEGIN');
+    const { rows } = await db.query('SELECT * FROM orders WHERE id = $1 FOR UPDATE', [orderId]);
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    const order = rows[0];
+
+    if (actor.role === 'client') {
+      if (order.client_id !== actor.id) throw new AppError('Accès refusé', 403);
+      if (order.status !== 'pending') {
+        throw new AppError('Annulation impossible : un chauffeur a déjà accepté la course', 409);
+      }
+    } else if (actor.role !== 'admin') {
+      throw new AppError('Accès refusé', 403);
+    }
+    if (order.payment_status !== 'escrow_held') {
+      throw new AppError('Aucun paiement en séquestre à rembourser', 409);
+    }
+    if (['validated', 'completed', 'cancelled'].includes(order.status)) {
+      throw new AppError('Cette commande ne peut plus être remboursée', 409);
+    }
+
+    try {
+      await kkiapay.refund(order.payment_reference);
+    } catch (error) {
+      console.error('KKiaPay refund:', error.message);
+      throw new AppError('Le remboursement a été refusé par KKiaPay', 502);
+    }
+
+    await db.query(
+      `INSERT INTO transactions (order_id, type, amount, provider, provider_reference, status, metadata)
+       VALUES ($1, 'refund', $2, 'kkiapay', $3, 'success', $4)`,
+      [order.id, order.total_amount, order.payment_reference, JSON.stringify({ by: actor.role, reason: reason || null })]
+    );
+    await db.query(
+      `UPDATE orders SET payment_status = 'refunded', status = 'cancelled', cancelled_at = NOW(),
+              cancellation_reason = $2, updated_at = NOW() WHERE id = $1`,
+      [order.id, reason || null]
+    );
+    await db.query('COMMIT');
+    return { order };
+  } catch (error) {
+    await db.query('ROLLBACK');
+    throw error;
+  } finally {
+    db.release();
+  }
+};
+
+/** Webhook KKiaPay — filet de sécurité si le client ferme la page après avoir payé */
 const handleKKiaPayWebhook = async (req, res, next) => {
   try {
-    const event = req.body;
-    const signature = req.headers['x-kkiapay-signature'];
-
-    // Vérifier la signature pour sécuriser le webhook
-    if (!verifyKKiaPaySignature(event, signature)) {
-      console.warn('Webhook KKiaPay: signature invalide');
-      return res.status(401).json({ error: 'Signature invalide' });
+    if (!verifyWebhookSecret(req.headers['x-kkiapay-secret'])) {
+      console.warn('Webhook KKiaPay rejeté : secret absent ou invalide');
+      return res.status(401).json({ error: 'Secret invalide' });
     }
 
-    const { status, transactionId, data: rawData } = event;
+    const event = req.body || {};
+    const isSuccess = event.event === 'transaction.success' || event.isPaymentSucces === true;
+    if (!isSuccess) return res.json({ received: true });
 
-    // Parser les données personnalisées
-    let customData = {};
+    const orderId = extractOrderId(event);
+    if (!orderId) {
+      console.warn('Webhook KKiaPay : commande non identifiable', event.transactionId);
+      return res.json({ received: true });
+    }
+
     try {
-      customData = typeof rawData === 'string' ? JSON.parse(rawData) : (rawData || {});
-    } catch {
-      customData = {};
+      const { order, alreadyConfirmed } = await confirmEscrow(orderId, event.transactionId);
+      if (!alreadyConfirmed) require('./order-events').notifyNewOrder(req.app.get('io'), order);
+    } catch (error) {
+      // Erreur "métier" : inutile que KKiaPay réessaie. Erreur technique : on laisse réessayer.
+      if (!error.statusCode || error.statusCode >= 500) throw error;
+      console.warn(`Webhook KKiaPay ignoré (${error.statusCode}) : ${error.message}`);
     }
-
-    const { order_id, type } = customData;
-
-    if (status === 'SUCCESS' && type === 'escrow_hold' && order_id) {
-      // Paiement client confirmé → bloquer les fonds
-      await query(
-        `UPDATE orders SET
-          payment_status = 'escrow_held',
-          payment_reference = $1,
-          payment_at = NOW(),
-          status = 'pending',
-          updated_at = NOW()
-         WHERE id = $2 AND payment_status = 'unpaid'`,
-        [transactionId, order_id]
-      );
-
-      // Enregistrer la transaction en base
-      await query(
-        `INSERT INTO transactions
-          (order_id, type, amount, provider, status, provider_reference)
-         SELECT id, 'escrow_hold', total_amount, 'kkiapay', 'success', $1
-         FROM orders WHERE id = $2
-         ON CONFLICT DO NOTHING`,
-        [transactionId, order_id]
-      );
-
-      console.log(`Escrow KKiaPay confirmé - Commande ${order_id} - Ref: ${transactionId}`);
-
-    } else if (status === 'FAILED' && order_id) {
-      // Paiement échoué → notifier
-      console.warn(`Paiement KKiaPay échoué - Commande ${order_id}`);
-    }
-
     res.json({ received: true });
   } catch (error) {
     next(error);
@@ -302,10 +384,13 @@ const handleKKiaPayWebhook = async (req, res, next) => {
 };
 
 module.exports = {
-  verifyKKiaPaySignature,
-  createEscrowPayment,
-  verifyTransaction,
-  payoutToDriver,
-  releaseFundsToDriver,
+  verifyWebhookSecret,
+  extractOrderId,
+  getCheckoutConfig,
+  confirmEscrow,
+  confirmDelivery,
+  settlePayout,
+  markPayoutPaid,
+  refundEscrow,
   handleKKiaPayWebhook,
 };

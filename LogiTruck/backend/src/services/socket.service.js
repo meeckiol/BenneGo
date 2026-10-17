@@ -1,20 +1,22 @@
 const jwt = require('jsonwebtoken');
 const { query } = require('../config/database');
+const { recordPosition, broadcastPosition } = require('./tracking.service');
 
 /**
- * Configure Socket.IO pour le tracking temps réel des camions
+ * Socket.IO : suivi temps réel des camions.
+ * Rooms : user_<id>, client_<id>, driver_<id>, drivers_available, order_<id>
  */
 const setupSocketIO = (io) => {
-  // Middleware d'authentification WebSocket
-  io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
-    if (!token) {
-      return next(new Error('Token requis'));
-    }
+  // Authentification : token valide ET compte toujours actif (un compte désactivé perd son canal)
+  io.use(async (socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error('Token requis'));
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.userId = decoded.userId;
-      socket.userRole = decoded.role;
+      const { rows } = await query('SELECT id, role, is_active FROM users WHERE id = $1', [decoded.userId]);
+      if (!rows.length || !rows[0].is_active) return next(new Error('Compte inactif'));
+      socket.userId = rows[0].id;
+      socket.userRole = rows[0].role;
       next();
     } catch (err) {
       next(new Error('Token invalide'));
@@ -22,43 +24,31 @@ const setupSocketIO = (io) => {
   });
 
   io.on('connection', (socket) => {
-    console.log(`Connecté: ${socket.userId} (${socket.userRole})`);
-
-    // Rejoindre la salle personnelle
     socket.join(`user_${socket.userId}`);
+    if (socket.userRole === 'client') socket.join(`client_${socket.userId}`);
+    if (socket.userRole === 'driver') socket.join(`driver_${socket.userId}`);
 
-    if (socket.userRole === 'client') {
-      socket.join(`client_${socket.userId}`);
-    }
-
-    if (socket.userRole === 'driver') {
-      socket.join(`driver_${socket.userId}`);
-    }
-
-    // Chauffeur: se mettre disponible
+    // Chauffeur : se mettre disponible (reçoit les nouvelles commandes payées)
     socket.on('driver_available', async () => {
       if (socket.userRole !== 'driver') return;
       try {
-        await query(
-          'UPDATE driver_profiles SET is_available = true, updated_at = NOW() WHERE user_id = $1',
+        const { rowCount } = await query(
+          `UPDATE driver_profiles SET is_available = true, updated_at = NOW()
+           WHERE user_id = $1 AND momo_number IS NOT NULL`,
           [socket.userId]
         );
+        if (!rowCount) return socket.emit('error_message', { error: 'Profil chauffeur ou numéro Mobile Money manquant' });
         socket.join('drivers_available');
         socket.emit('availability_updated', { is_available: true });
-        console.log(`Chauffeur ${socket.userId} disponible`);
       } catch (err) {
         console.error('Erreur mise à jour disponibilité:', err);
       }
     });
 
-    // Chauffeur: se mettre indisponible
     socket.on('driver_unavailable', async () => {
       if (socket.userRole !== 'driver') return;
       try {
-        await query(
-          'UPDATE driver_profiles SET is_available = false, updated_at = NOW() WHERE user_id = $1',
-          [socket.userId]
-        );
+        await query('UPDATE driver_profiles SET is_available = false, updated_at = NOW() WHERE user_id = $1', [socket.userId]);
         socket.leave('drivers_available');
         socket.emit('availability_updated', { is_available: false });
       } catch (err) {
@@ -66,61 +56,39 @@ const setupSocketIO = (io) => {
       }
     });
 
-    // Chauffeur: envoi position GPS
+    // Chauffeur : envoi de sa position (validée : bornes + course active lui appartenant)
     socket.on('driver_location', async (data) => {
       if (socket.userRole !== 'driver') return;
-      const { lat, lng, order_id } = data;
-
       try {
-        // Mettre à jour la position du chauffeur
-        await query(
-          `UPDATE driver_profiles SET
-            current_lat = $1, current_lng = $2,
-            last_position_at = NOW(), updated_at = NOW()
-           WHERE user_id = $3`,
-          [lat, lng, socket.userId]
-        );
-
-        // Si en cours de livraison, enregistrer le tracking et notifier le client
-        if (order_id) {
-          await query(
-            'INSERT INTO order_tracking (order_id, driver_id, lat, lng) VALUES ($1, $2, $3, $4)',
-            [order_id, socket.userId, lat, lng]
-          );
-
-          // Trouver le client et lui envoyer la position
-          const orderResult = await query(
-            'SELECT client_id FROM orders WHERE id = $1',
-            [order_id]
-          );
-
-          if (orderResult.rows.length) {
-            io.to(`client_${orderResult.rows[0].client_id}`).emit('driver_position', {
-              order_id,
-              lat,
-              lng,
-              timestamp: new Date().toISOString(),
-            });
-          }
-        }
+        const recorded = await recordPosition(socket.userId, data || {});
+        if (recorded) broadcastPosition(io, recorded);
       } catch (err) {
-        console.error('Erreur tracking GPS:', err);
+        socket.emit('error_message', { error: err.message });
       }
     });
 
-    // Client: rejoindre la salle de suivi d'une commande
-    socket.on('track_order', (orderId) => {
-      socket.join(`order_${orderId}`);
+    // Client : suivre une commande — uniquement la sienne (ou admin)
+    socket.on('track_order', async (orderId) => {
+      try {
+        const { rows } = await query('SELECT client_id, driver_id FROM orders WHERE id = $1', [orderId]);
+        const order = rows[0];
+        const allowed = order && (
+          socket.userRole === 'admin'
+          || (socket.userRole === 'client' && order.client_id === socket.userId)
+          || (socket.userRole === 'driver' && order.driver_id === socket.userId)
+        );
+        if (!allowed) return socket.emit('error_message', { error: 'Accès refusé à cette commande' });
+        socket.join(`order_${orderId}`);
+        socket.emit('tracking_started', { order_id: orderId });
+      } catch (err) {
+        socket.emit('error_message', { error: 'Suivi indisponible' });
+      }
     });
 
     socket.on('disconnect', async () => {
-      console.log(`Déconnecté: ${socket.userId}`);
       if (socket.userRole === 'driver') {
         try {
-          await query(
-            'UPDATE driver_profiles SET is_available = false, updated_at = NOW() WHERE user_id = $1',
-            [socket.userId]
-          );
+          await query('UPDATE driver_profiles SET is_available = false, updated_at = NOW() WHERE user_id = $1', [socket.userId]);
         } catch (err) {
           console.error('Erreur déconnexion chauffeur:', err);
         }

@@ -3,12 +3,15 @@ import {
   JOB_STATUS_LABELS,
   NEXT_JOB_STATUS,
   type JobStatus,
+  type OrderType,
 } from "@/shared/logitruck";
 
 /** Course telle que renvoyée par l'API, normalisée pour l'interface. */
 export type JobLike = {
   id: string;
   reference: string;
+  orderType?: OrderType;
+  durationHours?: number | null;
   clientName: string;
   clientPhone?: string | null;
   driverId?: string | null;
@@ -32,6 +35,8 @@ export function toJob(o: any): JobLike {
   return {
     id: o.id,
     reference: o.order_number,
+    orderType: (o.order_type as OrderType) || "MATERIAL",
+    durationHours: o.duration_hours ? Number(o.duration_hours) : null,
     clientName: o.client_name ?? "Client",
     clientPhone: o.client_phone ?? null,
     driverId: o.driver_id ?? null,
@@ -41,8 +46,8 @@ export function toJob(o: any): JobLike {
     pickupLongitude: Number(o.pickup_lng),
     deliveryLatitude: Number(o.delivery_lat),
     deliveryLongitude: Number(o.delivery_lng),
-    materialDescription: o.material_description || o.material_name || "Matériaux",
-    quantityM3: Number(o.quantity_m3),
+    materialDescription: o.material_description || o.material_name || (o.order_type === "RENTAL" ? "Location d'engin" : o.order_type === "EVACUATION" ? "Évacuation gravats" : "Matériaux"),
+    quantityM3: Number(o.quantity_m3 || 0),
     driverEarnings: Number(o.driver_amount),
     status: o.status,
     paymentStatus: o.payment_status,

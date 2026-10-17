@@ -4,7 +4,8 @@ import api from '../services/api';
 
 const STATUSES = [
   { value: '', label: 'Toutes' },
-  { value: 'pending', label: 'En attente' },
+  { value: 'awaiting_payment', label: 'À payer' },
+  { value: 'pending', label: 'Payée · en attente' },
   { value: 'accepted', label: 'Acceptées' },
   { value: 'driver_en_route_delivery', label: 'En livraison' },
   { value: 'delivered', label: 'Livrées' },
@@ -14,7 +15,8 @@ const STATUSES = [
 ];
 
 const STATUS_LABELS = {
-  pending: { label: 'En attente', color: '#F59E0B' },
+  awaiting_payment: { label: 'À payer', color: '#EF4444' },
+  pending: { label: 'Payée · en attente', color: '#F59E0B' },
   accepted: { label: 'Acceptée', color: '#3B82F6' },
   driver_en_route_pickup: { label: 'En route carrière', color: '#8B5CF6' },
   loading: { label: 'Chargement', color: '#EC4899' },

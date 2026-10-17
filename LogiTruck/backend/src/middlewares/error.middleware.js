@@ -2,7 +2,9 @@
  * Middleware centralisé de gestion des erreurs
  */
 const errorHandler = (err, req, res, next) => {
-  console.error('Erreur:', {
+  // Les erreurs métier attendues (4xx) ne polluent pas les logs en test
+  const quiet = process.env.NODE_ENV === 'test' && (err.statusCode || 500) < 500;
+  if (!quiet) console.error('Erreur:', {
     message: err.message,
     stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     path: req.path,

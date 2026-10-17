@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * Alerte plein écran quand une nouvelle commande arrive
- * Le chauffeur a timeoutSeconds secondes pour accepter ou refuser
+ * Le chauffeur ou opérateur d'engin a timeoutSeconds secondes pour accepter ou refuser
  */
 export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSeconds = 30 }) {
   const [remaining, setRemaining] = useState(timeoutSeconds);
@@ -17,6 +17,8 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
   }, [remaining, onRefuse]);
 
   const progressPct = (remaining / timeoutSeconds) * 100;
+  const isRental = order.order_type === 'RENTAL';
+  const isEvacuation = order.order_type === 'EVACUATION';
 
   return (
     <div style={styles.overlay}>
@@ -40,36 +42,52 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
           <span style={styles.countdownNum}>{remaining}</span>
         </div>
 
-        <h2 style={styles.title}>Nouvelle commande !</h2>
+        {/* Badge Service */}
+        <div style={{
+          ...styles.typeBadge,
+          background: isRental ? '#1E3A8A' : isEvacuation ? '#065F46' : '#9A3412',
+          color: isRental ? '#93C5FD' : isEvacuation ? '#6EE7B7' : '#FED7AA',
+        }}>
+          {isRental ? '🚜 Location d\'Engin Lourd' : isEvacuation ? '📦 Évacuation de Gravats' : '🏗️ Transport de Matériaux'}
+        </div>
+
+        <h2 style={styles.title}>Nouvelle mission disponible !</h2>
 
         {/* Détails de la commande */}
         <div style={styles.details}>
           <div style={styles.detailRow}>
             <div>
-              <div style={styles.detailLabel}>Chargement</div>
+              <div style={styles.detailLabel}>
+                {isRental ? 'Site de l\'engin' : isEvacuation ? 'Chantier à nettoyer' : 'Carrière (Chargement)'}
+              </div>
               <div style={styles.detailValue}>{order.pickup_address}</div>
             </div>
           </div>
           <div style={styles.arrow}>↓</div>
           <div style={styles.detailRow}>
             <div>
-              <div style={styles.detailLabel}>Livraison</div>
+              <div style={styles.detailLabel}>
+                {isRental ? 'Chantier de travail' : isEvacuation ? 'Décharge autorisée (Dépôt)' : 'Chantier de livraison'}
+              </div>
               <div style={styles.detailValue}>{order.delivery_address}</div>
             </div>
           </div>
+          {isRental && order.duration_hours && (
+            <div style={styles.extraInfo}>⏱️ Durée réservée : <strong>{order.duration_hours} heures</strong></div>
+          )}
         </div>
 
         {/* Prix */}
         <div style={styles.priceBox}>
           <div style={styles.priceRow}>
-            <span style={styles.priceLabel}>Votre gain</span>
+            <span style={styles.priceLabel}>Votre part séquestre (90%)</span>
             <span style={styles.priceValue}>
               {parseFloat(order.driver_amount || 0).toLocaleString()} FCFA
             </span>
           </div>
           <div style={styles.priceRow}>
             <span style={styles.priceLabel}>Distance</span>
-            <span style={styles.priceDistane}>{order.distance_km} km</span>
+            <span style={styles.priceDistane}>{order.distance_km || 0} km</span>
           </div>
         </div>
 
@@ -79,7 +97,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
             ✕ Ignorer
           </button>
           <button onClick={onAccept} style={styles.acceptBtn}>
-            ✓ Accepter
+            ✓ Accepter la mission
           </button>
         </div>
       </div>
@@ -105,13 +123,12 @@ const styles = {
     borderRadius: '20px',
     padding: '28px 24px',
     width: '100%',
-    maxWidth: '360px',
+    maxWidth: '380px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '20px',
+    gap: '16px',
     boxShadow: '0 20px 60px rgba(255,107,0,0.2)',
-    animation: 'slideUp 0.3s ease',
   },
   countdownWrapper: {
     position: 'relative',
@@ -129,8 +146,15 @@ const styles = {
     position: 'relative',
     zIndex: 1,
   },
+  typeBadge: {
+    fontSize: '12px',
+    fontWeight: '800',
+    padding: '5px 12px',
+    borderRadius: '20px',
+    textTransform: 'uppercase',
+  },
   title: {
-    fontSize: '22px',
+    fontSize: '20px',
     fontWeight: '800',
     color: 'white',
     margin: 0,
@@ -147,7 +171,8 @@ const styles = {
   },
   detailRow: { display: 'flex', gap: '12px', alignItems: 'flex-start' },
   detailLabel: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '2px' },
-  detailValue: { fontSize: '14px', color: 'white', fontWeight: '500' },
+  detailValue: { fontSize: '13.5px', color: 'white', fontWeight: '500' },
+  extraInfo: { fontSize: '12px', color: '#93C5FD', marginTop: '4px' },
   arrow: { textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '16px' },
   priceBox: {
     width: '100%',
@@ -161,7 +186,7 @@ const styles = {
   },
   priceRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   priceLabel: { color: 'rgba(255,255,255,0.6)', fontSize: '13px' },
-  priceValue: { color: '#FF6B00', fontSize: '22px', fontWeight: '800' },
+  priceValue: { color: '#FF6B00', fontSize: '20px', fontWeight: '800' },
   priceDistane: { color: 'white', fontSize: '14px', fontWeight: '600' },
   buttons: { display: 'flex', gap: '12px', width: '100%' },
   refuseBtn: {
@@ -171,7 +196,7 @@ const styles = {
     color: 'rgba(255,255,255,0.7)',
     border: '1px solid rgba(255,255,255,0.1)',
     borderRadius: '10px',
-    fontSize: '15px',
+    fontSize: '14px',
     fontWeight: '700',
     cursor: 'pointer',
   },
@@ -182,7 +207,7 @@ const styles = {
     color: 'white',
     border: 'none',
     borderRadius: '10px',
-    fontSize: '16px',
+    fontSize: '15px',
     fontWeight: '700',
     cursor: 'pointer',
     boxShadow: '0 4px 16px rgba(76,175,80,0.4)',

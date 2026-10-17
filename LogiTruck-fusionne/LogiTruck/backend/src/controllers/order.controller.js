@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 const { calculateRoute, calculatePrice } = require('../services/pricing.service');
@@ -8,34 +9,128 @@ const { generateReceiptPDF } = require('../services/receipt.service');
 /**
  * Génère un numéro de commande unique
  */
-const generateOrderNumber = () => {
+const generateOrderNumber = (prefix = 'LT') => {
   const year = new Date().getFullYear();
-  const random = require('crypto').randomInt(0, 1000000).toString().padStart(6, '0');
-  return `LT-${year}-${random}`;
+  const random = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+  return `${prefix}-${year}-${random}`;
+};
+
+/**
+ * Transitions autorisées pour les conducteurs selon le type de commande
+ */
+const getDriverNextStatuses = (orderType, currentStatus) => {
+  if (orderType === 'RENTAL') {
+    const map = {
+      accepted: ['driver_en_route_pickup', 'machine_operating'],
+      driver_en_route_pickup: ['machine_operating'],
+      machine_operating: ['delivered'],
+    };
+    return map[currentStatus] || [];
+  }
+  if (orderType === 'EVACUATION') {
+    const map = {
+      accepted: ['driver_en_route_pickup'],
+      driver_en_route_pickup: ['loading'],
+      loading: ['driver_en_route_delivery'],
+      driver_en_route_delivery: ['dumping', 'delivered'],
+      dumping: ['delivered'],
+    };
+    return map[currentStatus] || [];
+  }
+  // Standard MATERIAL
+  const map = {
+    accepted: ['driver_en_route_pickup'],
+    driver_en_route_pickup: ['loading'],
+    loading: ['driver_en_route_delivery'],
+    driver_en_route_delivery: ['delivered'],
+  };
+  return map[currentStatus] || [];
+};
+
+/**
+ * Vérifie si le client connecté bénéficie d'un abonnement B2B actif
+ */
+const checkUserB2BStatus = async (userId) => {
+  const result = await query(
+    `SELECT c.id AS company_id, c.name AS company_name, c.subscription_status
+     FROM users u
+     JOIN companies c ON c.id = u.company_id
+     WHERE u.id = $1`,
+    [userId]
+  );
+  if (!result.rows.length) return { isB2b: false, companyId: null };
+  const { company_id, subscription_status } = result.rows[0];
+  return {
+    isB2b: subscription_status === 'active',
+    companyId: company_id,
+  };
 };
 
 /**
  * POST /api/orders/estimate
- * Estimateur de prix avant commande
+ * Estimateur de prix multi-services (Matériaux, Location Engin, Évacuation Gravats)
  */
 const estimatePrice = async (req, res, next) => {
   try {
     const {
+      order_type = 'MATERIAL',
       pickup_lat, pickup_lng,
       delivery_lat, delivery_lng,
       truck_type = 'simple_benne',
+      material_type_id,
+      quantity_m3,
+      duration_hours,
+      machinery_type,
+      rotations = 1,
+      vehicle_type_id,
     } = req.body;
 
-    const route = await calculateRoute(
-      parseFloat(pickup_lat), parseFloat(pickup_lng),
-      parseFloat(delivery_lat), parseFloat(delivery_lng)
-    );
+    const b2bStatus = req.user ? await checkUserB2BStatus(req.user.id) : { isB2b: false };
 
-    const pricing = calculatePrice(route.distance_km, truck_type);
+    let route = { distance_km: 0, duration_min: 0, coordinates: [] };
+    let materialUnitPrice = 0;
+    let vehicleInfo = null;
+
+    if (vehicle_type_id) {
+      const vRes = await query('SELECT * FROM vehicle_types WHERE id = $1', [vehicle_type_id]);
+      if (vRes.rows.length) vehicleInfo = vRes.rows[0];
+    }
+
+    if (material_type_id) {
+      const mRes = await query('SELECT base_price_per_unit FROM material_types WHERE id = $1', [material_type_id]);
+      if (mRes.rows.length) {
+        materialUnitPrice = parseFloat(mRes.rows[0].base_price_per_unit) || 0;
+      }
+    }
+
+    // Calcul de route OSRM si coordonnées fournies
+    if (pickup_lat && pickup_lng && delivery_lat && delivery_lng) {
+      route = await calculateRoute(
+        parseFloat(pickup_lat), parseFloat(pickup_lng),
+        parseFloat(delivery_lat), parseFloat(delivery_lng)
+      );
+    }
+
+    const pricing = calculatePrice({
+      order_type,
+      distance_km: route.distance_km,
+      truck_type,
+      material_unit_price: materialUnitPrice,
+      quantity_m3: parseFloat(quantity_m3) || 1,
+      duration_hours: parseFloat(duration_hours) || 4,
+      machinery_type,
+      rotations: parseInt(rotations, 10) || 1,
+      is_b2b: b2bStatus.isB2b,
+      hourly_rate: vehicleInfo?.hourly_rate,
+      base_fare: vehicleInfo?.base_fare,
+      km_rate: vehicleInfo?.km_rate,
+    });
 
     res.json({
+      order_type,
       distance_km: route.distance_km,
       duration_min: route.duration_min,
+      route_coordinates: route.coordinates,
       ...pricing,
     });
   } catch (error) {
@@ -45,7 +140,7 @@ const estimatePrice = async (req, res, next) => {
 
 /**
  * POST /api/orders
- * Créer une nouvelle commande
+ * Créer une nouvelle commande (Matériau, Location d'engin ou Évacuation)
  */
 const createOrder = async (req, res, next) => {
   const client = await getClient();
@@ -53,37 +148,91 @@ const createOrder = async (req, res, next) => {
     await client.query('BEGIN');
 
     const {
+      order_type = 'MATERIAL',
+      project_id,
+      vehicle_type_id,
       pickup_lat, pickup_lng, pickup_address, pickup_contact,
       delivery_lat, delivery_lng, delivery_address, delivery_contact,
       material_type_id, quantity_m3, material_description,
-      truck_type = 'simple_benne', notes,
+      truck_type = 'simple_benne',
+      duration_hours,
+      rental_start_date,
+      rental_end_date,
+      evacuation_debris_type,
+      evacuation_photo_url,
+      notes,
     } = req.body;
 
-    // Calculer la distance et le prix
-    const route = await calculateRoute(
-      parseFloat(pickup_lat), parseFloat(pickup_lng),
-      parseFloat(delivery_lat), parseFloat(delivery_lng)
-    );
-    const pricing = calculatePrice(route.distance_km, truck_type);
+    const b2bStatus = await checkUserB2BStatus(req.user.id);
 
-    const orderNumber = generateOrderNumber();
+    // Coordonnées par défaut si non fournies selon le service
+    const pLat = parseFloat(pickup_lat) || 6.3703;
+    const pLng = parseFloat(pickup_lng) || 2.3912;
+    const dLat = parseFloat(delivery_lat) || 6.3654;
+    const dLng = parseFloat(delivery_lng) || 2.4183;
+
+    let route = { distance_km: 0, duration_min: 0, coordinates: [] };
+    if (order_type !== 'RENTAL' || (pickup_lat && delivery_lat)) {
+      route = await calculateRoute(pLat, pLng, dLat, dLng);
+    }
+
+    let materialUnitPrice = 0;
+    if (material_type_id) {
+      const mRes = await client.query('SELECT base_price_per_unit FROM material_types WHERE id = $1', [material_type_id]);
+      if (mRes.rows.length) materialUnitPrice = parseFloat(mRes.rows[0].base_price_per_unit) || 0;
+    }
+
+    let vehicleInfo = null;
+    if (vehicle_type_id) {
+      const vRes = await client.query('SELECT * FROM vehicle_types WHERE id = $1', [vehicle_type_id]);
+      if (vRes.rows.length) vehicleInfo = vRes.rows[0];
+    }
+
+    const pricing = calculatePrice({
+      order_type,
+      distance_km: route.distance_km,
+      truck_type,
+      material_unit_price: materialUnitPrice,
+      quantity_m3: parseFloat(quantity_m3) || 1,
+      duration_hours: parseFloat(duration_hours) || 4,
+      is_b2b: b2bStatus.isB2b,
+      hourly_rate: vehicleInfo?.hourly_rate,
+      base_fare: vehicleInfo?.base_fare,
+      km_rate: vehicleInfo?.km_rate,
+    });
+
+    const orderNumber = generateOrderNumber(order_type === 'RENTAL' ? 'ENG' : order_type === 'EVACUATION' ? 'EVAC' : 'LT');
 
     const result = await client.query(
       `INSERT INTO orders (
-        order_number, client_id,
+        order_number, client_id, project_id, order_type, vehicle_type_id,
         pickup_lat, pickup_lng, pickup_address, pickup_contact,
         delivery_lat, delivery_lng, delivery_address, delivery_contact,
         material_type_id, quantity_m3, material_description,
+        duration_hours, rental_start_date, rental_end_date,
+        evacuation_debris_type, evacuation_photo_url,
         distance_km, price_per_km,
         total_amount, commission_amount, driver_amount,
         notes, status, payment_status
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'awaiting_payment','unpaid')
+      ) VALUES (
+        $1, $2, $3, $4, $5,
+        $6, $7, $8, $9,
+        $10, $11, $12, $13,
+        $14, $15, $16,
+        $17, $18, $19,
+        $20, $21,
+        $22, $23,
+        $24, $25, $26,
+        $27, 'awaiting_payment', 'unpaid'
+      )
       RETURNING *`,
       [
-        orderNumber, req.user.id,
-        pickup_lat, pickup_lng, pickup_address, pickup_contact || null,
-        delivery_lat, delivery_lng, delivery_address, delivery_contact || null,
-        material_type_id || null, quantity_m3, material_description || null,
+        orderNumber, req.user.id, project_id || null, order_type, vehicle_type_id || null,
+        pLat, pLng, pickup_address || 'Point de ramassage', pickup_contact || null,
+        dLat, dLng, delivery_address || 'Point de chantier / décharge', delivery_contact || null,
+        material_type_id || null, parseFloat(quantity_m3) || 1, material_description || null,
+        duration_hours ? parseFloat(duration_hours) : null, rental_start_date || null, rental_end_date || null,
+        evacuation_debris_type || null, evacuation_photo_url || null,
         route.distance_km, pricing.price_per_km,
         pricing.total_amount, pricing.commission_amount, pricing.driver_amount,
         notes || null,
@@ -91,14 +240,12 @@ const createOrder = async (req, res, next) => {
     );
 
     await client.query('COMMIT');
-
     const order = result.rows[0];
 
-    // Les chauffeurs ne voient la commande qu'une fois le paiement bloqué en séquestre.
-
     res.status(201).json({
-      message: 'Commande créée. Procédez au paiement pour la publier aux chauffeurs.',
+      message: 'Commande créée. Procédez au paiement pour la bloquer en séquestre.',
       order,
+      breakdown: pricing.breakdown,
       next_step: 'payment',
     });
   } catch (error) {
@@ -110,12 +257,139 @@ const createOrder = async (req, res, next) => {
 };
 
 /**
+ * POST /api/orders/bulk
+ * Planification massive B2B (LogiTruck Enterprise)
+ * Permet de planifier N rotations de camions sur X jours (ex: 10 rotations/jour sur 5 jours = 50 courses)
+ * Génère automatiquement une facture proforma unique avec virement/chèque sur compte séquestre.
+ */
+const createBulkOrders = async (req, res, next) => {
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+
+    const {
+      project_id,
+      order_type = 'MATERIAL',
+      vehicle_type_id,
+      pickup_lat, pickup_lng, pickup_address, pickup_contact,
+      delivery_lat, delivery_lng, delivery_address, delivery_contact,
+      material_type_id, quantity_per_truck_m3 = 16, material_description,
+      truck_type = 'double_benne',
+      rotations_per_day = 10,
+      number_of_days = 5,
+      start_date = new Date().toISOString().split('T')[0],
+      notes,
+    } = req.body;
+
+    const b2bStatus = await checkUserB2BStatus(req.user.id);
+    const totalTrips = Math.min(Math.max(parseInt(rotations_per_day, 10) * parseInt(number_of_days, 10), 1), 200);
+
+    const pLat = parseFloat(pickup_lat);
+    const pLng = parseFloat(pickup_lng);
+    const dLat = parseFloat(delivery_lat);
+    const dLng = parseFloat(delivery_lng);
+
+    const route = await calculateRoute(pLat, pLng, dLat, dLng);
+
+    let materialUnitPrice = 0;
+    if (material_type_id) {
+      const mRes = await client.query('SELECT base_price_per_unit FROM material_types WHERE id = $1', [material_type_id]);
+      if (mRes.rows.length) materialUnitPrice = parseFloat(mRes.rows[0].base_price_per_unit) || 0;
+    }
+
+    const unitPricing = calculatePrice({
+      order_type,
+      distance_km: route.distance_km,
+      truck_type,
+      material_unit_price: materialUnitPrice,
+      quantity_m3: parseFloat(quantity_per_truck_m3),
+      is_b2b: true, // Taux préférentiel B2B
+    });
+
+    const bulkGroupId = crypto.randomUUID();
+    const proformaInvoiceNumber = `PROFORMA-${new Date().getFullYear()}-${crypto.randomInt(100000, 999999)}`;
+
+    const createdOrders = [];
+    const baseStartDate = new Date(start_date);
+
+    for (let day = 0; day < number_of_days; day++) {
+      const scheduledDate = new Date(baseStartDate);
+      scheduledDate.setDate(scheduledDate.getDate() + day);
+
+      for (let rot = 1; rot <= rotations_per_day; rot++) {
+        const orderNumber = generateOrderNumber('LT-B2B');
+        const resOrder = await client.query(
+          `INSERT INTO orders (
+            order_number, client_id, project_id, order_type, vehicle_type_id,
+            pickup_lat, pickup_lng, pickup_address, pickup_contact,
+            delivery_lat, delivery_lng, delivery_address, delivery_contact,
+            material_type_id, quantity_m3, material_description,
+            distance_km, price_per_km,
+            total_amount, commission_amount, driver_amount,
+            is_bulk_order, bulk_group_id, proforma_invoice_number,
+            notes, status, payment_status
+          ) VALUES (
+            $1, $2, $3, $4, $5,
+            $6, $7, $8, $9,
+            $10, $11, $12, $13,
+            $14, $15, $16,
+            $17, $18,
+            $19, $20, $21,
+            true, $22, $23,
+            $24, 'awaiting_payment', 'unpaid'
+          ) RETURNING id, order_number, total_amount`,
+          [
+            orderNumber, req.user.id, project_id || null, order_type, vehicle_type_id || null,
+            pLat, pLng, pickup_address, pickup_contact || null,
+            dLat, dLng, delivery_address, delivery_contact || null,
+            material_type_id || null, parseFloat(quantity_per_truck_m3), material_description || null,
+            route.distance_km, unitPricing.price_per_km,
+            unitPricing.total_amount, unitPricing.commission_amount, unitPricing.driver_amount,
+            bulkGroupId, proformaInvoiceNumber,
+            `${notes || ''} (Jour ${day + 1}/${number_of_days} - Rotation ${rot}/${rotations_per_day})`.trim(),
+          ]
+        );
+        createdOrders.push(resOrder.rows[0]);
+      }
+    }
+
+    await client.query('COMMIT');
+
+    const totalAmountGlobal = unitPricing.total_amount * totalTrips;
+    const totalCommissionGlobal = unitPricing.commission_amount * totalTrips;
+    const totalDriverGlobal = unitPricing.driver_amount * totalTrips;
+
+    res.status(201).json({
+      message: `Planification massive créée avec succès : ${totalTrips} camions programmés.`,
+      bulk_group_id: bulkGroupId,
+      proforma_invoice_number: proformaInvoiceNumber,
+      total_orders_count: totalTrips,
+      unit_price_per_trip: unitPricing.total_amount,
+      total_amount_global: totalAmountGlobal,
+      total_commission_global: totalCommissionGlobal,
+      total_driver_global: totalDriverGlobal,
+      escrow_bank_details: {
+        bank_name: 'BOA Bénin / Ecobank Bénin',
+        account_name: 'LogiTruck Escrow Account SARL',
+        rib: 'BJ061 01001 00123456789 22',
+        instructions: `Effectuez votre virement ou déposez votre chèque avec le libellé "${proformaInvoiceNumber}". Une fois validé par l'administration, vos 50 courses seront débloquées en temps réel pour les chauffeurs.`,
+      },
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    next(error);
+  } finally {
+    client.release();
+  }
+};
+
+/**
  * GET /api/orders
- * Liste des commandes (filtrée selon le rôle)
+ * Liste des commandes (filtrée selon le rôle et les filtres B2B)
  */
 const getOrders = async (req, res, next) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, order_type, project_id, bulk_group_id, page = 1, limit = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     let whereClause = '';
@@ -126,7 +400,20 @@ const getOrders = async (req, res, next) => {
       whereClause = `WHERE o.client_id = $${paramIdx++}`;
       params.push(req.user.id);
     } else if (req.user.role === 'driver') {
-      whereClause = `WHERE (o.driver_id = $${paramIdx++} OR (o.status = 'pending' AND o.payment_status = 'escrow_held'))`;
+      // Les chauffeurs voient leurs courses ou les courses en attente payées en séquestre
+      // Filtrage par catégorie de véhicule selon profil chauffeur
+      const dpRes = await query('SELECT vehicle_category, truck_type FROM driver_profiles WHERE user_id = $1', [req.user.id]);
+      const driverProfile = dpRes.rows[0];
+
+      let categoryFilter = '';
+      if (driverProfile?.vehicle_category === 'HEAVY_MACHINERY') {
+        categoryFilter = " AND o.order_type = 'RENTAL'";
+      } else {
+        // Camions bennes : Transport de matériaux ou Évacuation de gravats
+        categoryFilter = " AND o.order_type IN ('MATERIAL', 'EVACUATION')";
+      }
+
+      whereClause = `WHERE (o.driver_id = $${paramIdx++} OR (o.status = 'pending' AND o.payment_status = 'escrow_held'${categoryFilter}))`;
       params.push(req.user.id);
     }
 
@@ -135,20 +422,35 @@ const getOrders = async (req, res, next) => {
       params.push(status);
     }
 
-    const countResult = await query(
-      `SELECT COUNT(*) FROM orders o ${whereClause}`,
-      params
-    );
+    if (order_type) {
+      whereClause += whereClause ? ` AND o.order_type = $${paramIdx++}` : `WHERE o.order_type = $${paramIdx++}`;
+      params.push(order_type.toUpperCase());
+    }
+
+    if (project_id) {
+      whereClause += whereClause ? ` AND o.project_id = $${paramIdx++}` : `WHERE o.project_id = $${paramIdx++}`;
+      params.push(project_id);
+    }
+
+    if (bulk_group_id) {
+      whereClause += whereClause ? ` AND o.bulk_group_id = $${paramIdx++}` : `WHERE o.bulk_group_id = $${paramIdx++}`;
+      params.push(bulk_group_id);
+    }
+
+    const countResult = await query(`SELECT COUNT(*) FROM orders o ${whereClause}`, params);
 
     const result = await query(
       `SELECT o.*,
               u_client.full_name AS client_name, u_client.phone AS client_phone,
               u_driver.full_name AS driver_name, u_driver.phone AS driver_phone,
-              mt.name AS material_name
+              mt.name AS material_name, vt.name AS vehicle_name, vt.category AS vehicle_category,
+              pc.name AS project_name
        FROM orders o
        LEFT JOIN users u_client ON u_client.id = o.client_id
        LEFT JOIN users u_driver ON u_driver.id = o.driver_id
        LEFT JOIN material_types mt ON mt.id = o.material_type_id
+       LEFT JOIN vehicle_types vt ON vt.id = o.vehicle_type_id
+       LEFT JOIN projects_chantiers pc ON pc.id = o.project_id
        ${whereClause}
        ORDER BY o.created_at DESC
        LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
@@ -180,12 +482,15 @@ const getOrder = async (req, res, next) => {
               u_client.full_name AS client_name, u_client.phone AS client_phone,
               u_driver.full_name AS driver_name, u_driver.phone AS driver_phone,
               dp.truck_type, dp.truck_plate, dp.rating AS driver_rating_avg, dp.rating_count AS driver_rating_count,
-              mt.name AS material_name
+              mt.name AS material_name, vt.name AS vehicle_name, vt.category AS vehicle_category,
+              pc.name AS project_name, pc.address AS project_address
        FROM orders o
        LEFT JOIN users u_client ON u_client.id = o.client_id
        LEFT JOIN users u_driver ON u_driver.id = o.driver_id
        LEFT JOIN driver_profiles dp ON dp.user_id = o.driver_id
        LEFT JOIN material_types mt ON mt.id = o.material_type_id
+       LEFT JOIN vehicle_types vt ON vt.id = o.vehicle_type_id
+       LEFT JOIN projects_chantiers pc ON pc.id = o.project_id
        WHERE o.id = $1`,
       [req.params.id]
     );
@@ -275,15 +580,7 @@ const acceptOrder = async (req, res, next) => {
 /**
  * PATCH /api/orders/:id/status
  * Le chauffeur fait avancer la course. La validation finale appartient au client
- * (POST /api/orders/:id/confirm-delivery) — le chauffeur ne peut jamais "se valider" lui-même.
  */
-const DRIVER_TRANSITIONS = {
-  accepted: 'driver_en_route_pickup',
-  driver_en_route_pickup: 'loading',
-  loading: 'driver_en_route_delivery',
-  driver_en_route_delivery: 'delivered',
-};
-
 const updateOrderStatus = async (req, res, next) => {
   const { status } = req.body;
   if (req.user.role !== 'driver') {
@@ -299,7 +596,9 @@ const updateOrderStatus = async (req, res, next) => {
 
     if (order.driver_id !== req.user.id) throw new AppError('Accès refusé', 403);
     if (order.payment_status !== 'escrow_held') throw new AppError('Paiement non sécurisé pour cette commande', 409);
-    if (DRIVER_TRANSITIONS[order.status] !== status) {
+
+    const allowedNext = getDriverNextStatuses(order.order_type, order.status);
+    if (!allowedNext.includes(status)) {
       throw new AppError(`Transition de statut invalide: ${order.status} → ${status}`, 400);
     }
 
@@ -319,7 +618,10 @@ const updateOrderStatus = async (req, res, next) => {
     const io = req.app.get('io');
     events.notifyStatus(io, order, status);
     if (status === 'delivered' && io) {
-      io.to(`client_${order.client_id}`).emit('delivery_to_confirm', { order_id: order.id });
+      io.to(`client_${order.client_id}`).emit('delivery_to_confirm', {
+        order_id: order.id,
+        order_type: order.order_type,
+      });
     }
 
     res.json({ message: `Statut mis à jour: ${status}` });
@@ -332,9 +634,8 @@ const updateOrderStatus = async (req, res, next) => {
 };
 
 /**
- * POST /api/orders/:id/confirm-delivery   (client)
- * Bouton « Confirmer la réception » : libère l'argent bloqué —
- * 10 % pour la plateforme, 90 % pour le chauffeur.
+ * POST /api/orders/:id/confirm-delivery (client)
+ * Pour Transport de Matériaux : Le client confirme la réception -> libération du séquestre (90% chauffeur / 10% plateforme)
  */
 const confirmDelivery = async (req, res, next) => {
   try {
@@ -350,7 +651,7 @@ const confirmDelivery = async (req, res, next) => {
     }
 
     res.json({
-      message: 'Réception confirmée. Merci ! Le paiement est transmis au chauffeur.',
+      message: 'Livraison confirmée. Le paiement séquestré a été débloqué et transmis au chauffeur.',
       commission_amount: Number(result.order.commission_amount),
       driver_amount: Number(result.order.driver_amount),
       payout: result.settlement.status,
@@ -362,9 +663,111 @@ const confirmDelivery = async (req, res, next) => {
 };
 
 /**
- * POST /api/orders/:id/cancel   (client)
- * Avant paiement : simple annulation. Après paiement et tant qu'aucun chauffeur n'a accepté :
- * remboursement intégral.
+ * POST /api/orders/:id/confirm-rental (client)
+ * Pour Location d'Engins : L'argent reste bloqué tant que l'engin n'a pas travaillé la durée convenue.
+ * Le client valide les heures d'opération -> libération des fonds.
+ */
+const confirmRental = async (req, res, next) => {
+  try {
+    await query(
+      `UPDATE orders SET rental_hours_confirmed = true, updated_at = NOW() WHERE id = $1 AND client_id = $2`,
+      [req.params.id, req.user.id]
+    );
+
+    const result = await payments.confirmDelivery(req.params.id, req.user.id);
+    const io = req.app.get('io');
+
+    if (!result.alreadyDone && io) {
+      events.notifyStatus(io, result.order, 'validated');
+      io.to(`driver_${result.driverId}`).emit('order_validated', {
+        order_id: result.orderId,
+        driver_amount: result.order.driver_amount,
+      });
+    }
+
+    res.json({
+      message: 'Heures d\'opération de l\'engin validées ! Le paiement séquestré a été transmis au propriétaire de la machine.',
+      commission_amount: Number(result.order.commission_amount),
+      driver_amount: Number(result.order.driver_amount),
+      payout: result.settlement.status,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/orders/:id/confirm-evacuation (client)
+ * Pour Évacuation de gravats : L'argent est libéré uniquement lorsque le chauffeur confirme
+ * avoir déposé les gravats à la décharge et que le client valide que son chantier est propre.
+ */
+const confirmEvacuation = async (req, res, next) => {
+  try {
+    await query(
+      `UPDATE orders SET site_cleaned_confirmed = true, updated_at = NOW() WHERE id = $1 AND client_id = $2`,
+      [req.params.id, req.user.id]
+    );
+
+    const result = await payments.confirmDelivery(req.params.id, req.user.id);
+    const io = req.app.get('io');
+
+    if (!result.alreadyDone && io) {
+      events.notifyStatus(io, result.order, 'validated');
+      io.to(`driver_${result.driverId}`).emit('order_validated', {
+        order_id: result.orderId,
+        driver_amount: result.order.driver_amount,
+      });
+    }
+
+    res.json({
+      message: 'Propreté du chantier validée ! Le paiement séquestré a été transmis au chauffeur.',
+      commission_amount: Number(result.order.commission_amount),
+      driver_amount: Number(result.order.driver_amount),
+      payout: result.settlement.status,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/orders/:id/driver-confirm-dump (driver)
+ * Pour Évacuation : Le chauffeur confirme avoir déversé les gravats à la décharge officielle.
+ */
+const driverConfirmDump = async (req, res, next) => {
+  try {
+    const { rows } = await query('SELECT * FROM orders WHERE id = $1', [req.params.id]);
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    const order = rows[0];
+
+    if (order.driver_id !== req.user.id) throw new AppError('Accès refusé', 403);
+    if (order.order_type !== 'EVACUATION') throw new AppError('Action réservée aux ordres d\'évacuation', 400);
+
+    await query(
+      `UPDATE orders
+       SET dump_site_confirmed = true, status = 'delivered', delivered_at = NOW(), updated_at = NOW()
+       WHERE id = $1`,
+      [order.id]
+    );
+
+    const io = req.app.get('io');
+    events.notifyStatus(io, order, 'delivered');
+    if (io) {
+      io.to(`client_${order.client_id}`).emit('delivery_to_confirm', {
+        order_id: order.id,
+        order_type: 'EVACUATION',
+        message: 'Le chauffeur a vidé les gravats à la décharge. Veuillez valider la propreté du chantier pour libérer les fonds.',
+      });
+    }
+
+    res.json({ message: 'Déversement à la décharge confirmé. En attente de validation propreté par le client.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/orders/:id/cancel (client)
  */
 const cancelOrder = async (req, res, next) => {
   try {
@@ -393,11 +796,10 @@ const cancelOrder = async (req, res, next) => {
 
 /**
  * GET /api/orders/:id/tracking
- * Dernière position + trajet parcouru (client propriétaire, chauffeur assigné ou admin)
  */
 const getTracking = async (req, res, next) => {
   try {
-    const { rows } = await query('SELECT id, client_id, driver_id, status FROM orders WHERE id = $1', [req.params.id]);
+    const { rows } = await query('SELECT id, client_id, driver_id, status, route_deviation_alert, route_deviation_details FROM orders WHERE id = $1', [req.params.id]);
     if (!rows.length) throw new AppError('Commande introuvable', 404);
     const order = rows[0];
     const allowed = req.user.role === 'admin'
@@ -413,7 +815,14 @@ const getTracking = async (req, res, next) => {
       [order.id]
     );
     const route = points.rows.map((p) => ({ lat: Number(p.lat), lng: Number(p.lng), recorded_at: p.recorded_at }));
-    res.json({ order_id: order.id, status: order.status, route, last: route[route.length - 1] || null });
+    res.json({
+      order_id: order.id,
+      status: order.status,
+      route,
+      last: route[route.length - 1] || null,
+      route_deviation_alert: order.route_deviation_alert,
+      route_deviation_details: order.route_deviation_details,
+    });
   } catch (error) {
     next(error);
   }
@@ -421,13 +830,11 @@ const getTracking = async (req, res, next) => {
 
 /**
  * Requête SQL commune pour récupérer une commande avec toutes les infos
- * nécessaires à la génération d'un reçu.
  */
 const fetchOrderForReceipt = async (orderId) => {
   const result = await query(
     `SELECT
        o.*,
-       -- Client
        u_c.full_name  AS client_full_name,
        u_c.prenom     AS client_prenom,
        u_c.nom        AS client_nom,
@@ -435,42 +842,37 @@ const fetchOrderForReceipt = async (orderId) => {
        u_c.email      AS client_email,
        u_c.date_naissance AS client_date_naissance,
        u_c.adresse    AS client_adresse,
-       -- Conducteur
        u_d.full_name  AS driver_full_name,
        u_d.phone      AS driver_phone,
        u_d.prenom     AS driver_prenom,
        u_d.nom        AS driver_nom,
-       -- Profil conducteur
        dp.truck_type,
        dp.truck_plate,
        dp.momo_number AS driver_momo_number,
        dp.momo_provider AS driver_momo_provider,
        dp.date_naissance AS driver_date_naissance,
        dp.adresse     AS driver_adresse,
-       -- Matériau
-       mt.name        AS material_name
+       mt.name        AS material_name,
+       vt.name        AS vehicle_name,
+       pc.name        AS project_name
      FROM orders o
      LEFT JOIN users u_c ON u_c.id = o.client_id
      LEFT JOIN users u_d ON u_d.id = o.driver_id
      LEFT JOIN driver_profiles dp ON dp.user_id = o.driver_id
      LEFT JOIN material_types mt ON mt.id = o.material_type_id
+     LEFT JOIN vehicle_types vt ON vt.id = o.vehicle_type_id
+     LEFT JOIN projects_chantiers pc ON pc.id = o.project_id
      WHERE o.id = $1`,
     [orderId]
   );
   return result.rows[0] || null;
 };
 
-/**
- * GET /api/orders/:id/receipt
- * Reçu client exportable en PDF.
- * Accessible par : le client propriétaire ou un admin.
- */
 const getReceiptClient = async (req, res, next) => {
   try {
     const order = await fetchOrderForReceipt(req.params.id);
     if (!order) throw new AppError('Commande introuvable', 404);
 
-    // Contrôle d'accès : client propriétaire ou admin
     if (req.user.role === 'driver') {
       throw new AppError('Accès refusé. Utilisez /receipt/driver pour votre reçu.', 403);
     }
@@ -484,17 +886,11 @@ const getReceiptClient = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/orders/:id/receipt/driver
- * Reçu conducteur exportable en PDF (avec détail commission).
- * Accessible par : le conducteur assigné ou un admin.
- */
 const getReceiptDriver = async (req, res, next) => {
   try {
     const order = await fetchOrderForReceipt(req.params.id);
     if (!order) throw new AppError('Commande introuvable', 404);
 
-    // Contrôle d'accès : conducteur assigné ou admin
     if (req.user.role === 'client') {
       throw new AppError('Accès refusé. Utilisez /receipt pour votre reçu.', 403);
     }
@@ -514,11 +910,15 @@ const getReceiptDriver = async (req, res, next) => {
 module.exports = {
   estimatePrice,
   createOrder,
+  createBulkOrders,
   getOrders,
   getOrder,
   acceptOrder,
   updateOrderStatus,
   confirmDelivery,
+  confirmRental,
+  confirmEvacuation,
+  driverConfirmDump,
   cancelOrder,
   getTracking,
   getReceiptClient,
