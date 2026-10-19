@@ -1,7 +1,7 @@
-# LogiTruck
+# BenneGo
 
 Plateforme de livraison de matériaux de chantier (sable, gravier, latérite…) au Bénin, avec **paiement en séquestre** :
-le client paie à la commande, l'argent reste bloqué sur LogiTruck, et n'est réparti qu'après sa confirmation de réception.
+le client paie à la commande, l'argent reste bloqué sur BenneGo, et n'est réparti qu'après sa confirmation de réception.
 
 ## Contenu
 
