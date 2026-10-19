@@ -1,0 +1,21 @@
+### 🎨 L'Écosystème de marque BenneGo                                                                                                                                                    
+  
+   Produit / Interface                                       │ Nom officiel                                             │ Cible & Usage
+  ───────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────
+   📱 App Particuliers & Artisans                            │ BenneGo                                                  │ Commande rapide de sable, gravier, bennes & évacuation en direct
+   🏢 Espace Entreprises & Promoteurs                        │ BenneGo Business (ou Pro)                                │ Factures proforma, séquestre bancaire, rotations groupées
+   🚛 App Conducteurs                                        │ BenneGo Driver                                           │ Réception des courses, GPS certifié, upload PoD
+   🛡 Console d'Administration                                │ BenneGo Console (ou Admin)                               │ Gestion des séquestres, reversements MoMo, litiges
+  ──────
+  ### 📣 Idées de Slogans & Accroches                                                                                                                                                      
+  
+  • Grand public & Artisans :
+  │ « BenneGo : Votre sable et gravier livrés en un clic, zéro risque. »
+  
+  • Chauffeurs :
+  │ « BenneGo Driver : Plus de courses, paiement garanti à chaque voyage. »
+  
+  • B2B / Entreprises :
+  │ « BenneGo Business : Sécurisez la logistique lourde de vos chantiers. »
+  
+
