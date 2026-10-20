@@ -4,7 +4,7 @@ import {
   NEXT_JOB_STATUS,
   type JobStatus,
   type OrderType,
-} from "@/shared/logitruck";
+} from "@/shared/bennego";
 
 /** Course telle que renvoyée par l'API, normalisée pour l'interface. */
 export type JobLike = {

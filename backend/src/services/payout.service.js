@@ -26,7 +26,7 @@ const execute = async ({ orderId, orderNumber, amount, momoNumber, momoProvider 
         currency: 'XOF',
         phone: momoNumber,
         network: String(momoProvider || '').toUpperCase(),
-        reason: `LogiTruck - Course ${orderNumber}`,
+        reason: `BenneGo - Course ${orderNumber}`,
       },
       {
         headers: { Authorization: `Bearer ${process.env.PAYOUT_WEBHOOK_TOKEN || ''}` },

@@ -1,0 +1,17 @@
+# Dépendances et builds
+node_modules/
+dist/
+build/
+coverage/
+.expo/
+
+# Secrets et environnement (garder uniquement les .env.example)
+.env
+.env.*
+!.env.example
+
+# Divers
+*.log
+*~
+.DS_Store
+uploads/

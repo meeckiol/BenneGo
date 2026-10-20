@@ -12,7 +12,7 @@ const setupSocketIO = (io) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Token requis'));
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
       const { rows } = await query('SELECT id, full_name, role, is_active FROM users WHERE id = $1', [decoded.userId]);
       if (!rows.length || !rows[0].is_active) return next(new Error('Compte inactif'));
       socket.userId = rows[0].id;
@@ -114,7 +114,7 @@ const setupSocketIO = (io) => {
     socket.on('chat_message', async (data) => {
       const { order_id, message } = data || {};
       if (!order_id || !message || typeof message !== 'string') return;
-      const trimmed = message.trim();
+      const trimmed = message.trim().slice(0, 1000);
       if (!trimmed) return;
       try {
         const { rows: orderRows } = await query('SELECT client_id, driver_id FROM orders WHERE id = $1', [order_id]);
@@ -145,6 +145,14 @@ const setupSocketIO = (io) => {
       const orderId = data?.order_id || data;
       if (!orderId) return;
       try {
+        const { rows: orderRows } = await query('SELECT client_id, driver_id FROM orders WHERE id = $1', [orderId]);
+        const order = orderRows[0];
+        const allowed = order && (
+          socket.userRole === 'admin'
+          || (socket.userRole === 'client' && order.client_id === socket.userId)
+          || (socket.userRole === 'driver' && order.driver_id === socket.userId)
+        );
+        if (!allowed) return socket.emit('error_message', { error: 'Accès refusé au chat de cette commande' });
         const { rows } = await query(
           `SELECT id, order_id, sender_id, sender_name, sender_role, message, created_at
            FROM order_chat_messages

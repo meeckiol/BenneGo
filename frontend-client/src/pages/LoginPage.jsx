@@ -44,6 +44,7 @@ export default function LoginPage() {
       <div style={styles.card}>
         {/* Logo */}
         <div style={styles.logo}>
+          <img src="/logo-icon.png" alt="BenneGo" style={{ width: 72, height: 72, borderRadius: 16, marginBottom: 12, boxShadow: "0 8px 24px rgba(255,107,0,0.25)" }} />
           <h1 style={styles.logoText}>BenneGo</h1>
           <p style={styles.logoSub}>Livraison de matériaux & BTP au Bénin</p>
         </div>
@@ -77,13 +78,15 @@ export default function LoginPage() {
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
 
-          <button
-            type="button"
-            onClick={handleDemoAccess}
-            style={styles.demoButton}
-          >
-            ⚡ Accès Démo Direct (Voir le Dashboard)
-          </button>
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              onClick={handleDemoAccess}
+              style={styles.demoButton}
+            >
+              Accès Démo Direct (Voir le Dashboard)
+            </button>
+          )}
         </form>
 
         <p style={styles.footer}>

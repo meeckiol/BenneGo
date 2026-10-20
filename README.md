@@ -49,9 +49,9 @@ Appli mobile : `cd mobile-driver && cp .env.example .env && npm install && npx e
 ## Tests
 
 ```bash
-docker exec logitruck_postgres createdb -U logitruck_user logitruck_test
-DB_NAME=logitruck_test npm run migrate                      # depuis la racine, avec backend/.env renseigné
-DB_NAME=logitruck_test npm test
+docker exec bennego_postgres createdb -U bennego_user bennego_test
+DB_NAME=bennego_test npm run migrate                      # depuis la racine, avec backend/.env renseigné
+DB_NAME=bennego_test npm test
 ```
 ⚠️ Les tests **vident les tables** : ils refusent de s'exécuter si le nom de la base ne contient pas « test ».
 

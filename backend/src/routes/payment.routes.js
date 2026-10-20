@@ -10,7 +10,11 @@ const { AppError } = require('../middlewares/error.middleware');
 const router = express.Router();
 
 // POST /api/payments/webhook/kkiapay — appelé par KKiaPay (authentifié par x-kkiapay-secret)
-router.post('/webhook/kkiapay', payments.handleKKiaPayWebhook);
+const webhookLimiter = require('express-rate-limit')({
+  windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Trop de requêtes webhook' },
+});
+router.post('/webhook/kkiapay', webhookLimiter, payments.handleKKiaPayWebhook);
 
 router.use(authenticate);
 
@@ -41,7 +45,7 @@ router.post('/orders/:orderId/confirm', requireRole('client'), [
       events.notifyNewOrder(io, order);
     }
     res.json({
-      message: 'Paiement sécurisé. Votre argent est bloqué sur LogiTruck jusqu\'à la confirmation de la livraison.',
+      message: 'Paiement sécurisé. Votre argent est bloqué sur BenneGo jusqu\'à la confirmation de la livraison.',
       payment_status: order.payment_status,
       status: order.status,
     });

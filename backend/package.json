@@ -1,7 +1,7 @@
 {
-  "name": "logitruck-backend",
+  "name": "bennego-backend",
   "version": "1.0.0",
-  "description": "Backend API LogiTruck",
+  "description": "Backend API BenneGo",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",

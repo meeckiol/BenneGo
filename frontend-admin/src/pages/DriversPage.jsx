@@ -52,11 +52,11 @@ export default function DriversPage() {
     <div style={s.page}>
       {/* Résumé */}
       <div style={s.summaryRow}>
-        <SummaryCard icon="🚛" label="Total chauffeurs" value={drivers.length} />
-        <SummaryCard icon="🟢" label="Disponibles" value={drivers.filter((d) => d.is_available).length} color="#10B981" />
-        <SummaryCard icon="🔴" label="Indisponibles" value={drivers.filter((d) => !d.is_available).length} color="#EF4444" />
+        <SummaryCard icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>} label="Total chauffeurs" value={drivers.length} />
+        <SummaryCard icon={<span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: '50%', background: '#10B981' }} />} label="Disponibles" value={drivers.filter((d) => d.is_available).length} color="#10B981" />
+        <SummaryCard icon={<span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: '50%', background: '#EF4444' }} />} label="Indisponibles" value={drivers.filter((d) => !d.is_available).length} color="#EF4444" />
         <SummaryCard
-          icon="⭐"
+          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>}
           label="Note moyenne"
           value={drivers.length > 0
             ? (drivers.reduce((s, d) => s + parseFloat(d.rating || 5), 0) / drivers.length).toFixed(1)
@@ -68,12 +68,12 @@ export default function DriversPage() {
       <div style={s.tableCard}>
         <div style={s.tableHeader}>
           <input
-            placeholder="🔍 Nom, prénom, téléphone, plaque, adresse..."
+            placeholder="Nom, prénom, téléphone, plaque, adresse..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={s.searchInput}
           />
-          <button onClick={load} style={s.refreshBtn}>🔄</button>
+          <button onClick={load} style={s.refreshBtn}>Actualiser</button>
         </div>
 
         <div style={s.tableWrapper}>
@@ -104,8 +104,8 @@ export default function DriversPage() {
                   </td>
                   <td style={s.td}>
                     <span style={s.truckType}>
-                      {driver.truck_type === 'double_benne' ? '🟠 Double benne' :
-                       driver.truck_type === 'simple_benne' ? '🔵 Benne simple' : '🟣 Plateau'}
+                      {driver.truck_type === 'double_benne' ? 'Double benne' :
+                       driver.truck_type === 'simple_benne' ? 'Benne simple' : 'Plateau'}
                     </span>
                   </td>
                   <td style={{ ...s.td, fontWeight: '600' }}>{driver.truck_plate}</td>
@@ -113,7 +113,7 @@ export default function DriversPage() {
                     {driver.total_trips || 0}
                   </td>
                   <td style={{ ...s.td, textAlign: 'center' }}>
-                    <span style={s.rating}>⭐ {parseFloat(driver.rating || 5).toFixed(1)}</span>
+                    <span style={s.rating}>{parseFloat(driver.rating || 5).toFixed(1)} / 5</span>
                   </td>
                   <td style={s.td}>
                     <div style={s.momoInfo}>
@@ -150,7 +150,7 @@ export default function DriversPage() {
                         borderColor: driver.is_active ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)',
                       }}
                     >
-                      {toggling === driver.id ? '⏳' : driver.is_active ? 'Désactiver' : 'Activer'}
+                      {toggling === driver.id ? 'Patientez...' : driver.is_active ? 'Désactiver' : 'Activer'}
                     </button>
                   </td>
                 </tr>
@@ -169,7 +169,7 @@ export default function DriversPage() {
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
             <div style={s.modalHeader}>
               <h3 style={{ color: 'white', margin: 0 }}>
-                🚛 {selected.prenom || ''} {selected.nom || selected.full_name}
+                {selected.prenom || ''} {selected.nom || selected.full_name}
               </h3>
               <button onClick={() => setSelected(null)} style={s.closeBtn}>✕</button>
             </div>
@@ -188,7 +188,7 @@ export default function DriversPage() {
                   : 'Plateau'} />
               <InfoRow label="Plaque" value={selected.truck_plate} />
               <InfoRow label="Courses effectuées" value={selected.total_trips || 0} />
-              <InfoRow label="Note moyenne" value={`⭐ ${parseFloat(selected.rating || 5).toFixed(1)} (${selected.rating_count || 0} avis)`} />
+              <InfoRow label="Note moyenne" value={`${parseFloat(selected.rating || 5).toFixed(1)} / 5 (${selected.rating_count || 0} avis)`} />
 
               <SectionTitle>Mobile Money</SectionTitle>
               <InfoRow label="Opérateur"
@@ -197,8 +197,8 @@ export default function DriversPage() {
               <InfoRow label="Numéro" value={selected.momo_number || '—'} />
 
               <SectionTitle>Statut</SectionTitle>
-              <InfoRow label="Disponible" value={selected.is_available ? '🟢 Oui' : '🔴 Non'} />
-              <InfoRow label="Compte" value={selected.is_active ? '✅ Actif' : '❌ Inactif'} />
+              <InfoRow label="Disponible" value={selected.is_available ? 'Oui' : 'Non'} />
+              <InfoRow label="Compte" value={selected.is_active ? 'Actif' : 'Inactif'} />
             </div>
           </div>
         </div>

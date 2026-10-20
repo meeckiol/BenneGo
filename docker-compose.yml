@@ -2,10 +2,10 @@
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: logitruck_postgres
+    container_name: bennego_postgres
     environment:
-      POSTGRES_DB: logitruck_db
-      POSTGRES_USER: logitruck_user
+      POSTGRES_DB: bennego_db
+      POSTGRES_USER: bennego_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans .env}
     ports:
       - "127.0.0.1:5433:5432"   # accessible uniquement depuis cette machine
@@ -16,7 +16,7 @@ services:
 
   adminer:
     image: adminer
-    container_name: logitruck_adminer
+    container_name: bennego_adminer
     profiles: ["tools"]          # docker compose --profile tools up -d
     ports:
       - "127.0.0.1:8081:8080"

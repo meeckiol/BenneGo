@@ -2,7 +2,9 @@
  * Validation de la configuration au démarrage : on préfère refuser de démarrer
  * plutôt que de tourner avec un secret manquant ou faible.
  */
-const REQUIRED = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'JWT_SECRET'];
+const REQUIRED = ['JWT_SECRET'];
+// Base de données : soit DATABASE_URL (Render, etc.), soit les variables DB_* séparées.
+const REQUIRED_DB = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
 const REQUIRED_IN_PRODUCTION = [
   'CORS_ORIGIN',
   'KKIAPAY_PUBLIC_KEY', 'KKIAPAY_PRIVATE_KEY', 'KKIAPAY_SECRET', 'KKIAPAY_WEBHOOK_SECRET',
@@ -12,6 +14,9 @@ const isProduction = () => process.env.NODE_ENV === 'production';
 
 const validateEnv = () => {
   const missing = REQUIRED.filter((k) => !process.env[k]);
+  if (!process.env.DATABASE_URL) {
+    missing.push(...REQUIRED_DB.filter((k) => !process.env[k]));
+  }
   if (isProduction()) {
     missing.push(...REQUIRED_IN_PRODUCTION.filter((k) => !process.env[k]));
   }

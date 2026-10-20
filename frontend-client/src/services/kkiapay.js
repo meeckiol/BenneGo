@@ -22,12 +22,24 @@ const unlisten = (event, cb) => {
 };
 
 /**
- * Ouvre le paiement KKiaPay pour une commande. L'argent est BLOQUÉ en séquestre sur LogiTruck :
+ * Ouvre le paiement KKiaPay pour une commande. L'argent est BLOQUÉ en séquestre sur BenneGo :
  * il n'est versé au chauffeur qu'après votre confirmation de réception.
  * @returns {Promise<{ok: boolean, cancelled?: boolean}>}
  */
 export async function payOrder(orderId) {
   const { data: cfg } = await api.get(`/payments/orders/${orderId}/checkout`);
+
+  // En environnement local sans clé API KKiaPay configurée : simulation immédiate pour test
+  if (!cfg.api_key) {
+    try {
+      const mockTransId = `TEST_KKIAPAY_${Date.now()}`;
+      await api.post(`/payments/orders/${orderId}/confirm`, { transaction_id: mockTransId });
+      return { ok: true };
+    } catch {
+      return { ok: false };
+    }
+  }
+
   await loadWidget();
 
   return new Promise((resolve) => {
@@ -61,7 +73,7 @@ export async function payOrder(orderId) {
       phone: cfg.phone,
       name: cfg.name,
       data: cfg.order_id,        // renvoyé par le webhook pour retrouver la commande
-      reason: `LogiTruck ${cfg.order_number}`,
+      reason: `BenneGo ${cfg.order_number}`,
       theme: '#FF6B00',
     });
   });

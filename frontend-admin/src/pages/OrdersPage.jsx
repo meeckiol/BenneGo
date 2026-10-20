@@ -53,7 +53,7 @@ export default function OrdersPage() {
     setReleasing(orderId);
     try {
       await api.post(`/payments/orders/${orderId}/release`);
-      toast.success('Fonds libérés vers le chauffeur via KKiaPay ✅');
+      toast.success('Fonds libérés vers le chauffeur via KKiaPay');
       loadOrders();
     } finally {
       setReleasing(null);
@@ -72,7 +72,7 @@ export default function OrdersPage() {
       {/* Filtres */}
       <div style={s.toolbar}>
         <input
-          placeholder="🔍 Rechercher (numéro, client, chauffeur)..."
+          placeholder="Rechercher (numéro, client, chauffeur)..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={s.searchInput}
@@ -101,7 +101,7 @@ export default function OrdersPage() {
           <span style={s.tableTitle}>
             {loading ? 'Chargement...' : `${filtered.length} commande(s)`}
           </span>
-          <button onClick={loadOrders} style={s.refreshBtn}>🔄 Actualiser</button>
+          <button onClick={loadOrders} style={s.refreshBtn}>Actualiser</button>
         </div>
 
         <div style={s.tableWrapper}>
@@ -124,14 +124,14 @@ export default function OrdersPage() {
                       onClick={() => setSelectedOrder(order)}
                       title="Cliquer pour voir les détails et photos PoD"
                     >
-                      {order.order_number} 🔍
+                      {order.order_number}
                     </td>
                     <td style={s.td}>{order.client_name || '—'}</td>
                     <td style={s.td}>{order.driver_name || <span style={s.noDriver}>Non assigné</span>}</td>
                     <td style={{ ...s.td, maxWidth: '200px' }}>
                       <div style={s.addresses}>
-                        <span style={s.addrFrom}>📍 {order.pickup_address?.slice(0, 25)}...</span>
-                        <span style={s.addrTo}>🏗️ {order.delivery_address?.slice(0, 25)}...</span>
+                        <span style={s.addrFrom}>{order.pickup_address?.slice(0, 25)}...</span>
+                        <span style={s.addrTo}>{order.delivery_address?.slice(0, 25)}...</span>
                       </div>
                     </td>
                     <td style={{ ...s.td, fontWeight: '700', color: 'white' }}>
@@ -154,7 +154,7 @@ export default function OrdersPage() {
                         style={s.detailBtn}
                         title="Voir photos PoD"
                       >
-                        📸 PoD
+                        PoD
                       </button>
                       {canRelease && (
                         <button
@@ -162,7 +162,7 @@ export default function OrdersPage() {
                           disabled={releasing === order.id}
                           style={s.releaseBtn}
                         >
-                          {releasing === order.id ? '⏳' : '💸 Libérer'}
+                          {releasing === order.id ? 'Traitement...' : 'Libérer'}
                         </button>
                       )}
                     </td>
@@ -182,7 +182,7 @@ export default function OrdersPage() {
         <div style={s.modalOverlay} onClick={() => setSelectedOrder(null)}>
           <div style={s.modalCard} onClick={(e) => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h3 style={s.modalTitle}>📦 Détail commande {selectedOrder.order_number}</h3>
+              <h3 style={s.modalTitle}>Détail commande {selectedOrder.order_number}</h3>
               <button onClick={() => setSelectedOrder(null)} style={s.modalCloseBtn}>✕</button>
             </div>
 
@@ -195,7 +195,7 @@ export default function OrdersPage() {
               </div>
 
               <div style={s.podBox}>
-                <h4 style={s.podTitle}>📸 Preuves de Livraison (PoD)</h4>
+                <h4 style={s.podTitle}>Preuves de Livraison (PoD)</h4>
                 {selectedOrder.pod_submitted_at && (
                   <p style={s.podMeta}>
                     Soumis le : {new Date(selectedOrder.pod_submitted_at).toLocaleString('fr-FR')}
@@ -227,10 +227,10 @@ export default function OrdersPage() {
 }
 
 const PAYMENT_STYLES = {
-  unpaid:       { label: '⏳ Non payé',   color: '#F59E0B' },
-  escrow_held:  { label: '🔒 Escrow',     color: '#3B82F6' },
-  released:     { label: '✅ Libéré',     color: '#10B981' },
-  refunded:     { label: '↩ Remboursé',  color: '#EF4444' },
+  unpaid:       { label: 'Non payé',   color: '#F59E0B' },
+  escrow_held:  { label: 'Escrow',     color: '#3B82F6' },
+  released:     { label: 'Libéré',     color: '#10B981' },
+  refunded:     { label: 'Remboursé',  color: '#EF4444' },
 };
 
 function PaymentBadge({ status }) {

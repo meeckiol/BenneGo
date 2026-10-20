@@ -26,7 +26,7 @@ export default function NewOrderPage() {
     project_id: '',
     vehicle_type_id: '',
 
-    // 🏗️ 1. Matériaux
+    // 1. Matériaux
     material_type_id: '',
     quantity_m3: 16,
     material_description: '',
@@ -38,12 +38,12 @@ export default function NewOrderPage() {
     delivery_lat: DEFAULT_COTONOU.lat,
     delivery_lng: DEFAULT_COTONOU.lng,
 
-    // 🚜 2. Location Engins
+    // 2. Location Engins
     machinery_type: 'excavatrice',
     duration_hours: 8,
     rental_start_date: new Date().toISOString().split('T')[0],
 
-    // 📦 3. Évacuation Gravats
+    // 3. Évacuation Gravats
     evacuation_debris_type: 'Gravats de démolition et béton',
     evacuation_photo_url: '',
     rotations: 2,
@@ -161,7 +161,7 @@ export default function NewOrderPage() {
       if (res.ok) {
         toast.success('Paiement sécurisé en séquestre ! Un prestataire va accepter sous peu.');
       } else {
-        toast('Paiement non finalisé : vous pouvez régler depuis votre espace de suivi.', { icon: 'ℹ️' });
+        toast('Paiement non finalisé : vous pouvez régler depuis votre espace de suivi.');
       }
     } catch (err) {
       if (err?.message && !err.response) toast.error(err.message);
@@ -176,9 +176,9 @@ export default function NewOrderPage() {
       <header style={styles.header}>
         <button onClick={() => navigate(-1)} style={styles.back}>← Retour</button>
         <h2 style={styles.title}>
-          {orderType === 'MATERIAL' && '🏗️ Transport de Matériaux'}
-          {orderType === 'RENTAL' && '🚜 Location d\'Engin Lourd'}
-          {orderType === 'EVACUATION' && '📦 Évacuation de Gravats'}
+          {orderType === 'MATERIAL' && 'Transport de Matériaux'}
+          {orderType === 'RENTAL' && 'Location d\'Engin Lourd'}
+          {orderType === 'EVACUATION' && 'Évacuation de Gravats'}
         </h2>
       </header>
 
@@ -195,7 +195,7 @@ export default function NewOrderPage() {
                 color: orderType === 'MATERIAL' ? 'white' : '#475569',
               }}
             >
-              🏗️ Matériaux
+              Matériaux
             </button>
             <button
               type="button"
@@ -206,7 +206,7 @@ export default function NewOrderPage() {
                 color: orderType === 'RENTAL' ? 'white' : '#475569',
               }}
             >
-              🚜 Louer un Engin
+              Louer un Engin
             </button>
             <button
               type="button"
@@ -217,7 +217,7 @@ export default function NewOrderPage() {
                 color: orderType === 'EVACUATION' ? 'white' : '#475569',
               }}
             >
-              📦 Évacuer Gravats
+              Évacuer Gravats
             </button>
           </div>
         )}
@@ -227,7 +227,7 @@ export default function NewOrderPage() {
           <form onSubmit={getEstimate} style={styles.form}>
             {/* Rattachement à un chantier B2B optionnel */}
             {projects.length > 0 && (
-              <Section title="🏢 Chantier Entreprise (Optionnel)">
+              <Section title="Chantier Entreprise (Optionnel)">
                 <Field label="Associer à un projet de chantier">
                   <select
                     name="project_id"
@@ -552,7 +552,7 @@ export default function NewOrderPage() {
               </div>
 
               <div style={styles.commission}>
-                🔒 <strong>Règle d'or du Séquestre BenneGo :</strong>
+                <strong>Règle d'or du Séquestre BenneGo :</strong>
                 {orderType === 'RENTAL' && ' L\'argent reste bloqué tant que l\'engin n\'a pas accompli les heures sur le chantier. Une fois validé par vous, 90% sont reversés au propriétaire.'}
                 {orderType === 'EVACUATION' && ' L\'argent est libéré uniquement après dépôt vérifié à la décharge et confirmation que votre chantier est débarrassé.'}
                 {orderType === 'MATERIAL' && ' L\'argent est débloqué au chauffeur uniquement après déchargement et vérification des matériaux sur votre chantier.'}

@@ -1,4 +1,4 @@
-# LogiTruck — Suivi d'implémentation des features manquantes
+# BenneGo — Suivi d'implémentation des features manquantes
 
 > Dernière mise à jour : 2026-10-19
 

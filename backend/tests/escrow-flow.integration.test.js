@@ -21,17 +21,17 @@ const kkiapay = require('../src/providers/kkiapay');
 const { query, pool } = require('../src/config/database');
 const { app } = require('../src/server');
 
-// 20 km, benne simple : 10 000 + 30 000 + 5 000 = 45 000 → minimum 50 000 FCFA
-const TOTAL = 50000;
-const COMMISSION = 5000;   // 10 %
-const DRIVER_SHARE = 45000; // 90 %
+// 20 km, benne simple : 10 000 + 30 000 + 5 000 = 45 000 → minimum 35 000 FCFA, donc 45 000 FCFA
+const TOTAL = 45000;
+const COMMISSION = 4500;   // 10 %
+const DRIVER_SHARE = 40500; // 90 %
 
 let seq = 0;
 const nextPhone = () => `+2299${String(Date.now()).slice(-5)}${String(++seq).padStart(2, '0')}`;
 
 const register = async (role, name) => {
   const res = await request(app).post('/api/auth/register')
-    .send({ phone: nextPhone(), full_name: name, password: 'Motdepasse123', role });
+    .send({ phone: nextPhone(), full_name: name, prenom: name, nom: 'Test', date_naissance: '1990-01-01', adresse: 'Cotonou', password: 'Motdepasse123', role });
   expect(res.status).toBe(201);
   return { token: res.body.token, id: res.body.user.id, auth: { Authorization: `Bearer ${res.body.token}` } };
 };
@@ -124,7 +124,7 @@ describe('parcours complet : paiement bloqué → livraison → confirmation →
     const o = await dbOrder(order.id);
     expect(o.payment_status).toBe('escrow_held');
     expect(o.status).toBe('pending');
-    expect(await txOf(order.id)).toEqual([{ type: 'escrow_hold', amount: 50000, status: 'success' }]);
+    expect(await txOf(order.id)).toEqual([{ type: 'escrow_hold', amount: 45000, status: 'success' }]);
 
     const list = await request(app).get('/api/orders').set(driver.auth).expect(200);
     expect(list.body.orders.map((x) => x.id)).toContain(order.id);
@@ -201,8 +201,8 @@ describe('parcours complet : paiement bloqué → livraison → confirmation →
     expect(o.payment_status).toBe('payout_pending'); // mode manuel : en attente du versement admin
 
     const tx = await txOf(order.id);
-    expect(tx.filter((t) => t.type === 'platform_fee')).toEqual([{ type: 'platform_fee', amount: 5000, status: 'success' }]);
-    expect(tx.filter((t) => t.type === 'driver_payout')).toEqual([{ type: 'driver_payout', amount: 45000, status: 'pending' }]);
+    expect(tx.filter((t) => t.type === 'platform_fee')).toEqual([{ type: 'platform_fee', amount: 4500, status: 'success' }]);
+    expect(tx.filter((t) => t.type === 'driver_payout')).toEqual([{ type: 'driver_payout', amount: 40500, status: 'pending' }]);
 
     const summary = await request(app).get('/api/drivers/me/summary').set(driver.auth).expect(200);
     expect(summary.body.total_trips).toBe(1);
@@ -214,7 +214,7 @@ describe('parcours complet : paiement bloqué → livraison → confirmation →
     const admin = { Authorization: `Bearer ${login.body.token}` };
 
     const due = await request(app).get('/api/admin/payouts').set(admin).expect(200);
-    expect(due.body.payouts.find((p) => p.order_id === order.id)).toMatchObject({ driver_amount: 45000 });
+    expect(due.body.payouts.find((p) => p.order_id === order.id)).toMatchObject({ driver_amount: 40500 });
 
     await request(app).post(`/api/payments/orders/${order.id}/mark-paid`).set(admin).send({}).expect(400);
     await request(app).post(`/api/payments/orders/${order.id}/mark-paid`).set(admin).send({ reference: 'MOMO-8841' }).expect(200);
@@ -353,7 +353,7 @@ describe('reversement automatique (PAYOUT_MODE=webhook)', () => {
     await Promise.all([payments.settlePayout(order.id), payments.settlePayout(order.id)]);
 
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0][1]).toMatchObject({ amount: 45000, idempotency_key: `payout-${order.id}`, network: 'MTN' });
+    expect(spy.mock.calls[0][1]).toMatchObject({ amount: 40500, idempotency_key: `payout-${order.id}`, network: 'MTN' });
     const o = await dbOrder(order.id);
     expect([o.status, o.payment_status]).toEqual(['completed', 'released']);
   });

@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { JobCard } from "@/components/mission/job-card";
-import { EmptyState, LoadingState, SectionHeading } from "@/components/ui/logitruck-ui";
+import { EmptyState, LoadingState, SectionHeading } from "@/components/ui/bennego-ui";
 import { formatMoney } from "@/lib/domain/jobs";
 import { useDriverDashboard, useJobs } from "@/hooks/use-driver-dashboard";
 

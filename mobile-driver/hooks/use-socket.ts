@@ -5,7 +5,7 @@ import { API_URL } from "@/lib/api";
 import { getToken } from "@/lib/session";
 
 /**
- * Événements Socket.IO émis par le backend LogiTruck.
+ * Événements Socket.IO émis par le backend BenneGo.
  * Documentés dans backend/src/services/order-events.js
  */
 interface ServerToClientEvents {

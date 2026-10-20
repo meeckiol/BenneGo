@@ -175,25 +175,25 @@ export default function EnterprisePage() {
             onClick={() => setActiveTab('projects')}
             style={{ ...styles.navTab, ...(activeTab === 'projects' ? styles.navTabActive : {}) }}
           >
-            🏗️ Mes Chantiers ({projects.length})
+            Mes Chantiers ({projects.length})
           </button>
           <button
             onClick={() => setActiveTab('bulk')}
             style={{ ...styles.navTab, ...(activeTab === 'bulk' ? styles.navTabActive : {}) }}
           >
-            📅 Planification Massive (Bulk)
+            Planification Massive (Bulk)
           </button>
           <button
             onClick={() => setActiveTab('subscription')}
             style={{ ...styles.navTab, ...(activeTab === 'subscription' ? styles.navTabActive : {}) }}
           >
-            💳 Abonnements B2B & Packs
+            Abonnements B2B & Packs
           </button>
           <button
             onClick={() => setActiveTab('company')}
             style={{ ...styles.navTab, ...(activeTab === 'company' ? styles.navTabActive : {}) }}
           >
-            🏢 Profil Entreprise
+            Profil Entreprise
           </button>
         </div>
 
@@ -285,13 +285,13 @@ export default function EnterprisePage() {
                     <div style={styles.projectTop}>
                       <div>
                         <h4 style={styles.projectName}>{p.name}</h4>
-                        <span style={styles.projectAddress}>📍 {p.address || 'Coordonnées GPS'}</span>
+                        <span style={styles.projectAddress}>{p.address || 'Coordonnées GPS'}</span>
                       </div>
                       <button
                         onClick={() => downloadCSV(p.id, p.name)}
                         style={styles.csvBtn}
                       >
-                        📄 Exporter CSV
+                        Exporter CSV
                       </button>
                     </div>
 
@@ -438,7 +438,7 @@ export default function EnterprisePage() {
                 </div>
 
                 <div style={styles.bulkNotice}>
-                  💡 Total estimé : <strong>{bulkForm.rotations_per_day * bulkForm.number_of_days} courses programmées</strong>. Une facture proforma globale vous sera délivrée avec validation manuelle par virement / chèque.
+                  Total estimé : <strong>{bulkForm.rotations_per_day * bulkForm.number_of_days} courses programmées</strong>. Une facture proforma globale vous sera délivrée avec validation manuelle par virement / chèque.
                 </div>
 
                 <button type="submit" style={styles.actionBtn}>

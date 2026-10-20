@@ -63,19 +63,19 @@ export default function B2BEnterprisePage() {
           onClick={() => setActiveTab('bulk')}
           style={{ ...styles.tab, ...(activeTab === 'bulk' ? styles.tabActive : {}) }}
         >
-          📄 Factures Proforma & Commandes Groupées ({bulkOrders.length})
+          Factures Proforma & Commandes Groupées ({bulkOrders.length})
         </button>
         <button
           onClick={() => setActiveTab('companies')}
           style={{ ...styles.tab, ...(activeTab === 'companies' ? styles.tabActive : {}) }}
         >
-          🏢 Entreprises BTP Partenaires ({companies.length})
+          Entreprises BTP Partenaires ({companies.length})
         </button>
         <button
           onClick={() => setActiveTab('deviations')}
           style={{ ...styles.tab, ...(activeTab === 'deviations' ? styles.tabActive : {}) }}
         >
-          ⚠️ Alertes Déviation GPS ({deviations.length})
+          Alertes Déviation GPS ({deviations.length})
         </button>
       </div>
 

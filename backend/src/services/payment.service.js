@@ -1,5 +1,5 @@
 /**
- * Paiement avec séquestre (escrow) — LogiTruck
+ * Paiement avec séquestre (escrow) — BenneGo
  *
  *   1. Le client paie en même temps que la commande      → confirmEscrow()
  *      L'argent reste sur le compte plateforme, PAS chez le chauffeur (payment_status = escrow_held).
@@ -76,7 +76,7 @@ const confirmEscrow = async (orderId, transactionId, { clientId } = {}) => {
   // Vérification directe auprès de KKiaPay : statut ET montant.
   let result;
   try {
-    result = await kkiapay.verify(transactionId);
+    result = await kkiapay.verify(transactionId, orderId);
   } catch (error) {
     console.error('KKiaPay verify:', error.message);
     throw new AppError('Paiement introuvable chez KKiaPay', 402);

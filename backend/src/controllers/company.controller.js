@@ -121,24 +121,24 @@ const subscribePlan = async (req, res, next) => {
       throw new AppError('Vous devez d\'abord enregistrer le profil de votre entreprise', 400);
     }
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + planConfig.duration_days);
-
+    // Aucun paiement n'est vérifié ici : la souscription reste « pending_payment »
+    // tant qu'un administrateur n'a pas validé le règlement (PATCH /api/admin/companies/:id/activate-subscription).
     const result = await query(
       `UPDATE companies
-       SET subscription_status = 'active',
+       SET subscription_status = 'pending_payment',
            subscription_plan = $1,
            subscription_price = $2,
-           subscription_started_at = NOW(),
-           subscription_expires_at = $3,
            updated_at = NOW()
-       WHERE id = $4
+       WHERE id = $3 AND subscription_status <> 'active'
        RETURNING *`,
-      [plan, planConfig.price, expiresAt, companyId]
+      [plan, planConfig.price, companyId]
     );
+    if (!result.rows.length) {
+      throw new AppError('Un abonnement est déjà actif pour votre entreprise', 409);
+    }
 
     res.json({
-      message: `Abonnement B2B "${planConfig.name}" activé avec succès !`,
+      message: `Demande d'abonnement B2B "${planConfig.name}" enregistrée : elle sera activée après validation du paiement.`,
       company: result.rows[0],
       plan: planConfig,
     });
@@ -229,7 +229,11 @@ const createProject = async (req, res, next) => {
 const getProjectDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const projectResult = await query('SELECT * FROM projects_chantiers WHERE id = $1', [id]);
+    const { rows: [owner] } = await query('SELECT company_id FROM users WHERE id = $1', [req.user.id]);
+    const projectResult = await query(
+      'SELECT * FROM projects_chantiers WHERE id = $1 AND company_id = $2',
+      [id, owner?.company_id || null]
+    );
     if (!projectResult.rows.length) throw new AppError('Chantier introuvable', 404);
 
     const project = projectResult.rows[0];
@@ -260,7 +264,11 @@ const getProjectDetails = async (req, res, next) => {
 const exportProjectOrdersCSV = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const projectResult = await query('SELECT name FROM projects_chantiers WHERE id = $1', [id]);
+    const { rows: [owner] } = await query('SELECT company_id FROM users WHERE id = $1', [req.user.id]);
+    const projectResult = await query(
+      'SELECT name FROM projects_chantiers WHERE id = $1 AND company_id = $2',
+      [id, owner?.company_id || null]
+    );
     if (!projectResult.rows.length) throw new AppError('Chantier introuvable', 404);
 
     const projectName = projectResult.rows[0].name.replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -303,7 +311,9 @@ const exportProjectOrdersCSV = async (req, res, next) => {
 
     const escapeCsv = (str) => {
       if (str === null || str === undefined) return '""';
-      const s = String(str).replace(/"/g, '""');
+      let s = String(str);
+      if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`; // neutralise les formules Excel
+      s = s.replace(/"/g, '""');
       return `"${s}"`;
     };
 
@@ -333,7 +343,7 @@ const exportProjectOrdersCSV = async (req, res, next) => {
     const csvContent = '\uFEFF' + csvLines.join('\r\n'); // BOM UTF-8 pour Excel
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="LogiTruck_${projectName}_rapport.csv"`);
+    res.setHeader('Content-Disposition', `attachment; filename="BenneGo_${projectName}_rapport.csv"`);
     res.status(200).send(csvContent);
   } catch (error) {
     next(error);

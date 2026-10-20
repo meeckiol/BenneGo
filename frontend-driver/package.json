@@ -1,7 +1,7 @@
 {
-  "name": "logitruck-driver",
+  "name": "bennego-driver",
   "version": "1.0.0",
-  "description": "PWA chauffeur LogiTruck",
+  "description": "PWA chauffeur BenneGo",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5174",

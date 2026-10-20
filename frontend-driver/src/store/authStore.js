@@ -27,7 +27,7 @@ const useDriverAuthStore = create(
       updateUser: (updates) => set((state) => ({ user: { ...state.user, ...updates } })),
     }),
     {
-      name: 'logitruck-driver-auth',
+      name: 'bennego-driver-auth',
       onRehydrateStorage: () => (state) => {
         if (state?.token) {
           api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;

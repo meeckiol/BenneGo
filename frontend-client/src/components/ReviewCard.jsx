@@ -38,7 +38,7 @@ export default function ReviewCard({ order, onDone }) {
         comment: platformComment.trim(),
       });
       setPlatformDone(true);
-      toast.success('Merci pour votre avis sur LogiTruck !');
+      toast.success('Merci pour votre avis sur BenneGo !');
     } catch { /* idem */ } finally { setBusy(false); }
   };
 
@@ -72,10 +72,10 @@ export default function ReviewCard({ order, onDone }) {
       ))}
 
       {tab === 'platform' && (platformDone ? (
-        <div style={s.done}><p>Merci, votre avis sur LogiTruck a bien été envoyé.</p></div>
+        <div style={s.done}><p>Merci, votre avis sur BenneGo a bien été envoyé.</p></div>
       ) : (
         <div style={s.form}>
-          <p style={s.hint}>Que pensez-vous de LogiTruck (commande, paiement sécurisé, suivi) ?</p>
+          <p style={s.hint}>Que pensez-vous de BenneGo (commande, paiement sécurisé, suivi) ?</p>
           <StarRating value={platformRating} onChange={setPlatformRating} label="Note de la plateforme" size={30} />
           <textarea value={platformComment} onChange={(e) => setPlatformComment(e.target.value)} maxLength={1000} rows={3}
             placeholder="Votre avis sur la plateforme" style={s.textarea} />

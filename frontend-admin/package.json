@@ -1,7 +1,7 @@
 {
-  "name": "logitruck-admin",
+  "name": "bennego-admin",
   "version": "1.0.0",
-  "description": "Dashboard admin LogiTruck",
+  "description": "Dashboard admin BenneGo",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5175",

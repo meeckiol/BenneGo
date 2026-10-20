@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { JobTimeline } from "@/components/mission/job-timeline";
-import { InfoBanner, LoadingState } from "@/components/ui/logitruck-ui";
+import { InfoBanner, LoadingState } from "@/components/ui/bennego-ui";
 import {
   formatMoney,
   formatVolume,
@@ -20,11 +20,11 @@ import { errorMessage } from "@/lib/api";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { useSocket } from "@/hooks/use-socket";
 import { useAuth } from "@/hooks/use-auth";
-import { isActiveJobStatus, isTrackedJobStatus, type JobStatus } from "@/shared/logitruck";
+import { isActiveJobStatus, isTrackedJobStatus, type JobStatus } from "@/shared/bennego";
 
 function notify(message: string) {
   if (Platform.OS === "web" && typeof window !== "undefined") window.alert(message);
-  else Alert.alert("LogiTruck", message);
+  else Alert.alert("BenneGo", message);
 }
 
 function confirmAction(title: string, message: string, onConfirm: () => void) {

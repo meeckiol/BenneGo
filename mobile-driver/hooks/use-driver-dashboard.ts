@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toJob, type JobLike } from "@/lib/domain/jobs";
 import { useAuth } from "@/hooks/use-auth";
-import { isActiveJobStatus, type JobStatus } from "@/shared/logitruck";
+import { isActiveJobStatus, type JobStatus } from "@/shared/bennego";
 
 export type JobBucket = "offered" | "active" | "completed";
 

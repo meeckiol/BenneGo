@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { JobCard } from "@/components/mission/job-card";
-import { EmptyState, InfoBanner, LoadingState, SectionHeading } from "@/components/ui/logitruck-ui";
+import { EmptyState, InfoBanner, LoadingState, SectionHeading } from "@/components/ui/bennego-ui";
 import { useJobs, type JobBucket } from "@/hooks/use-driver-dashboard";
 
 type Bucket = JobBucket;

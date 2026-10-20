@@ -29,7 +29,7 @@ export default function ReferralPage() {
   const copyCode = () => {
     if (!data?.referral_code) return;
     navigator.clipboard.writeText(data.referral_code).then(() => {
-      toast.success('Code copié dans le presse-papier ! ✅');
+      toast.success('Code copié dans le presse-papier !');
     });
   };
 
@@ -47,7 +47,7 @@ export default function ReferralPage() {
     setSubmitting(true);
     try {
       await api.post('/referrals', { referral_code: friendCode.trim() });
-      toast.success('Code parrain validé avec succès ! ✅');
+      toast.success('Code parrain validé avec succès !');
       setFriendCode('');
       loadReferral();
     } catch (err) {
@@ -70,7 +70,6 @@ export default function ReferralPage() {
       {/* Main content */}
       <main style={styles.main}>
         <div style={styles.hero}>
-          <span style={{ fontSize: '48px', display: 'block', marginBottom: '8px' }}>🎁</span>
           <h1 style={styles.heroTitle}>Invitez vos amis et gagnez</h1>
           <p style={styles.heroSub}>
             Partagez votre code avec vos partenaires BTP et vos collègues. Chaque inscription avec votre code vous rapporte <strong>2 500 FCFA</strong> !
@@ -87,11 +86,11 @@ export default function ReferralPage() {
               <p style={styles.cardSub}>Donnez ce code à vos contacts lors de leur inscription :</p>
               <div style={styles.codeBox}>
                 <span style={styles.codeText}>{data?.referral_code || '------'}</span>
-                <button onClick={copyCode} style={styles.copyBtn}>📋 Copier</button>
+                <button onClick={copyCode} style={styles.copyBtn}>Copier</button>
               </div>
 
               <button onClick={shareWhatsApp} style={styles.whatsappBtn}>
-                📲 Partager directement sur WhatsApp
+                Partager directement sur WhatsApp
               </button>
             </div>
 

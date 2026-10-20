@@ -91,10 +91,10 @@ export default function PromoCodesAdminPage() {
     try {
       if (editing) {
         await api.patch(`/admin/promos/${editing.id}`, payload);
-        toast.success('Code promo mis à jour ✅');
+        toast.success('Code promo mis à jour');
       } else {
         await api.post('/admin/promos', payload);
-        toast.success('Code promo créé ✅');
+        toast.success('Code promo créé');
       }
       closeModal();
       loadPromos();
@@ -124,7 +124,7 @@ export default function PromoCodesAdminPage() {
       {/* En-tête */}
       <div style={s.header}>
         <div>
-          <h2 style={s.title}>🎟️ Codes Promo</h2>
+          <h2 style={s.title}>Codes Promo</h2>
           <p style={s.subtitle}>Gérez les codes de réduction pour vos clients</p>
         </div>
         <button onClick={openCreate} style={s.newBtn}>+ Nouveau code</button>
@@ -136,7 +136,7 @@ export default function PromoCodesAdminPage() {
           <span style={s.tableTitle}>
             {loading ? 'Chargement...' : `${promos.length} code(s) promo`}
           </span>
-          <button onClick={loadPromos} style={s.refreshBtn}>🔄 Actualiser</button>
+          <button onClick={loadPromos} style={s.refreshBtn}>Actualiser</button>
         </div>
 
         <div style={s.tableWrapper}>
@@ -189,17 +189,17 @@ export default function PromoCodesAdminPage() {
                       background: promo.is_active ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.1)',
                       color: promo.is_active ? '#10B981' : '#EF4444',
                     }}>
-                      {promo.is_active ? '✅ Actif' : '❌ Inactif'}
+                      {promo.is_active ? 'Actif' : 'Inactif'}
                     </span>
                   </td>
                   <td style={{ ...s.td, display: 'flex', gap: '8px' }}>
-                    <button onClick={() => openEdit(promo)} style={s.editBtn}>✏️ Éditer</button>
+                    <button onClick={() => openEdit(promo)} style={s.editBtn}>Éditer</button>
                     <button
                       onClick={() => handleDelete(promo)}
                       disabled={deleting === promo.id}
                       style={s.deleteBtn}
                     >
-                      {deleting === promo.id ? '⏳' : '🗑️'}
+                      {deleting === promo.id ? 'Suppression...' : 'Supprimer'}
                     </button>
                   </td>
                 </tr>
@@ -218,7 +218,7 @@ export default function PromoCodesAdminPage() {
           <div style={s.modal}>
             <div style={s.modalHeader}>
               <h3 style={s.modalTitle}>
-                {editing ? '✏️ Modifier le code promo' : '🎟️ Nouveau code promo'}
+                {editing ? 'Modifier le code promo' : 'Nouveau code promo'}
               </h3>
               <button onClick={closeModal} style={s.closeBtn}>✕</button>
             </div>
@@ -333,7 +333,7 @@ export default function PromoCodesAdminPage() {
             <div style={s.modalFooter}>
               <button onClick={closeModal} style={s.cancelBtn}>Annuler</button>
               <button onClick={handleSave} disabled={saving} style={{ ...s.saveBtn, opacity: saving ? 0.7 : 1 }}>
-                {saving ? '⏳ Sauvegarde...' : editing ? '✅ Mettre à jour' : '✅ Créer le code'}
+                {saving ? 'Sauvegarde...' : editing ? 'Mettre à jour' : 'Créer le code'}
               </button>
             </div>
           </div>

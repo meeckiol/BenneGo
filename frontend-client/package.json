@@ -1,7 +1,7 @@
 {
-  "name": "logitruck-client",
+  "name": "bennego-client",
   "version": "1.0.0",
-  "description": "Interface client LogiTruck",
+  "description": "Interface client BenneGo",
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173",

@@ -20,13 +20,15 @@ export default function HomePage() {
       {/* Header */}
       <header style={styles.header}>
         <div style={styles.headerLeft}>
+          <img src="/logo-icon.png" alt="BenneGo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" }} />
           <span style={styles.logo}>BenneGo</span>
           <span style={styles.badge}>B2B & BTP Bénin</span>
         </div>
         <div style={styles.headerRight}>
           <span style={styles.userName}>{user?.full_name}</span>
-          <button onClick={() => navigate('/referral')} style={styles.navLink}>🎁 Parrainage</button>
-          <button onClick={() => navigate('/careers')} style={styles.navLink}>💼 Emplois</button>
+          <button onClick={() => navigate('/enterprise')} style={{ ...styles.navLink, background: '#FF6B00', color: '#fff', fontWeight: 'bold', padding: '6px 12px', borderRadius: '6px' }}>BenneGoPRO</button>
+          <button onClick={() => navigate('/referral')} style={styles.navLink}>Parrainage</button>
+          <button onClick={() => navigate('/careers')} style={styles.navLink}>Emplois</button>
           <button onClick={logout} style={styles.logoutBtn}>Déconnexion</button>
         </div>
       </header>
@@ -35,14 +37,14 @@ export default function HomePage() {
       <main style={styles.main}>
         <div style={styles.welcome}>
           <h2 style={styles.welcomeTitle}>
-            Bonjour, {user?.full_name?.split(' ')[0]} 👋
+            Bonjour, {user?.full_name?.split(' ')[0]}
           </h2>
           <p style={styles.welcomeSub}>
             Sélectionnez votre besoin logistique de chantier avec paiement bloqué en séquestre :
           </p>
         </div>
 
-        {/* 🏗️ 3 GROS BOUTONS D'ACTION (SERVICES LOGITRUCK B2B) */}
+        {/* 3 GROS BOUTONS D'ACTION (SERVICES BENNEGO B2B) */}
         <div style={styles.servicesGrid}>
           {/* Service 1 : Transport de Matériaux */}
           <div
@@ -50,7 +52,6 @@ export default function HomePage() {
             style={{ ...styles.serviceCard, borderColor: '#FF6B00' }}
           >
             <div style={styles.serviceIconContainer}>
-              <span style={styles.serviceEmoji}>🏗️</span>
               <span style={{ ...styles.serviceTag, background: '#FFF3E0', color: '#E65100' }}>
                 Service Cœur
               </span>
@@ -71,7 +72,6 @@ export default function HomePage() {
             style={{ ...styles.serviceCard, borderColor: '#1976D2' }}
           >
             <div style={styles.serviceIconContainer}>
-              <span style={styles.serviceEmoji}>🚜</span>
               <span style={{ ...styles.serviceTag, background: '#E3F2FD', color: '#0D47A1' }}>
                 Service Premium
               </span>
@@ -92,7 +92,6 @@ export default function HomePage() {
             style={{ ...styles.serviceCard, borderColor: '#388E3C' }}
           >
             <div style={styles.serviceIconContainer}>
-              <span style={styles.serviceEmoji}>📦</span>
               <span style={{ ...styles.serviceTag, background: '#E8F5E9', color: '#1B5E20' }}>
                 Service Évacuation
               </span>
@@ -108,10 +107,10 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* 🏢 SECTION B2B GRANDS COMPTES (BENNEGO BUSINESS) */}
+        {/* SECTION B2B GRANDS COMPTES (BENNEGO BUSINESS) */}
         <section style={styles.enterpriseBanner}>
           <div style={styles.enterpriseContent}>
-            <div style={styles.enterpriseBadge}>🏢 BenneGo Business (B2B)</div>
+            <div style={styles.enterpriseBadge}>BenneGo Business (B2B)</div>
             <h3 style={styles.enterpriseTitle}>
               Grands Comptes, Promoteurs & Entreprises BTP
             </h3>
@@ -142,25 +141,21 @@ export default function HomePage() {
 
         {/* Badges de confiance */}
         <section style={styles.trustSection}>
-          <h3 style={styles.trustTitle}>✅ Pourquoi faire confiance à BenneGo ?</h3>
+          <h3 style={styles.trustTitle}>Pourquoi faire confiance à BenneGo ?</h3>
           <div style={styles.trustGrid}>
             <div style={styles.trustBadge}>
-              <span style={{ fontSize: '24px' }}>🔒</span>
               <strong style={{ fontSize: '13px', color: '#1E293B' }}>Séquestre sécurisé</strong>
               <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Votre argent protégé jusqu'à livraison</p>
             </div>
             <div style={styles.trustBadge}>
-              <span style={{ fontSize: '24px' }}>📍</span>
               <strong style={{ fontSize: '13px', color: '#1E293B' }}>GPS Temps réel</strong>
               <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Suivez votre camion en direct</p>
             </div>
             <div style={styles.trustBadge}>
-              <span style={{ fontSize: '24px' }}>⭐</span>
               <strong style={{ fontSize: '13px', color: '#1E293B' }}>Chauffeurs vérifiés</strong>
               <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Profils contrôlés par BenneGo</p>
             </div>
             <div style={styles.trustBadge}>
-              <span style={{ fontSize: '24px' }}>📞</span>
               <strong style={{ fontSize: '13px', color: '#1E293B' }}>Support 24/7</strong>
               <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Assistance disponible à tout moment</p>
             </div>
@@ -169,7 +164,7 @@ export default function HomePage() {
 
         {/* Pourquoi le Séquestre BenneGo ? */}
         <section style={styles.escrowCard}>
-          <h4 style={styles.escrowTitle}>🛡️ Pourquoi le Séquestre BenneGo change tout au Bénin ?</h4>
+          <h4 style={styles.escrowTitle}>Pourquoi le Séquestre BenneGo change tout au Bénin ?</h4>
           <div style={styles.escrowGrid}>
             <div style={styles.escrowItem}>
               <strong>1. Zéro Risque de Vol</strong>
@@ -185,6 +180,36 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        {/* Comparatif BenneGo vs Apps de VTC / Gozem */}
+        <section style={styles.comparisonSection}>
+          <div style={styles.comparisonHeader}>
+            <h4 style={styles.comparisonTitle}>L'avantage BenneGo & BenneGoPRO : L'expert BTP face aux applications de taxi urbain</h4>
+          </div>
+          <div style={styles.comparisonGrid}>
+            <div style={styles.comparisonCol}>
+              <div style={styles.comparisonColHeaderBad}>Applications de VTC / Taxi standards</div>
+              <ul style={styles.comparisonList}>
+                <li>Conçues pour motos et petites voitures (passagers)</li>
+                <li>Incapables de gérer le cubage (m³) et le tonnage utile (20T - 35T)</li>
+                <li>Aucune liaison avec les carrières d'extraction de sable et gravier</li>
+                <li>Pas de bons de pesée pont-bascule certifiés</li>
+                <li>Paiement immédiat sans séquestre adapté aux gros montants</li>
+                <li>Pas de factures fiscales B2B (IFU, RCCM, TVA, AIB)</li>
+              </ul>
+            </div>
+            <div style={styles.comparisonCol}>
+              <div style={styles.comparisonColHeaderGood}>BenneGo & BenneGoPRO (Spécialiste BTP)</div>
+              <ul style={styles.comparisonList}>
+                <li><strong>Flotte lourde dédiée :</strong> 6 roues (10m³), 8 roues (16m³), semi 25m³ & engins</li>
+                <li><strong>Double vérification :</strong> Cubage certifié + ticket de pesée dématérialisé</li>
+                <li><strong>Réseau carrières partenaires :</strong> Tori, Sèmè, Ouidah, Dan, Akassato</li>
+                <li><strong>Séquestre garanti :</strong> Fonds sécurisés, 100% garanti pour client et chauffeur</li>
+                <li><strong>Multi-rotations chantiers :</strong> 10 à 100 voyages gérés en 1 bon de commande</li>
+                <li><strong>Conformité fiscale complète :</strong> Factures proforma, TVA 18%, AIB</li>
+              </ul>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Bouton WhatsApp flottant */}
@@ -195,7 +220,7 @@ export default function HomePage() {
         style={styles.whatsappBtn}
         aria-label="Contacter via WhatsApp"
       >
-        <span style={{ fontSize: '24px' }}>💬</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
       </a>
     </div>
   );

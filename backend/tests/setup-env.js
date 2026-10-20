@@ -1,8 +1,8 @@
 // Valeurs de test (n'écrasent pas ce qui est déjà défini dans l'environnement)
 const defaults = {
   NODE_ENV: 'test',
-  DB_HOST: 'localhost', DB_PORT: '5433', DB_NAME: 'logitruck_test',
-  DB_USER: 'logitruck_user', DB_PASSWORD: 'logitruck_password',
+  DB_HOST: 'localhost', DB_PORT: '5433', DB_NAME: 'bennego_test',
+  DB_USER: 'bennego_user', DB_PASSWORD: process.env.DB_PASSWORD || 'bennegopass',
   JWT_SECRET: 'test-secret-test-secret-test-secret-123456',
   KKIAPAY_WEBHOOK_SECRET: 'webhook-test-secret',
   KKIAPAY_PUBLIC_KEY: 'pk_test', KKIAPAY_PRIVATE_KEY: 'sk_test', KKIAPAY_SECRET: 'secret_test',

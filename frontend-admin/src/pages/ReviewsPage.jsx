@@ -13,13 +13,13 @@ export default function ReviewsPage() {
 
   return (
     <div style={s.page}>
-      <Section title={`⭐ Avis sur la plateforme (${data.platform_reviews.length})`}>
+      <Section title={`Avis sur la plateforme (${data.platform_reviews.length})`}>
         {data.platform_reviews.map((r) => (
           <Row key={r.id} who={r.client_name} rating={r.rating} comment={r.comment} date={r.created_at} />
         ))}
         {!loading && data.platform_reviews.length === 0 && <Empty />}
       </Section>
-      <Section title={`🚛 Avis sur les chauffeurs (${data.driver_reviews.length})`}>
+      <Section title={`Avis sur les chauffeurs (${data.driver_reviews.length})`}>
         {data.driver_reviews.map((r) => (
           <Row key={r.order_id} who={`${r.client_name} → ${r.driver_name}`} rating={r.rating} comment={r.comment} date={r.rated_at} sub={r.order_number} />
         ))}

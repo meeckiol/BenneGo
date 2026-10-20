@@ -211,7 +211,7 @@ export default function ActiveDeliveryPage() {
             : 'Livraison enregistrée. Le client doit confirmer la réception pour libérer votre paiement.'
         );
       } else {
-        toast.success('Statut mis à jour ✓');
+        toast.success('Statut mis à jour');
       }
     } finally {
       setUpdating(false);
@@ -236,7 +236,7 @@ export default function ActiveDeliveryPage() {
       await api.post(`/orders/${orderId}/pod`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      toast.success('Photos soumises ✅');
+      toast.success('Photos soumises');
       setPodSubmitted(true);
     } catch {
       toast.error('Échec de l\'envoi des photos');
@@ -393,10 +393,10 @@ export default function ActiveDeliveryPage() {
           </div>
         ) : null}
 
-        {/* 📸 Section Preuve de Livraison (PoD) */}
+        {/* Section Preuve de Livraison (PoD) */}
         {showPoD && !podSubmitted && (
           <div style={styles.podSection}>
-            <div style={styles.podTitle}>📸 Preuve de Livraison (PoD)</div>
+            <div style={styles.podTitle}>Preuve de Livraison (PoD)</div>
             <input
               type="file"
               accept="image/*"
@@ -432,26 +432,26 @@ export default function ActiveDeliveryPage() {
         {showPoD && podSubmitted && (
           <div style={{ ...styles.podSection, textAlign: 'center' }}>
             <div style={{ fontSize: '14px', color: '#4CAF50', fontWeight: '700' }}>
-              ✅ Preuves de livraison envoyées
+              Preuves de livraison envoyées
             </div>
           </div>
         )}
       </div>
 
-      {/* 💬 Bouton flottant Chat */}
+      {/* Bouton flottant Chat */}
       <button
         onClick={() => setChatOpen((o) => !o)}
         style={styles.chatFab}
         aria-label="Chat"
       >
-        💬
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
       </button>
 
       {/* Panneau Chat */}
       {chatOpen && (
         <div style={styles.chatPanel}>
           <div style={styles.chatHeader}>
-            💬 Discussion — {order.order_number}
+            Discussion — {order.order_number}
           </div>
           <div style={styles.chatMessages}>
             {chatMessages.length === 0 && (

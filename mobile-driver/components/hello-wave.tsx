@@ -13,8 +13,6 @@ export function HelloWave() {
         animationIterationCount: 4,
         animationDuration: "300ms",
       }}
-    >
-      👋
-    </Animated.Text>
+    />
   );
 }

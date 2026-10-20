@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
-const TOKEN_KEY = "logitruck-token";
-const USER_KEY = "logitruck-user";
+const TOKEN_KEY = "bennego-token";
+const USER_KEY = "bennego-user";
 
 export type SessionUser = { id: string; phone: string; full_name: string; role: string };
 

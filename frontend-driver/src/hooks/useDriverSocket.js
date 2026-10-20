@@ -4,8 +4,8 @@ import useDriverAuthStore from '../store/authStore';
 
 let socketInstance = null;
 
-// En prod (Vercel) : VITE_SOCKET_URL=https://logitruck-backend.onrender.com
-// En dev local    : '/' (même origine, proxy Vite gère /socket.io)
+// En production : VITE_SOCKET_URL configurable (ex: https://api.bennego.com)
+// En dev local  : '/' (proxy Vite vers le backend local)
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '/';
 
 /**

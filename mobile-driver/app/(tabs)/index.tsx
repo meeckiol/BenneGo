@@ -2,7 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { Alert, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { InfoBanner, LoadingState, SectionHeading } from "@/components/ui/logitruck-ui";
+import { InfoBanner, LoadingState, SectionHeading } from "@/components/ui/bennego-ui";
 import { formatMoney } from "@/lib/domain/jobs";
 import { useDriverDashboard } from "@/hooks/use-driver-dashboard";
 import { useDriverLocation } from "@/hooks/use-driver-location";

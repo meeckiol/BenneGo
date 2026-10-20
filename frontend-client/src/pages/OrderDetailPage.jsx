@@ -196,7 +196,7 @@ export default function OrderDetailPage() {
         {/* Alerte Déviation GPS Certifié (Anti-détournement / anti-vol) */}
         {order.route_deviation_alert && (
           <div style={styles.deviationAlert}>
-            <div style={styles.deviationTitle}>⚠️ ALERTE GPS CERTIFIÉ : Détournement Potentiel Détecté</div>
+            <div style={styles.deviationTitle}>ALERTE GPS CERTIFIÉ : Détournement Potentiel Détecté</div>
             <p style={styles.deviationText}>
               Le camion s'est écarté de plus de 15% de l'itinéraire optimal calculé par OSRM.
               Vérifiez sa position en direct pour prévenir toute revente frauduleuse de marchandise.
@@ -206,7 +206,7 @@ export default function OrderDetailPage() {
 
         {order.payment_status === 'escrow_held' && !confirmed && (
           <div style={styles.secure}>
-            🔒 Votre paiement de <strong>{fcfa(order.total_amount)}</strong> est bloqué en sécurité sur BenneGo.
+            Votre paiement de <strong>{fcfa(order.total_amount)}</strong> est bloqué en sécurité sur BenneGo.
             {order.order_type === 'RENTAL' && ' Les fonds sont libérés uniquement après validation des heures de l\'engin sur le chantier.'}
             {order.order_type === 'EVACUATION' && ' Les fonds sont libérés uniquement après confirmation de la propreté de votre site.'}
             {(!order.order_type || order.order_type === 'MATERIAL') && ' Le chauffeur n\'est payé qu\'après déchargement et vérification des matériaux.'}
@@ -253,9 +253,9 @@ export default function OrderDetailPage() {
           <InfoRow
             label="Service"
             value={
-              order.order_type === 'RENTAL' ? '🚜 Location d\'Engin Lourd' :
-              order.order_type === 'EVACUATION' ? '📦 Évacuation de Gravats' :
-              '🏗️ Transport de Matériaux'
+              order.order_type === 'RENTAL' ? 'Location d\'Engin Lourd' :
+              order.order_type === 'EVACUATION' ? 'Évacuation de Gravats' :
+              'Transport de Matériaux'
             }
             bold
           />
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
           <InfoRow label="Statut Paiement" value={PAYMENT_LABELS[order.payment_status] || order.payment_status} />
         </div>
 
-        {/* 💬 Section Chat avec le Chauffeur */}
+        {/* Section Chat avec le Chauffeur */}
         {order.driver_id && (
           <div style={styles.card}>
             <div
@@ -298,7 +298,7 @@ export default function OrderDetailPage() {
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
             >
               <h3 style={{ ...styles.cardTitle, margin: 0 }}>
-                💬 Chat en direct avec le chauffeur
+                Chat en direct avec le chauffeur
               </h3>
               <span style={{ fontSize: '13px', color: '#FF6B00', fontWeight: '700' }}>
                 {chatOpen ? 'Masquer ▲' : `Ouvrir (${chatMessages.length}) ▼`}

@@ -48,7 +48,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
           background: isRental ? '#1E3A8A' : isEvacuation ? '#065F46' : '#9A3412',
           color: isRental ? '#93C5FD' : isEvacuation ? '#6EE7B7' : '#FED7AA',
         }}>
-          {isRental ? '🚜 Location d\'Engin Lourd' : isEvacuation ? '📦 Évacuation de Gravats' : '🏗️ Transport de Matériaux'}
+          {isRental ? 'Location d\'Engin Lourd' : isEvacuation ? 'Évacuation de Gravats' : 'Transport de Matériaux'}
         </div>
 
         <h2 style={styles.title}>Nouvelle mission disponible !</h2>
@@ -73,7 +73,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
             </div>
           </div>
           {isRental && order.duration_hours && (
-            <div style={styles.extraInfo}>⏱️ Durée réservée : <strong>{order.duration_hours} heures</strong></div>
+            <div style={styles.extraInfo}>Durée réservée : <strong>{order.duration_hours} heures</strong></div>
           )}
         </div>
 
@@ -94,10 +94,10 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
         {/* Boutons */}
         <div style={styles.buttons}>
           <button onClick={onRefuse} style={styles.refuseBtn}>
-            ✕ Ignorer
+            Ignorer
           </button>
           <button onClick={onAccept} style={styles.acceptBtn}>
-            ✓ Accepter la mission
+            Accepter la mission
           </button>
         </div>
       </div>

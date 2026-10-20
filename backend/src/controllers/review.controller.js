@@ -54,7 +54,7 @@ const reviewDriver = async (req, res, next) => {
 
 /**
  * POST /api/reviews/platform   (client)
- * Avis (et note facultative) sur la plateforme LogiTruck. `order_id` facultatif :
+ * Avis (et note facultative) sur la plateforme BenneGo. `order_id` facultatif :
  * s'il est fourni il doit s'agir d'une commande du client (un avis plateforme par commande).
  */
 const reviewPlatform = async (req, res, next) => {

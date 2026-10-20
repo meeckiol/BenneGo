@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const { query, pool } = require('../config/database');
 
 (async () => {
-  const { ADMIN_PHONE, ADMIN_NAME = 'Administrateur LogiTruck', ADMIN_PASSWORD, ADMIN_EMAIL } = process.env;
+  const { ADMIN_PHONE, ADMIN_NAME = 'Administrateur BenneGo', ADMIN_PASSWORD, ADMIN_EMAIL } = process.env;
   if (!ADMIN_PHONE || !ADMIN_PASSWORD) throw new Error('ADMIN_PHONE et ADMIN_PASSWORD sont requis');
   if (ADMIN_PASSWORD.length < 12) throw new Error('Mot de passe admin : 12 caractères minimum');
   const hash = await bcrypt.hash(ADMIN_PASSWORD, 12);

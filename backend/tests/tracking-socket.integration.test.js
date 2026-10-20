@@ -1,6 +1,6 @@
 /** Suivi temps réel : le client reçoit la position du chauffeur, un tiers non. */
 jest.mock('../src/providers/kkiapay', () => ({
-  verify: jest.fn(async () => ({ status: 'SUCCESS', amount: 50000 })),
+  verify: jest.fn(async () => ({ status: 'SUCCESS', amount: 45000 })),
   refund: jest.fn(),
   widgetConfig: () => ({}),
 }));
@@ -17,7 +17,7 @@ const { app, server } = require('../src/server');
 let port;
 const phone = () => `+2298${String(Date.now()).slice(-6)}${Math.floor(Math.random() * 90 + 10)}`;
 const reg = async (role, name) => {
-  const r = await request(app).post('/api/auth/register').send({ phone: phone(), full_name: name, password: 'Motdepasse123', role });
+  const r = await request(app).post('/api/auth/register').send({ phone: phone(), full_name: name, prenom: name, nom: 'Test', date_naissance: '1990-01-01', adresse: 'Cotonou', password: 'Motdepasse123', role });
   return { token: r.body.token, id: r.body.user.id, auth: { Authorization: `Bearer ${r.body.token}` } };
 };
 const sock = (token) => new Promise((resolve, reject) => {

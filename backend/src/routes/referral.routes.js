@@ -28,7 +28,7 @@ const generateReferralCode = async () => {
 // =============================================
 
 // GET /api/referrals/me — voir son code + stats
-router.get('/me', authenticate, requireRole(['client', 'driver']), async (req, res, next) => {
+router.get('/me', authenticate, requireRole('client', 'driver'), async (req, res, next) => {
   try {
     let userRes = await query(`SELECT referral_code FROM users WHERE id = $1`, [req.user.id]);
     let referral_code = userRes.rows[0]?.referral_code;
@@ -71,7 +71,7 @@ router.get('/me', authenticate, requireRole(['client', 'driver']), async (req, r
 // =============================================
 
 // POST /api/referrals — l'utilisateur connecté devient filleul (referee)
-router.post('/', authenticate, requireRole(['client', 'driver']), [
+router.post('/', authenticate, requireRole('client', 'driver'), [
   body('referral_code').trim().notEmpty().withMessage('Code de parrainage requis'),
 ], validateRequest, async (req, res, next) => {
   try {

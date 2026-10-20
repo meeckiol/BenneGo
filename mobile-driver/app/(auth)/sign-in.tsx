@@ -34,7 +34,7 @@ export default function SignInScreen() {
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.logoMark}>
-              <Image source={require("../../assets/images/logitruck-icon.png")} style={styles.logoImage} resizeMode="contain" />
+              <Image source={require("../../assets/images/bennego-icon.png")} style={styles.logoImage} resizeMode="contain" />
             </View>
             <Text style={styles.wordmark}>Logi<Text style={styles.wordmarkAccent}>Truck</Text></Text>
             <Text style={styles.kicker}>DRIVER</Text>
@@ -53,7 +53,7 @@ export default function SignInScreen() {
               {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.buttonText}>Se connecter</Text>}
               <MaterialIcons name="arrow-forward" color="#FFFFFF" size={20} />
             </Pressable>
-            <Text style={styles.footnote}>Compte chauffeur créé depuis l'application web LogiTruck.</Text>
+            <Text style={styles.footnote}>Compte chauffeur créé depuis l'application web BenneGo.</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

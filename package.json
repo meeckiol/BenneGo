@@ -1,7 +1,7 @@
 {
-  "name": "logitruck",
+  "name": "bennego",
   "version": "1.0.0",
-  "description": "LogiTruck — plateforme de livraison de matériaux de chantier (Bénin) avec paiement en séquestre",
+  "description": "BenneGo — plateforme de livraison de matériaux de chantier (Bénin) avec paiement en séquestre",
   "private": true,
   "workspaces": [
     "backend",

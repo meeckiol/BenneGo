@@ -1,6 +1,9 @@
 const express = require('express');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
 const { query } = require('../config/database');
+const { param, body } = require('express-validator');
+const { validateRequest } = require('../middlewares/validate.middleware');
+const { B2B_PRICING_PLANS } = require('../services/pricing.service');
 
 const router = express.Router();
 router.use(authenticate, requireRole('admin'));
@@ -211,7 +214,7 @@ router.get('/bulk-orders', async (req, res, next) => {
 });
 
 // POST /api/admin/bulk-orders/:bulkGroupId/validate-escrow
-// Validation manuelle du virement bancaire ou chèque reçu sur le compte séquestre LogiTruck
+// Validation manuelle du virement bancaire ou chèque reçu sur le compte séquestre BenneGo
 // Débloque les sous-commandes pour les chauffeurs (statut pending + escrow_held)
 router.post('/bulk-orders/:bulkGroupId/validate-escrow', async (req, res, next) => {
   const { getClient } = require('../config/database');
@@ -402,12 +405,12 @@ router.get('/report/monthly', async (req, res, next) => {
 
     const doc = new PDFDocument({ margin: 40 });
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=rapport-logitruck-${monthStr}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=rapport-bennego-${monthStr}.pdf`);
     doc.pipe(res);
 
     // En-tête
     doc.rect(0, 0, doc.page.width, 90).fill('#1E293B');
-    doc.fillColor('#FF6B00').fontSize(22).font('Helvetica-Bold').text('LogiTruck', 40, 25);
+    doc.fillColor('#FF6B00').fontSize(22).font('Helvetica-Bold').text('BenneGo', 40, 25);
     doc.fillColor('#94A3B8').fontSize(12).font('Helvetica').text(`Rapport d'activité mensuel — ${monthStr}`, 40, 55);
 
     // Résumé
@@ -563,6 +566,30 @@ router.get('/careers', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// PATCH /api/admin/companies/:id/activate-subscription — valide le paiement d'un abonnement B2B
+router.patch('/companies/:id/activate-subscription', [
+  param('id').isUUID(),
+  body('payment_reference').isString().trim().isLength({ min: 3, max: 100 }),
+], validateRequest, async (req, res, next) => {
+  try {
+    const { rows: [co] } = await query('SELECT subscription_plan FROM companies WHERE id = $1', [req.params.id]);
+    if (!co) return res.status(404).json({ error: 'Entreprise introuvable' });
+    const planConfig = B2B_PRICING_PLANS[co.subscription_plan];
+    if (!planConfig) return res.status(400).json({ error: 'Aucune formule en attente pour cette entreprise' });
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + planConfig.duration_days);
+    const { rows } = await query(
+      `UPDATE companies
+       SET subscription_status = 'active', subscription_started_at = NOW(),
+           subscription_expires_at = $1, updated_at = NOW()
+       WHERE id = $2 RETURNING *`,
+      [expiresAt, req.params.id]
+    );
+    console.log(`[audit] abonnement ${req.params.id} activé par admin ${req.user.id} (réf. ${req.body.payment_reference})`);
+    res.json({ message: 'Abonnement activé', company: rows[0] });
+  } catch (error) { next(error); }
 });
 
 module.exports = router;

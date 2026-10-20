@@ -1,4 +1,4 @@
-const CACHE_NAME = 'logitruck-driver-v1';
+const CACHE_NAME = 'bennego-driver-v1';
 const STATIC_ASSETS = ['/', '/index.html'];
 
 self.addEventListener('install', (event) => {

@@ -40,7 +40,7 @@ router.post('/', requireRole('client'), [
   body('material_type_id').optional({ nullable: true }).isUUID(),
 ], validateRequest, createOrder);
 
-// POST /api/orders/bulk - Planification massive B2B (LogiTruck Enterprise)
+// POST /api/orders/bulk - Planification massive B2B (BenneGo Enterprise)
 router.post('/bulk', requireRole('client'), [
   body('project_id').optional({ nullable: true }).isUUID(),
   body('order_type').optional().isIn(['MATERIAL', 'RENTAL', 'EVACUATION']),
@@ -128,8 +128,21 @@ const multer = require('multer');
 const { query } = require('../config/database');
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 }, // max 2Mo par photo
+  limits: { fileSize: 2 * 1024 * 1024, files: 5 }, // max 2Mo par photo, 5 photos
+  fileFilter: (req, file, cb) => (
+    ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)
+      ? cb(null, true)
+      : cb(new Error('Format image invalide (JPEG, PNG ou WebP uniquement)'))
+  ),
 });
+// Vérifie la signature réelle du fichier (le mimetype vient du client)
+const hasImageSignature = (buf) => (
+  (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF)
+  || (buf.slice(0, 4).toString('hex') === '89504e47')
+  || (buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP')
+);
+const POD_ALLOWED_STATUSES = ['driver_en_route_delivery', 'dumping', 'machine_operating', 'delivered'];
+const MAX_POD_PHOTOS = 10;
 
 // POST /api/orders/:id/pod - Upload photos preuve de livraison (Chauffeur)
 router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
@@ -147,9 +160,16 @@ router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
       return res.status(403).json({ error: 'Vous n\'êtes pas le chauffeur de cette commande' });
     }
 
+    if (!POD_ALLOWED_STATUSES.includes(orderRes.rows[0].status)) {
+      return res.status(409).json({ error: 'Cette commande n\'accepte plus de photos de livraison' });
+    }
+
     const files = req.files || [];
+    if (files.some((f) => !hasImageSignature(f.buffer))) {
+      return res.status(400).json({ error: 'Fichier image invalide' });
+    }
     const photoData = files.map((f) => `data:${f.mimetype};base64,${f.buffer.toString('base64')}`);
-    const notes = req.body.notes || null;
+    const notes = typeof req.body.notes === 'string' ? req.body.notes.slice(0, 500) : null;
 
     const updateRes = await query(
       `UPDATE orders
@@ -158,9 +178,14 @@ router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
            pod_submitted_at = NOW(),
            updated_at = NOW()
        WHERE id = $3
+         AND jsonb_array_length(COALESCE(pod_photos, '[]'::jsonb)) + jsonb_array_length($1::jsonb) <= ${MAX_POD_PHOTOS}
        RETURNING id, order_number, pod_photos, pod_notes, pod_submitted_at`,
       [JSON.stringify(photoData), notes, req.params.id]
     );
+
+    if (!updateRes.rows.length) {
+      return res.status(409).json({ error: `Maximum ${MAX_POD_PHOTOS} photos par commande atteint` });
+    }
 
     res.json({
       message: 'Preuve de livraison enregistrée avec succès',

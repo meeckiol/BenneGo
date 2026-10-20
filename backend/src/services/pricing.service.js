@@ -22,7 +22,7 @@ const B2B_PRICING_PLANS = {
   },
 };
 
-// Tarification de base LogiTruck (en FCFA)
+// Tarification de base BenneGo (en FCFA)
 const PRICING = {
   base_fee: 10000,           // Frais fixes de départ pour transport matériaux
   price_per_km: 1500,        // Prix standard par km
@@ -163,7 +163,7 @@ const calculatePrice = (arg1, truckType = 'simple_benne', materialType = null) =
   let breakdown = {};
 
   if (orderType === 'RENTAL') {
-    // 🚜 SERVICE 2 : Location d'Engins Lourds
+    // SERVICE 2 : Location d'Engins Lourds
     // Formule : Tarif Horaire de l'Engin × Nombre d'Heures (+ Forfait d'acheminement)
     const hours = Math.max(parseFloat(opts.duration_hours) || 4, 1); // Min 1 heure
     const hourlyRate = parseFloat(opts.hourly_rate) ||
@@ -183,7 +183,7 @@ const calculatePrice = (arg1, truckType = 'simple_benne', materialType = null) =
       mobilization_fee: mobilizationFee,
     };
   } else if (orderType === 'EVACUATION') {
-    // 📦 SERVICE 3 : Logistique d'Évacuation de gravats
+    // SERVICE 3 : Logistique d'Évacuation de gravats
     // Formule : Prix Fixe de Prise en Charge + (Distance × Prix au Km) × Rotations
     const distanceKm = Math.max(parseFloat(opts.distance_km) || 0, 0);
     const rotations = Math.max(parseInt(opts.rotations || opts.trucks_count, 10) || 1, 1);
@@ -202,7 +202,7 @@ const calculatePrice = (arg1, truckType = 'simple_benne', materialType = null) =
       price_per_km: pricePerKm,
     };
   } else {
-    // 🏗️ SERVICE 1 : Transport de Matériaux (Cœur de métier)
+    // SERVICE 1 : Transport de Matériaux (Cœur de métier)
     // Formule : Prix du Matériau + (Distance × Prix au Km du Camion) + Prise en charge
     const distanceKm = Math.max(parseFloat(opts.distance_km) || 0, 0);
     const truckKey = opts.truck_type || 'simple_benne';
@@ -213,7 +213,7 @@ const calculatePrice = (arg1, truckType = 'simple_benne', materialType = null) =
     const baseFee = parseFloat(opts.base_fare) || PRICING.base_fee;
     const loadingFee = PRICING.loading_fee;
 
-    // Coût d'achat du matériau s'il est commandé directement via LogiTruck
+    // Coût d'achat du matériau s'il est commandé directement via BenneGo
     const materialUnitPrice = parseFloat(opts.material_unit_price) || 0;
     const quantity = parseFloat(opts.quantity_m3 || opts.quantity) || 0;
     const materialCost = materialUnitPrice * quantity;

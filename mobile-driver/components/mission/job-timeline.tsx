@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { JOB_STATUS_LABELS, type JobStatus } from "@/shared/logitruck";
+import { JOB_STATUS_LABELS, type JobStatus } from "@/shared/bennego";
 
 const STEPS: JobStatus[] = ["accepted", "driver_en_route_pickup", "loading", "driver_en_route_delivery", "delivered", "validated", "completed"];
 

@@ -51,14 +51,14 @@ export default function ClientsPage() {
     <div style={s.page}>
       <div style={s.tableCard}>
         <div style={s.tableHeader}>
-          <h3 style={s.tableTitle}>👥 {clients.length} clients inscrits</h3>
+          <h3 style={s.tableTitle}>{clients.length} clients inscrits</h3>
           <input
-            placeholder="🔍 Nom, prénom, téléphone, adresse..."
+            placeholder="Nom, prénom, téléphone, adresse..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={s.searchInput}
           />
-          <button onClick={load} style={s.refreshBtn}>🔄</button>
+          <button onClick={load} style={s.refreshBtn}>Actualiser</button>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -113,7 +113,7 @@ export default function ClientsPage() {
                         borderColor: client.is_active ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)',
                       }}
                     >
-                      {toggling === client.id ? '⏳' : client.is_active ? 'Bloquer' : 'Activer'}
+                      {toggling === client.id ? 'Patientez...' : client.is_active ? 'Bloquer' : 'Activer'}
                     </button>
                   </td>
                 </tr>
@@ -132,7 +132,7 @@ export default function ClientsPage() {
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
             <div style={s.modalHeader}>
               <h3 style={{ color: 'white', margin: 0 }}>
-                👤 {selected.prenom || ''} {selected.nom || selected.full_name}
+                {selected.prenom || ''} {selected.nom || selected.full_name}
               </h3>
               <button onClick={() => setSelected(null)} style={s.closeBtn}>✕</button>
             </div>
@@ -144,8 +144,8 @@ export default function ClientsPage() {
               <InfoRow label="Adresse" value={selected.adresse || '—'} />
               <InfoRow label="Email" value={selected.email || '—'} />
               <InfoRow label="Inscrit le" value={fmtDate(selected.created_at)} />
-              <InfoRow label="Vérifié" value={selected.is_verified ? '✅ Oui' : '⏳ Non'} />
-              <InfoRow label="Statut" value={selected.is_active ? '🟢 Actif' : '🔴 Inactif'} />
+              <InfoRow label="Vérifié" value={selected.is_verified ? 'Oui' : 'Non'} />
+              <InfoRow label="Statut" value={selected.is_active ? 'Actif' : 'Inactif'} />
             </div>
           </div>
         </div>

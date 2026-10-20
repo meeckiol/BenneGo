@@ -273,22 +273,22 @@ export default function DriverDashboard() {
         />
       </div>
 
-      {/* 🎁 Section Programme de Parrainage */}
+      {/* Section Programme de Parrainage */}
       <div style={styles.referralCard}>
-        <h3 style={styles.referralTitle}>🎁 Programme de Parrainage</h3>
+        <h3 style={styles.referralTitle}>Programme de Parrainage</h3>
         <p style={styles.referralDesc}>Parrainez un ami chauffeur et gagnez 2 500 FCFA chacun !</p>
         {referralCode ? (
           <>
             <div style={styles.referralCodeBox}>
               <span style={styles.referralCode}>{referralCode}</span>
-              <button onClick={copyCode} style={styles.copyBtn}>📋 Copier</button>
+              <button onClick={copyCode} style={styles.copyBtn}>Copier</button>
             </div>
             <div style={styles.referralStats}>
-              <span>👥 {referralStats.total} filleul(s)</span>
-              <span>💰 {Number(referralStats.totalRewards).toLocaleString()} FCFA gagnés</span>
+              <span>{referralStats.total} filleul(s)</span>
+              <span>{Number(referralStats.totalRewards).toLocaleString()} FCFA gagnés</span>
             </div>
             <button onClick={shareWhatsApp} style={styles.whatsappBtn}>
-              📲 Partager via WhatsApp
+              Partager via WhatsApp
             </button>
           </>
         ) : (

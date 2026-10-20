@@ -1,4 +1,4 @@
--- LogiTruck - Script de migration base de données
+-- BenneGo - Script de migration base de données
 -- Plateforme de logistique pour camions de chantier au Bénin
 
 -- Extension UUID
@@ -248,7 +248,7 @@ CREATE INDEX IF NOT EXISTS idx_platform_reviews_created ON platform_reviews(crea
 CREATE UNIQUE INDEX IF NOT EXISTS uq_platform_reviews_order ON platform_reviews(order_id) WHERE order_id IS NOT NULL;
 
 -- =============================================
--- B2B & EXPANSION SERVICES (LogiTruck B2B / BTP)
+-- B2B & EXPANSION SERVICES (BenneGo B2B / BTP)
 -- =============================================
 
 -- Table: companies (Entreprises BTP / Grands Comptes)
@@ -468,14 +468,142 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS recurring_order_id UUID REFERENCES r
 INSERT INTO promo_codes (code, discount_type, discount_value, min_order_amount, max_discount, usage_limit, is_active) VALUES
   ('BIENVENUE10', 'percentage', 10, 10000, 15000, 500, true),
   ('BTP2026', 'fixed', 5000, 30000, 5000, 200, true),
-  ('LOGITRUCK5', 'percentage', 5, 0, 10000, 1000, true)
+  ('BENNEGO5', 'percentage', 5, 0, 10000, 1000, true)
 ON CONFLICT (code) DO NOTHING;
 
 -- Initialisation d'offres d'emploi de test
 INSERT INTO careers (title, department, location, contract_type, description, requirements) VALUES
   ('Superviseur Logistique & Chantiers', 'Opérations', 'Cotonou, Bénin', 'CDI', 'Supervision des rotations de camions bennes et coordination sur les chantiers partenaires.', 'Minimum 3 ans d''expérience en logistique BTP ou transport.'),
-  ('Développeur Full-Stack Node/React', 'Technologie', 'Télétravail / Cotonou', 'CDI', 'Maintenance et développement de nouvelles fonctionnalités pour la plateforme LogiTruck.', 'Expérience confirmée Node.js, PostgreSQL, React, WebSockets.'),
+  ('Développeur Full-Stack Node/React', 'Technologie', 'Télétravail / Cotonou', 'CDI', 'Maintenance et développement de nouvelles fonctionnalités pour la plateforme BenneGo.', 'Expérience confirmée Node.js, PostgreSQL, React, WebSockets.'),
   ('Responsable Relations Transporteurs', 'Commercial', 'Cotonou / Parakou', 'CDI', 'Recrutement et fidélisation des chauffeurs et propriétaires d''engins lourds.', 'Excellentes compétences relationnelles et connaissance du secteur du transport au Bénin.')
 ON CONFLICT DO NOTHING;
 
 -- Le compte administrateur se crée avec : npm run create-admin (backend)
+
+-- =============================================================================
+-- EXTENSION BENNEGO-PRO (B2B BTP), GESTION CONDUCTEURS & CONSOLE ADMIN
+-- =============================================================================
+
+-- 1. ENRICHISSEMENT ENTREPRISES BTP & COMPTES GRANDS COMPTES
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS rccm VARCHAR(50);
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS legal_name VARCHAR(200);
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS tva_subject BOOLEAN DEFAULT true;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS aib_rate DECIMAL(4,2) DEFAULT 1.00;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS billing_address TEXT;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS credit_limit DECIMAL(14,2) DEFAULT 0;
+ALTER TABLE companies ADD COLUMN IF NOT EXISTS payment_term_days INT DEFAULT 0;
+
+ALTER TABLE projects_chantiers ADD COLUMN IF NOT EXISTS perimeter_radius_meters INT DEFAULT 500;
+ALTER TABLE projects_chantiers ADD COLUMN IF NOT EXISTS site_manager_name VARCHAR(120);
+ALTER TABLE projects_chantiers ADD COLUMN IF NOT EXISTS site_manager_phone VARCHAR(30);
+ALTER TABLE projects_chantiers ADD COLUMN IF NOT EXISTS authorized_dump_zone_lat DECIMAL(10, 8);
+ALTER TABLE projects_chantiers ADD COLUMN IF NOT EXISTS authorized_dump_zone_lng DECIMAL(11, 8);
+
+-- 2. COMMANDES MULTI-ROTATIONS & GROS VOLUMES B2B
+CREATE TABLE IF NOT EXISTS order_rotations (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  bulk_group_id UUID,
+  rotation_number INT NOT NULL,
+  driver_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  truck_plate VARCHAR(30),
+  truck_capacity_m3 DECIMAL(6,2),
+  status VARCHAR(30) DEFAULT 'scheduled',
+  quarry_ticket_number VARCHAR(100),
+  gross_weight_tonnes DECIMAL(8,2),
+  tare_weight_tonnes DECIMAL(8,2),
+  net_material_weight_tonnes DECIMAL(8,2),
+  quarry_ticket_photo_url TEXT,
+  loading_started_at TIMESTAMP WITH TIME ZONE,
+  weighed_at TIMESTAMP WITH TIME ZONE,
+  departure_time TIMESTAMP WITH TIME ZONE,
+  arrival_site_time TIMESTAMP WITH TIME ZONE,
+  dumping_time TIMESTAMP WITH TIME ZONE,
+  completed_at TIMESTAMP WITH TIME ZONE,
+  pod_signature_url TEXT,
+  pod_receiver_name VARCHAR(100),
+  pod_receiver_phone VARCHAR(30),
+  pod_photos JSONB DEFAULT '[]'::jsonb,
+  pod_notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rotations_order ON order_rotations(order_id);
+CREATE INDEX IF NOT EXISTS idx_rotations_driver ON order_rotations(driver_id);
+CREATE INDEX IF NOT EXISTS idx_rotations_status ON order_rotations(status);
+
+-- 3. MATÉRIAUX BTP PRÉCIS AU BÉNIN
+INSERT INTO material_types (name, name_local, unit, base_price_per_unit) VALUES
+  ('Sable de lagune (fin)', 'Sable lagune', 'm3', 7500),
+  ('Sable lavé de rivière', 'Sable lavé', 'm3', 9500),
+  ('Gravier concassé 5/15', 'Gravier béton fin', 'm3', 13500),
+  ('Gravier concassé 15/25', 'Gravier gros béton', 'm3', 12500),
+  ('Tout-venant 0/31.5', 'Tout-venant compactage', 'm3', 11000),
+  ('Terre rouge latéritique', 'Latérite de remblai', 'm3', 6000),
+  ('Évacuation gravats démolition', 'Gravats', 'm3', 5000),
+  ('Évacuation terre végétale', 'Terre excédentaire', 'm3', 4500)
+ON CONFLICT (name) DO UPDATE SET
+  base_price_per_unit = EXCLUDED.base_price_per_unit,
+  unit = EXCLUDED.unit;
+
+-- 4. CONFORMITÉ FISCALE & FACTURATION B2B (TVA Bénin 18% & AIB)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS subtotal_ht DECIMAL(12,2);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS tva_amount DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS aib_amount DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_ttc DECIMAL(12,2);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS b2b_purchase_order_ref VARCHAR(100);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS proforma_pdf_url TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS final_invoice_pdf_url TEXT;
+
+-- 5. SUIVI RIGOUREUX DES CONDUCTEURS & VÉHICULES
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS carte_grise_number VARCHAR(60);
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS carte_grise_photo_url TEXT;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS carte_grise_expires_at DATE;
+
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS visite_technique_number VARCHAR(60);
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS visite_technique_photo_url TEXT;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS visite_technique_expires_at DATE;
+
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS insurance_policy_number VARCHAR(60);
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS insurance_company VARCHAR(100);
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS insurance_photo_url TEXT;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS insurance_expires_at DATE;
+
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS truck_payload_tonnes DECIMAL(6,2) DEFAULT 20.00;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS truck_axle_count INT DEFAULT 3;
+
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS wallet_balance DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS pending_payout_balance DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS total_tips_earned DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE driver_profiles ADD COLUMN IF NOT EXISTS verification_status VARCHAR(30) DEFAULT 'pending';
+
+-- 6. GESTION DES LITIGES ET SÉCURISATION DU SÉQUESTRE (Console Admin)
+CREATE TABLE IF NOT EXISTS order_disputes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  opened_by_user_id UUID NOT NULL REFERENCES users(id),
+  reason VARCHAR(100) NOT NULL,
+  description TEXT NOT NULL,
+  evidence_photos JSONB DEFAULT '[]'::jsonb,
+  status VARCHAR(30) DEFAULT 'opened',
+  resolution_notes TEXT,
+  resolved_by_admin_id UUID REFERENCES users(id),
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS site_delay_alerts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  rotation_id UUID REFERENCES order_rotations(id) ON DELETE CASCADE,
+  expected_arrival TIMESTAMP WITH TIME ZONE NOT NULL,
+  actual_or_current_delay_minutes INT NOT NULL,
+  status VARCHAR(20) DEFAULT 'active',
+  alert_message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_disputes_order ON order_disputes(order_id);
+CREATE INDEX IF NOT EXISTS idx_alerts_order ON site_delay_alerts(order_id);
+

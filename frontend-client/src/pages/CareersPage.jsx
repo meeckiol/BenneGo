@@ -63,7 +63,7 @@ export default function CareersPage() {
       {/* Main content */}
       <main style={styles.main}>
         <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>💼 Rejoignez l'aventure BenneGo</h1>
+          <h1 style={styles.heroTitle}>Rejoignez l'aventure BenneGo</h1>
           <p style={styles.heroSub}>
             Construisons ensemble l'avenir de la logistique BTP et du transport lourd au Bénin et en Afrique de l'Ouest.
           </p>
@@ -73,7 +73,6 @@ export default function CareersPage() {
           <div style={styles.loading}>Chargement des opportunités...</div>
         ) : careers.length === 0 ? (
           <div style={styles.empty}>
-            <span style={{ fontSize: '40px' }}>🌱</span>
             <p>Aucune offre ouverte pour le moment. Revenez bientôt !</p>
           </div>
         ) : (
@@ -84,9 +83,9 @@ export default function CareersPage() {
                   <div>
                     <h3 style={styles.jobTitle}>{job.title}</h3>
                     <div style={styles.jobMeta}>
-                      <span>📍 {job.location || 'Cotonou, Bénin'}</span>
+                      <span>{job.location || 'Cotonou, Bénin'}</span>
                       <span>·</span>
-                      <span>📄 {job.contract_type || 'CDI'}</span>
+                      <span>{job.contract_type || 'CDI'}</span>
                       {job.department && (
                         <>
                           <span>·</span>
@@ -180,7 +179,7 @@ export default function CareersPage() {
               </div>
 
               <button type="submit" disabled={submitting} style={styles.submitBtn}>
-                {submitting ? 'Envoi en cours...' : 'Envoyer ma candidature 🚀'}
+                {submitting ? 'Envoi en cours...' : 'Envoyer ma candidature'}
               </button>
             </form>
           </div>

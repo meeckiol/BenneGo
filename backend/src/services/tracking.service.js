@@ -101,7 +101,7 @@ const recordPosition = async (driverId, { lat, lng, order_id: orderId }) => {
          VALUES ($1, 'GPS_ROUTE_DEVIATION', $2, $3, $4)`,
         [
           order.client_id,
-          `⚠️ Alerte GPS : Écart d'itinéraire (${order.order_number})`,
+          `Alerte GPS : Écart d'itinéraire (${order.order_number})`,
           `Le camion transportant votre commande s'est écarté de ${deviationPct}% de son tracé. Vérifiez sa position en direct.`,
           JSON.stringify(deviationAlert),
         ]

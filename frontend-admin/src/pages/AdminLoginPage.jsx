@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
     <div style={s.container}>
       <div style={s.card}>
         <div style={s.logo}>
-          <span style={s.logoIcon}>🚛</span>
+          <img src="/logo-icon.png" alt="BenneGo" style={{ width: 48, height: 48, borderRadius: 10, marginBottom: 8 }} />
           <h1 style={s.logoTitle}>BenneGo</h1>
           <p style={s.logoSub}>Administration</p>
         </div>
@@ -61,13 +61,15 @@ export default function AdminLoginPage() {
           <button type="submit" disabled={loading} style={s.btn}>
             {loading ? 'Connexion...' : 'Accéder au dashboard'}
           </button>
-          <button
-            type="button"
-            onClick={handleDemoAccess}
-            style={s.demoBtn}
-          >
-            ⚡ Accès Démo Administrateur
-          </button>
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              onClick={handleDemoAccess}
+              style={s.demoBtn}
+            >
+              Accès Démo Administrateur
+            </button>
+          )}
         </form>
       </div>
     </div>

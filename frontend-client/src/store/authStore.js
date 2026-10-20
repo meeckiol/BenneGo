@@ -36,7 +36,7 @@ const useAuthStore = create(
       },
     }),
     {
-      name: 'logitruck-auth',
+      name: 'bennego-auth',
       onRehydrateStorage: () => (state) => {
         if (state?.token) {
           api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;

@@ -1,6 +1,6 @@
 /**
  * receipt.service.js
- * Génération des reçus PDF pour les commandes LogiTruck.
+ * Génération des reçus PDF pour les commandes BenneGo.
  *
  * Deux types de reçu :
  *  - client  : informations de la commande, client, conducteur, montant payé
@@ -55,7 +55,7 @@ const drawHeader = (doc, type) => {
   doc.fillColor(WHITE)
      .fontSize(22)
      .font('Helvetica-Bold')
-     .text('🚛 LogiTruck', 50, 22);
+     .text('BenneGo', 50, 22);
 
   doc.fontSize(11)
      .font('Helvetica')
@@ -114,7 +114,7 @@ const drawFooter = (doc) => {
      .fontSize(9)
      .font('Helvetica')
      .text(
-       'Ce document est généré automatiquement par la plateforme LogiTruck. ' +
+       'Ce document est généré automatiquement par la plateforme BenneGo. ' +
        'Conservez-le comme preuve de paiement.',
        50, y + 12, { width: doc.page.width - 100, align: 'center' }
      );
@@ -138,7 +138,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
     margins: { top: 100, bottom: 70, left: 50, right: 50 },
     info: {
       Title: `Reçu ${order.order_number}`,
-      Author: 'LogiTruck',
+      Author: 'BenneGo',
       Subject: type === 'driver' ? 'Reçu conducteur' : 'Reçu client',
     },
   });
@@ -177,7 +177,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y += 30;
 
   // ── Section commande ─────────────────────────────────────────────────────
-  y = drawSection(doc, '📦 Détails de la commande', y);
+  y = drawSection(doc, 'Détails de la commande', y);
   y = drawRow(doc, 'Numéro de commande', order.order_number, y, ORANGE);
   y = drawRow(doc, 'Date de commande', fmtDate(order.created_at), y);
   y = drawRow(doc, 'Date de livraison', fmtDate(order.delivered_at), y);
@@ -189,7 +189,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y += 10;
 
   // ── Section client ───────────────────────────────────────────────────────
-  y = drawSection(doc, '👤 Informations client', y);
+  y = drawSection(doc, 'Informations client', y);
   y = drawRow(doc, 'Nom complet', order.client_full_name || order.client_name, y);
   y = drawRow(doc, 'Prénom', order.client_prenom, y);
   y = drawRow(doc, 'Nom de famille', order.client_nom, y);
@@ -199,7 +199,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y += 10;
 
   // ── Section conducteur ───────────────────────────────────────────────────
-  y = drawSection(doc, '🚛 Informations conducteur', y);
+  y = drawSection(doc, 'Informations conducteur', y);
   y = drawRow(doc, 'Nom complet', order.driver_full_name || order.driver_name, y);
   y = drawRow(doc, 'Téléphone', order.driver_phone, y);
   if (order.driver_date_naissance) {
@@ -216,7 +216,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y += 10;
 
   // ── Section paiement ─────────────────────────────────────────────────────
-  y = drawSection(doc, '💰 Paiement', y);
+  y = drawSection(doc, 'Paiement', y);
 
   // Cadre montant total
   doc.rect(50, y, doc.page.width - 100, 36).fill('#fff7ed').stroke(ORANGE);
@@ -235,7 +235,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   // ── Section répartition (conducteur seulement) ──────────────────────────
   if (type === 'driver') {
     y += 10;
-    y = drawSection(doc, '📊 Répartition des gains (conducteur)', y);
+    y = drawSection(doc, 'Répartition des gains (conducteur)', y);
 
     const commRate = order.total_amount > 0
       ? ((order.commission_amount / order.total_amount) * 100).toFixed(1)

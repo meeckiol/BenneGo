@@ -2,7 +2,7 @@ import axios from "axios";
 import Constants from "expo-constants";
 import { clearSession, getToken } from "@/lib/session";
 
-/** URL du backend LogiTruck (EXPO_PUBLIC_API_URL). Sur émulateur Android : http://10.0.2.2:3000 */
+/** URL du backend BenneGo (EXPO_PUBLIC_API_URL). Sur émulateur Android : http://10.0.2.2:3000 */
 export const API_URL: string =
   (Constants.expoConfig?.extra?.apiUrl as string | undefined) || process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 

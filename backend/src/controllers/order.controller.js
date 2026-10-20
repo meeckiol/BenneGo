@@ -258,7 +258,7 @@ const createOrder = async (req, res, next) => {
 
 /**
  * POST /api/orders/bulk
- * Planification massive B2B (LogiTruck Enterprise)
+ * Planification massive B2B (BenneGo Enterprise)
  * Permet de planifier N rotations de camions sur X jours (ex: 10 rotations/jour sur 5 jours = 50 courses)
  * Génère automatiquement une facture proforma unique avec virement/chèque sur compte séquestre.
  */
@@ -370,7 +370,7 @@ const createBulkOrders = async (req, res, next) => {
       total_driver_global: totalDriverGlobal,
       escrow_bank_details: {
         bank_name: 'BOA Bénin / Ecobank Bénin',
-        account_name: 'LogiTruck Escrow Account SARL',
+        account_name: 'BenneGo Escrow Account SARL',
         rib: 'BJ061 01001 00123456789 22',
         instructions: `Effectuez votre virement ou déposez votre chèque avec le libellé "${proformaInvoiceNumber}". Une fois validé par l'administration, vos 50 courses seront débloquées en temps réel pour les chauffeurs.`,
       },

@@ -30,6 +30,7 @@ export default function DriverLoginPage() {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.logo}>
+          <img src="/icon-192.png" alt="BenneGo Driver" style={{ width: 80, height: 80, borderRadius: 18, marginBottom: 14, boxShadow: "0 8px 20px rgba(0,0,0,0.3)" }} />
           <h1 style={styles.title}>BenneGo Driver</h1>
           <p style={styles.subtitle}>Espace Conducteur & Chauffeur</p>
         </div>
