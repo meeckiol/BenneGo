@@ -78,6 +78,16 @@ router.get('/orders/:orderId/status', [param('orderId').isUUID()], validateReque
 
 // ----- Administration -----
 
+// POST /api/payments/orders/:orderId/release — libération des fonds vers le chauffeur (admin)                                                                    
+    router.post('/orders/:orderId/release', requireRole('admin'), [param('orderId').isUUID()],                                                                                             
+      validateRequest, async (req, res, next) => {                                                                                                                                         
+        try {                                                                                                                                                                              
+          res.json(await payments.settlePayout(req.params.orderId));                                                                                                                       
+        } catch (error) {                                                                                                                                                                  
+          next(error);                                                                                                                                                                     
+        }                                                                                                                                                                                  
+      });
+
 // POST /api/payments/orders/:orderId/refund — remboursement (litige / chauffeur absent)
 router.post('/orders/:orderId/refund', requireRole('admin'), [param('orderId').isUUID()],
   validateRequest, async (req, res, next) => {

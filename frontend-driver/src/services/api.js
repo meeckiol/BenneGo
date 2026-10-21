@@ -13,10 +13,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.error || 'Erreur de connexion';
-    if (error.response?.status === 401) {
-      localStorage.removeItem('bennego-driver-auth');
-      window.location.href = '/login';
-    } else if (error.response?.status !== 404) {
+    const isLogin = error.config?.url?.includes('/auth/login');                                                                                                                       
+        if (error.response?.status === 401 && !isLogin) {                                                                                                                                  
+          localStorage.removeItem('bennego-driver-auth');                                                                                                                                           
+          window.location.href = '/login';                                                                                                                                                 
+        } else if (error.response?.status !== 404) {
       toast.error(message);
     }
     return Promise.reject(error);

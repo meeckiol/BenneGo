@@ -26,8 +26,8 @@ router.post('/estimate', [
 // POST /api/orders - Créer une commande (Matériaux, Location Engin, Évacuation)
 router.post('/', requireRole('client'), [
   body('order_type').optional().isIn(['MATERIAL', 'RENTAL', 'EVACUATION']),
-  body('project_id').optional({ nullable: true }).isUUID(),
-  body('vehicle_type_id').optional({ nullable: true }).isUUID(),
+  body('project_id').optional({ nullable: true, checkFalsy: true }).isUUID(),
+  body('vehicle_type_id').optional({ nullable: true, checkFalsy: true }).isUUID(),
   body('pickup_lat').optional({ nullable: true }).isFloat({ min: -90, max: 90 }),
   body('pickup_lng').optional({ nullable: true }).isFloat({ min: -180, max: 180 }),
   body('pickup_address').optional({ nullable: true }).trim(),
@@ -37,12 +37,12 @@ router.post('/', requireRole('client'), [
   body('quantity_m3').optional({ nullable: true }).isFloat({ min: 0.1, max: 500 }),
   body('duration_hours').optional({ nullable: true }).isFloat({ min: 1, max: 720 }),
   body('truck_type').optional().isString(),
-  body('material_type_id').optional({ nullable: true }).isUUID(),
+  body('material_type_id').optional({ nullable: true, checkFalsy: true }).isUUID(),
 ], validateRequest, createOrder);
 
 // POST /api/orders/bulk - Planification massive B2B (BenneGo Enterprise)
 router.post('/bulk', requireRole('client'), [
-  body('project_id').optional({ nullable: true }).isUUID(),
+  body('project_id').optional({ nullable: true, checkFalsy: true }).isUUID(),
   body('order_type').optional().isIn(['MATERIAL', 'RENTAL', 'EVACUATION']),
   body('pickup_lat').isFloat({ min: -90, max: 90 }),
   body('pickup_lng').isFloat({ min: -180, max: 180 }),

@@ -607,3 +607,112 @@ CREATE TABLE IF NOT EXISTS site_delay_alerts (
 CREATE INDEX IF NOT EXISTS idx_disputes_order ON order_disputes(order_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_order ON site_delay_alerts(order_id);
 
+
+                                                                                                                                                               
+    -- =============================================================================                                                                                                       
+    -- EXTENSION DU MASTERPLAN LANCEMENT.MD & CORRECTIFS SCHEMA DDL                                                                                                                        
+    -- =============================================================================                                                                                                       
+    ALTER TABLE careers ADD COLUMN IF NOT EXISTS salary_range VARCHAR(100);                                                                                                                
+    ALTER TABLE careers ALTER COLUMN department DROP NOT NULL;                                                                                                                             
+    ALTER TABLE careers ALTER COLUMN department SET DEFAULT 'Général';                                                                                                                     
+    ALTER TABLE job_applications ALTER COLUMN phone DROP NOT NULL;                                                                                                                         
+                                                                                                                                                                                           
+    -- 1. Mode Flotte & Télémétrie "Œil de Patron"                                                                                                                                         
+    CREATE TABLE IF NOT EXISTS fleets (                                                                                                                                                    
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,                                                                                                                       
+      name VARCHAR(150) NOT NULL,                                                                                                                                                          
+      momo_payout_number VARCHAR(30) NOT NULL,                                                                                                                                             
+      momo_payout_provider VARCHAR(20) DEFAULT 'mtn',                                                                                                                                      
+      driver_share_percentage DECIMAL(5,2) DEFAULT 30.00,                                                                                                                                  
+      insurance_partner VARCHAR(100) DEFAULT 'NSIA Assurances Bénin',                                                                                                                      
+      insurance_discount_pct DECIMAL(4,2) DEFAULT 20.00,                                                                                                                                   
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                                                                                                                    
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    CREATE TABLE IF NOT EXISTS fleet_trucks (                                                                                                                                              
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      fleet_id UUID NOT NULL REFERENCES fleets(id) ON DELETE CASCADE,                                                                                                                      
+      truck_plate VARCHAR(30) NOT NULL UNIQUE,                                                                                                                                             
+      driver_id UUID REFERENCES users(id) ON DELETE SET NULL,                                                                                                                              
+      truck_type VARCHAR(50) DEFAULT 'double_benne',                                                                                                                                       
+      is_active BOOLEAN DEFAULT true,                                                                                                                                                      
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                                                                                                                    
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    CREATE TABLE IF NOT EXISTS fleet_stop_alerts (                                                                                                                                         
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      fleet_id UUID REFERENCES fleets(id) ON DELETE CASCADE,                                                                                                                               
+      driver_id UUID REFERENCES users(id) ON DELETE CASCADE,                                                                                                                               
+      truck_plate VARCHAR(30) NOT NULL,                                                                                                                                                    
+      stop_lat DECIMAL(10, 8) NOT NULL,                                                                                                                                                    
+      stop_lng DECIMAL(11, 8) NOT NULL,                                                                                                                                                    
+      duration_minutes INT NOT NULL,                                                                                                                                                       
+      alert_type VARCHAR(50) DEFAULT 'ABNORMAL_PROLONGED_STOP',                                                                                                                            
+      status VARCHAR(30) DEFAULT 'active',                                                                                                                                                 
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),                                                                                                                                   
+      resolved_at TIMESTAMP WITH TIME ZONE                                                                                                                                                 
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    -- 2. Avance Carburant "BenneGo Fuel" & Retrait 60s                                                                                                                                    
+    CREATE TABLE IF NOT EXISTS fuel_advances (                                                                                                                                             
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,                                                                                                                      
+      station_partner VARCHAR(100) NOT NULL,                                                                                                                                               
+      voucher_code VARCHAR(50) UNIQUE NOT NULL,                                                                                                                                            
+      amount_fcfa DECIMAL(10,2) NOT NULL,                                                                                                                                                  
+      status VARCHAR(30) DEFAULT 'issued',                                                                                                                                                 
+      repaid_amount DECIMAL(10,2) DEFAULT 0,                                                                                                                                               
+      issued_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),                                                                                                                                    
+      repaid_at TIMESTAMP WITH TIME ZONE                                                                                                                                                   
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    CREATE TABLE IF NOT EXISTS driver_instant_cashouts (                                                                                                                                   
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,                                                                                                                      
+      order_id UUID REFERENCES orders(id) ON DELETE SET NULL,                                                                                                                              
+      amount_fcfa DECIMAL(10,2) NOT NULL,                                                                                                                                                  
+      momo_number VARCHAR(30) NOT NULL,                                                                                                                                                    
+      momo_provider VARCHAR(20) NOT NULL,                                                                                                                                                  
+      kkiapay_payout_ref VARCHAR(100),                                                                                                                                                     
+      status VARCHAR(30) DEFAULT 'completed',                                                                                                                                              
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                                                                                                                    
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    -- 3. Continuité de Chantier (SLA Béton Relève)                                                                                                                                        
+    CREATE TABLE IF NOT EXISTS breakdown_relief_requests (                                                                                                                                 
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,                                                                                                                      
+      original_driver_id UUID NOT NULL REFERENCES users(id),                                                                                                                               
+      relief_driver_id UUID REFERENCES users(id),                                                                                                                                          
+      breakdown_reason VARCHAR(100) NOT NULL,                                                                                                                                              
+      lat DECIMAL(10, 8) NOT NULL,                                                                                                                                                         
+      lng DECIMAL(11, 8) NOT NULL,                                                                                                                                                         
+      status VARCHAR(30) DEFAULT 'pending',                                                                                                                                                
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),                                                                                                                                   
+      assigned_at TIMESTAMP WITH TIME ZONE                                                                                                                                                 
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    -- 4. Baromètre Hebdomadaire des Prix BTP                                                                                                                                              
+    CREATE TABLE IF NOT EXISTS btp_price_barometer (                                                                                                                                       
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
+      material_name VARCHAR(100) NOT NULL,                                                                                                                                                 
+      avg_price_m3 DECIMAL(10,2) NOT NULL,                                                                                                                                                 
+      min_price_m3 DECIMAL(10,2) NOT NULL,                                                                                                                                                 
+      max_price_m3 DECIMAL(10,2) NOT NULL,                                                                                                                                                 
+      week_number INT NOT NULL,                                                                                                                                                            
+      year INT NOT NULL,                                                                                                                                                                   
+      trend VARCHAR(20) DEFAULT 'stable',                                                                                                                                                  
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                                                                                                                    
+    );                                                                                                                                                                                     
+                                                                                                                                                                                           
+    CREATE UNIQUE INDEX IF NOT EXISTS uq_btp_barometer ON btp_price_barometer(material_name, week_number, year);                                                                           
+                                                                                                                                                                                           
+    INSERT INTO btp_price_barometer (material_name, avg_price_m3, min_price_m3, max_price_m3, week_number, year, trend) VALUES                                                             
+      ('Sable de lagune (fin)', 7500, 7000, 8000, 42, 2026, 'stable'),                                                                                                                     
+      ('Sable lavé de rivière (Tori)', 9500, 9000, 10500, 42, 2026, 'up'),                                                                                                                 
+      ('Gravier concassé 5/15', 13500, 13000, 14500, 42, 2026, 'stable'),                                                                                                                  
+      ('Gravier concassé 15/25', 12500, 12000, 13500, 42, 2026, 'down'),                                                                                                                   
+      ('Latérite de remblai', 6000, 5500, 6500, 42, 2026, 'stable')                                                                                                                        
+    ON CONFLICT DO NOTHING;                                                                                                                                                                
+    

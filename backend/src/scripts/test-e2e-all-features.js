@@ -66,7 +66,7 @@ function checkFrontend(port, label) {
 }
 
 async function runTests() {
-  console.log('🚀 ========================================================');
+  console.log('========================================================');
   console.log('    TEST COMPLET DES FONCTIONNALITÉS BENNEGO (LOCALHOST)   ');
   console.log('========================================================\n');
 
@@ -87,12 +87,12 @@ async function runTests() {
 
   try {
     // 1. Health check
-    console.log('📌 1. VÉRIFICATION DU SERVEUR BACKEND');
+    console.log('1. VÉRIFICATION DU SERVEUR BACKEND');
     const health = await request('GET', '/health');
     assertStep('API Health Check', health.status === 200 && health.data.status === 'ok', `status: ${health.data.status}`);
 
     // 2. Authentication
-    console.log('\n📌 2. AUTHENTIFICATION & RÔLES');
+    console.log('\n2. AUTHENTIFICATION & RÔLES');
     // Admin login
     const adminAuth = await request('POST', '/api/auth/login', {
       phone: '+22997000001',
@@ -121,7 +121,7 @@ async function runTests() {
     const clientToken = clientAuth.data?.token;
 
     // 3. Public modules (Careers, Promo)
-    console.log('\n📌 3. MODULES PUBLICS & PROMOTIONS');
+    console.log('\n3. MODULES PUBLICS & PROMOTIONS');
     const careers = await request('GET', '/api/careers');
     const careerList = careers.data?.careers || (Array.isArray(careers.data) ? careers.data : []);
     assertStep('Liste des offres d\'emploi (Carrières)', careers.status === 200 && Array.isArray(careerList) && careerList.length > 0, `${careerList.length} offres actives`);
@@ -133,7 +133,7 @@ async function runTests() {
     assertStep('Validation code promo BENNEGO2026', promoCheck.status === 200 && (promoCheck.data?.discount_amount > 0 || promoCheck.data?.valid), `remise: ${promoCheck.data?.discount_amount || 5000} FCFA`);
 
     // 4. Estimation de prix (Devis dynamique OSRM)
-    console.log('\n📌 4. ESTIMATEUR DE PRIX & DEVIS DYNAMIQUE');
+    console.log('\n4. ESTIMATEUR DE PRIX & DEVIS DYNAMIQUE');
     const estimate = await request('POST', '/api/orders/estimate', {
       order_type: 'MATERIAL',
       pickup_lat: 6.4950,
@@ -146,7 +146,7 @@ async function runTests() {
     assertStep('Estimation trajet & tarif', estimate.status === 200 && estimate.data.total_amount > 0, `Total: ${estimate.data?.total_amount} FCFA, Distance: ${estimate.data?.distance_km} km`);
 
     // 5. Création de Commande par le Client
-    console.log('\n📌 5. CRÉATION COMMANDE CLIENT (BTP)');
+    console.log('\n5. CRÉATION COMMANDE CLIENT (BTP)');
     const newOrder = await request('POST', '/api/orders', {
       order_type: 'MATERIAL',
       pickup_address: 'Carrière Dan, Tori-Bossito',
@@ -167,7 +167,7 @@ async function runTests() {
     const orderNumber = newOrder.data?.order?.order_number;
 
     // 6. Blocage des fonds en Séquestre (Escrow)
-    console.log('\n📌 6. SÉCURISATION DU PAIEMENT EN SÉQUESTRE (ESCROW)');
+    console.log('\n6. SÉCURISATION DU PAIEMENT EN SÉQUESTRE (ESCROW)');
     const checkoutCfg = await request('GET', `/api/payments/orders/${orderId}/checkout`, null, clientToken);
     assertStep('Récupération configuration de paiement', checkoutCfg.status === 200 && checkoutCfg.data.amount > 0, `Montant: ${checkoutCfg.data?.amount} FCFA`);
 
@@ -177,7 +177,7 @@ async function runTests() {
     assertStep('Paiement sécurisé en séquestre', escrowConfirm.status === 200 && escrowConfirm.data?.payment_status === 'escrow_held', `statut commande: ${escrowConfirm.data?.status}`);
 
     // 7. Prise en charge par le Chauffeur
-    console.log('\n📌 7. CYCLE OPÉRATIONNEL CHAUFFEUR (DISPATCH & TRAJET)');
+    console.log('\n7. CYCLE OPÉRATIONNEL CHAUFFEUR (DISPATCH & TRAJET)');
     const driverOrders = await request('GET', '/api/orders', null, driverToken);
     assertStep('Consultation des missions disponibles', driverOrders.status === 200 && Array.isArray(driverOrders.data?.orders || driverOrders.data), 'liste récupérée');
 
@@ -210,7 +210,7 @@ async function runTests() {
     assertStep('Statut : Matériau livré sur site', stDelivered.status === 200, `${stDelivered.data?.message}`);
 
     // 8. Confirmation de Livraison par le Client & Libération du Séquestre
-    console.log('\n📌 8. CONFIRMATION CLIENT & DÉBLOCAGE DES FONDS');
+    console.log('\n8. CONFIRMATION CLIENT & DÉBLOCAGE DES FONDS');
     const confirmDelivery = await request('POST', `/api/orders/${orderId}/confirm-delivery`, null, clientToken);
     assertStep('Client valide la conformité du déchargement', confirmDelivery.status === 200, `Part chauffeur: ${confirmDelivery.data?.driver_amount} FCFA, Commission: ${confirmDelivery.data?.commission_amount} FCFA`);
 
@@ -222,7 +222,7 @@ async function runTests() {
     assertStep('Avis et notation client (5 étoiles)', reviewRes.status === 201 || reviewRes.status === 200, 'notation enregistrée');
 
     // 9. Tableau de bord Administrateur & Reversements
-    console.log('\n📌 9. CONSOLE ADMINISTRATEUR & GESTION FINANCIÈRE');
+    console.log('\n9. CONSOLE ADMINISTRATEUR & GESTION FINANCIÈRE');
     const adminStats = await request('GET', '/api/admin/stats', null, adminToken);
     assertStep('KPIs & Métriques Globales Admin', adminStats.status === 200, `Total commandes: ${adminStats.data?.orders?.total || 0}, Chauffeurs: ${adminStats.data?.drivers?.total || 0}`);
 
@@ -242,7 +242,7 @@ async function runTests() {
     assertStep('Programme de Parrainage Chantiers', adminReferrals.status === 200, 'dashboard parrainage actif');
 
     // 10. Frontends Web Check
-    console.log('\n📌 10. VÉRIFICATION DES SERVEURS FRONTEND REACT / VITE');
+    console.log('\n10. VÉRIFICATION DES SERVEURS FRONTEND REACT / VITE');
     const [cRes, dRes, aRes] = await Promise.all([
       checkFrontend(5173, 'Client Web App'),
       checkFrontend(5174, 'Driver Web App / PWA'),
@@ -254,11 +254,11 @@ async function runTests() {
 
     // Résumé
     console.log('\n========================================================');
-    console.log(`🎯 RÉSULTATS DU TEST : ${passedSteps}/${totalSteps} ÉTAPES VALIDÉES AVEC SUCCÈS`);
+    console.log(`RÉSULTATS DU TEST : ${passedSteps}/${totalSteps} ÉTAPES VALIDÉES AVEC SUCCÈS`);
     console.log('========================================================\n');
 
     if (passedSteps === totalSteps) {
-      console.log('✨ TOUTES LES FONCTIONNALITÉS FONCTIONNENT PARFAITEMENT EN LOCALHOST ! ✨');
+      console.log('TOUTES LES FONCTIONNALITÉS FONCTIONNENT PARFAITEMENT EN LOCALHOST ! ');
     }
 
   } catch (error) {

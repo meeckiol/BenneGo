@@ -15,6 +15,7 @@
     "dev:driver": "npm run dev -w frontend-driver",
     "dev:admin": "npm run dev -w frontend-admin",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\" \"npm run dev:driver\" \"npm run dev:admin\"",
+    "online": "node scripts/start-online.js",
     "migrate": "npm run migrate -w backend",
     "test": "npm test -w backend",
     "docker:up": "docker compose up -d",

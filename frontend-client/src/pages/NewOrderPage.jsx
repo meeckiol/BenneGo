@@ -148,10 +148,16 @@ export default function NewOrderPage() {
     setLoading(true);
     let orderId;
     try {
-      const payload = {
-        ...form,
-        order_type: orderType,
-      };
+      const payload = {                                                                                                                                                               
+            ...form,                                                                                                                                                                       
+            order_type: orderType,                                                                                                                                                         
+            project_id: form.project_id || undefined,                                                                                                                                      
+            vehicle_type_id: form.vehicle_type_id || undefined,                                                                                                                            
+            material_type_id: form.material_type_id || undefined,                                                                                                                          
+            promo_code: promoResult?.code || undefined,                                                                                                                                    
+            is_recurring: isRecurring,                                                                                                                                                     
+            recurring_frequency: isRecurring ? recurringFrequency : undefined,                                                                                                             
+          };
 
       const { data } = await api.post('/orders', payload);
       orderId = data.order.id;
@@ -558,6 +564,63 @@ export default function NewOrderPage() {
                 {orderType === 'MATERIAL' && ' L\'argent est débloqué au chauffeur uniquement après déchargement et vérification des matériaux sur votre chantier.'}
               </div>
             </div>
+
+                                                                                                                                                                           
+                {/* Promo & Commande récurrente */}                                                                                                                                        
+                <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>                                                                
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>                                                                                                      
+                    <input                                                                                                                                                                 
+                      type="text"                                                                                                                                                          
+                      placeholder="Code Promo (ex: BIENVENUE10)"                                                                                                                           
+                      value={promoCode}                                                                                                                                                    
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}                                                                                                         
+                      style={{ ...styles.input, textTransform: 'uppercase', flex: 1 }}                                                                                                     
+                    />                                                                                                                                                                     
+                    <button                                                                                                                                                                
+                      type="button"                                                                                                                                                        
+                      onClick={async () => {                                                                                                                                               
+                        if (!promoCode.trim()) return;                                                                                                                                     
+                        setPromoLoading(true);                                                                                                                                             
+                        try {                                                                                                                                                              
+                          const { data } = await api.post('/promo/validate', {                                                                                                             
+                            code: promoCode,                                                                                                                                               
+                            order_amount: estimate?.total_amount || 0,                                                                                                                     
+                          });                                                                                                                                                              
+                          setPromoResult(data);                                                                                                                                            
+                          toast.success(data.message);                                                                                                                                     
+                        } catch {                                                                                                                                                          
+                          setPromoResult(null);                                                                                                                                            
+                        } finally {                                                                                                                                                        
+                          setPromoLoading(false);                                                                                                                                          
+                        }                                                                                                                                                                  
+                      }}                                                                                                                                                                   
+                      disabled={promoLoading}                                                                                                                                              
+                      style={{ ...styles.primaryBtn, width: 'auto', padding: '0 16px', fontSize: '13.5px' }}                                                                               
+                    >                                                                                                                                                                      
+                      Appliquer                                                                                                                                                            
+                    </button>                                                                                                                                                              
+                  </div>                                                                                                                                                                   
+                                                                                                                                                                                           
+                  {promoResult && (                                                                                                                                                        
+                    <p style={{ color: '#16A34A', fontSize: '13px', fontWeight: '700', margin: '0 0 10px' }}>                                                                              
+                      Remise déduite : -{promoResult.discount_amount.toLocaleString()} FCFA                                                                                                
+                    </p>                                                                                                                                                                   
+                  )}                                                                                                                                                                       
+                                                                                                                                                                                           
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13.5px', color: '#334155' }}>                                           
+                    <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />                                                                     
+                    Planifier comme commande récurrente de chantier                                                                                                                        
+                  </label>                                                                                                                                                                 
+                                                                                                                                                                                           
+                  {isRecurring && (                                                                                                                                                        
+                    <select value={recurringFrequency} onChange={(e) => setRecurringFrequency(e.target.value)} style={{ ...styles.input, marginTop: '8px' }}>                              
+                      <option value="daily">Quotidien (chaque jour)</option>                                                                                                               
+                      <option value="weekly">Hebdomadaire (chaque semaine)</option>                                                                                                        
+                      <option value="biweekly">Bihebdomadaire (toutes les 2 semaines)</option>                                                                                             
+                      <option value="monthly">Mensuel (chaque mois)</option>                                                                                                               
+                    </select>                                                                                                                                                              
+                  )}                                                                                                                                                                       
+                </div>
 
             <div style={styles.paymentInfo}>
               <p><strong>Paiement instantané par Mobile Money (MTN MoMo / Moov Money)</strong></p>

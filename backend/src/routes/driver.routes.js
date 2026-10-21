@@ -54,7 +54,7 @@ router.patch('/availability', requireRole('driver'), [
 
 // PATCH /api/drivers/location - Position GPS (HTTP, pour l'appli mobile). order_id facultatif.
 router.patch('/location', requireRole('driver'), [
-  body('order_id').optional({ nullable: true }).isUUID(),
+  body('order_id').optional({ nullable: true, checkFalsy: true }).isUUID(),
 ], validateRequest, async (req, res, next) => {
   try {
     const recorded = await recordPosition(req.user.id, req.body);

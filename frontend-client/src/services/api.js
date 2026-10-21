@@ -15,11 +15,11 @@ api.interceptors.response.use(
   (error) => {
     const message = error.response?.data?.error || 'Erreur de connexion';
 
-    if (error.response?.status === 401) {
-      // Token expiré → rediriger vers login
-      localStorage.removeItem('bennego-auth');
-      window.location.href = '/login';
-    } else if (error.response?.status !== 404) {
+    const isLogin = error.config?.url?.includes('/auth/login');                                                                                                                       
+        if (error.response?.status === 401 && !isLogin) {                                                                                                                                  
+          localStorage.removeItem('bennego-auth');                                                                                                                                           
+          window.location.href = '/login';                                                                                                                                                 
+        } else if (error.response?.status !== 404) {
       toast.error(message);
     }
 

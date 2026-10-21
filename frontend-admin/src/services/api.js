@@ -13,10 +13,11 @@ api.interceptors.response.use(
   (r) => r,
   (error) => {
     const message = error.response?.data?.error || 'Erreur serveur';
-    if (error.response?.status === 401) {
-      localStorage.removeItem('bennego-admin-auth');
-      window.location.href = '/login';
-    } else {
+    const isLogin = error.config?.url?.includes('/auth/login');                                                                                                                       
+        if (error.response?.status === 401 && !isLogin) {                                                                                                                                  
+          localStorage.removeItem('bennego-admin-auth');                                                                                                                                           
+          window.location.href = '/login';                                                                                                                                                 
+        } else {
       toast.error(message);
     }
     return Promise.reject(error);

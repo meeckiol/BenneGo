@@ -36,7 +36,7 @@ export default function SignInScreen() {
             <View style={styles.logoMark}>
               <Image source={require("../../assets/images/bennego-icon.png")} style={styles.logoImage} resizeMode="contain" />
             </View>
-            <Text style={styles.wordmark}>Logi<Text style={styles.wordmarkAccent}>Truck</Text></Text>
+            <Text style={styles.wordmark}>Benne<Text style={styles.wordmarkAccent}>Go</Text></Text>
             <Text style={styles.kicker}>DRIVER</Text>
           </View>
           <View style={styles.copy}>

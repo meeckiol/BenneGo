@@ -26,21 +26,29 @@ const { validateEnv, allowedOrigins } = require('./config/env');
 validateEnv();
 const origins = allowedOrigins();
 
+const corsOriginConfig = (origin, callback) => {
+  if (!origin || process.env.NODE_ENV !== 'production' || origins.includes(origin)) {
+    return callback(null, true);
+  }
+  return callback(new Error('Origine non autorisée par CORS'));
+};
+
 const app = express();
 if (process.env.TRUST_PROXY) app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: origins,
+    origin: process.env.NODE_ENV !== 'production' ? true : origins,
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 
 // =============================================
 // Middlewares de sécurité
 // =============================================
-app.use(helmet());
-app.use(cors({ origin: origins }));
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({ origin: corsOriginConfig, credentials: true }));
 
 // Rate limiting global
 const limiter = rateLimit({

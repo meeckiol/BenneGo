@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const { query, pool } = require('../config/database');
 
 async function seed() {
-  console.log('🌱 Démarrage de l\'initialisation des données de démo BenneGo...');
+  console.log('Démarrage de l\'initialisation des données de démo BenneGo...');
 
   // 1. Password hashes
   const adminPass = await bcrypt.hash('AdminPassword123!', 10);
@@ -147,9 +147,9 @@ async function seed() {
     ) ON CONFLICT (order_number) DO NOTHING
   `, [clientId, driverId]);
 
-  console.log('✅ Base de données initialisée avec succès !');
+  console.log('[OK] Base de données initialisée avec succès !');
   console.log('--------------------------------------------------');
-  console.log('👤 Comptes prêts pour test localhost :');
+  console.log('Comptes prêts pour test localhost :');
   console.log('  1. ADMIN :');
   console.log('     Téléphone : +22997000001');
   console.log('     Mot de passe : AdminPassword123!');

@@ -16,6 +16,7 @@ const {
 const router = express.Router();
 
 // Catalogue des types de véhicules et engins (ouvert à tous les utilisateurs authentifiés)
+router.get('/', authenticate, getVehicleTypes);
 router.get('/vehicle-types', authenticate, getVehicleTypes);
 
 // Profil Entreprise B2B (clients authentifiés)
@@ -25,7 +26,7 @@ router.post('/my-company', authenticate, requireRole('client'), [
   body('ifu').optional({ nullable: true }).trim(),
   body('address').optional({ nullable: true }).trim(),
   body('phone').optional({ nullable: true }).trim(),
-  body('email').optional({ nullable: true }).isEmail().withMessage('Email invalide'),
+  body('email').optional({ nullable: true, checkFalsy: true }).isEmail().withMessage('Email invalide'),
 ], validateRequest, saveCompany);
 
 // Souscription Abonnement SaaS / Pack Chantier
