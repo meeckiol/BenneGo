@@ -1,0 +1,87 @@
+/* ============================================================
+   BenneGo Admin — Design tokens
+   Source unique de vérité pour couleurs, espacements, rayons,
+   typographie et ombres. Thème sombre (back-office).
+   Contrastes vérifiés : texte courant ≥ 4,5:1 sur surfaces.
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg: #0b1220;
+  --surface: #131c2e;
+  --surface-2: #1a2438;
+  --surface-3: #0f1727;
+  --overlay: rgba(4, 8, 16, 0.72);
+
+  /* Bordures */
+  --border: #26334a;
+  --border-strong: #3a4a68;
+
+  /* Texte */
+  --text: #e8edf5;
+  --text-muted: #a3b1c6;
+  --text-subtle: #8796ad;
+
+  /* Marque */
+  --brand: #ff6b00;
+  --brand-hover: #ff8126;
+  --brand-soft: rgba(255, 107, 0, 0.14);
+  --on-brand: #160b02;
+
+  /* Sémantique */
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.14);
+  --info: #60a5fa;
+  --info-soft: rgba(96, 165, 250, 0.14);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.14);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  --violet: #a78bfa;
+  --violet-soft: rgba(167, 139, 250, 0.14);
+  --pink: #f472b6;
+  --pink-soft: rgba(244, 114, 182, 0.14);
+  --neutral: #94a3b8;
+  --neutral-soft: rgba(148, 163, 184, 0.14);
+
+  /* Typographie */
+  --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-md: 0.9375rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.5rem;
+
+  /* Espacements */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  /* Rayons / ombres */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.18);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --sidebar-w-collapsed: 68px;
+  --topbar-h: 64px;
+  --control-h: 40px;
+
+  /* Focus */
+  --focus-ring: 0 0 0 3px rgba(255, 107, 0, 0.55);
+
+  /* Z-index */
+  --z-sidebar: 40;
+  --z-modal: 100;
+  --z-toast: 200;
+}

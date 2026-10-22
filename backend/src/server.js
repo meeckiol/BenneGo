@@ -22,6 +22,7 @@ const { errorHandler } = require('./middlewares/error.middleware');
 const reviewRoutes = require('./routes/review.routes');
 const { setupSocketIO } = require('./services/socket.service');
 const { validateEnv, allowedOrigins } = require('./config/env');
+const { pool } = require('./config/database');
 
 validateEnv();
 const origins = allowedOrigins();
@@ -79,8 +80,35 @@ app.use(express.json({ limit: '100kb' }));
 // =============================================
 // Routes
 // =============================================
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'BenneGo API', version: '1.0.0' });
+app.get('/health', async (req, res) => {
+  try {
+    const dbStart = Date.now();
+    await pool.query('SELECT 1');
+    const dbLatencyMs = Date.now() - dbStart;
+    res.json({
+      status: 'ok',
+      service: 'BenneGo API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      database: {
+        connected: true,
+        latencyMs: dbLatencyMs,
+      },
+      memory: {
+        rssMb: Math.round(process.memoryUsage().rss / 1024 / 1024),
+        heapUsedMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      },
+    });
+  } catch (err) {
+    res.status(503).json({
+      status: 'degraded',
+      service: 'BenneGo API',
+      version: '1.0.0',
+      error: 'Base de données inaccessible',
+      database: { connected: false },
+    });
+  }
 });
 
 app.use('/api/auth', authLimiter, authRoutes);
@@ -113,13 +141,34 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 // =============================================
-// Démarrage du serveur
+// Démarrage du serveur et arrêt gracieux
 // =============================================
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   server.listen(PORT, () => {
     console.log(`BenneGo API démarrée sur le port ${PORT} (${process.env.NODE_ENV || 'development'})`);
   });
+
+  const shutdown = (signal) => {
+    console.log(`Signal ${signal} reçu. Arrêt gracieux en cours...`);
+    server.close(async () => {
+      try {
+        await pool.end();
+        console.log('Connexions PostgreSQL closes.');
+        process.exit(0);
+      } catch (e) {
+        console.error('Erreur lors de la fermeture du pool:', e);
+        process.exit(1);
+      }
+    });
+    setTimeout(() => {
+      console.error('Arrêt forcé après timeout de 10s.');
+      process.exit(1);
+    }, 10000).unref();
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 module.exports = { app, server, io };

@@ -176,9 +176,17 @@ CREATE INDEX IF NOT EXISTS idx_orders_client_id ON orders(client_id);
 CREATE INDEX IF NOT EXISTS idx_orders_driver_id ON orders(driver_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_client_status ON orders(client_id, status);
+CREATE INDEX IF NOT EXISTS idx_orders_driver_status ON orders(driver_id, status);
+CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status);
 CREATE INDEX IF NOT EXISTS idx_driver_profiles_is_available ON driver_profiles(is_available);
 CREATE INDEX IF NOT EXISTS idx_order_tracking_order_id ON order_tracking(order_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id, is_read);
+CREATE INDEX IF NOT EXISTS idx_transactions_order_type ON transactions(order_id, type);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
+CREATE INDEX IF NOT EXISTS idx_transactions_created ON transactions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_promo_codes_code ON promo_codes(code);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
 
 -- =============================================
 -- DONNÉES INITIALES: Types de matériaux

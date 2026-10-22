@@ -7,6 +7,22 @@ import React, { useState, useEffect } from 'react';
 export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSeconds = 30 }) {
   const [remaining, setRemaining] = useState(timeoutSeconds);
 
+  // Vibration haptique pour alerter le chauffeur dans la cabine du camion
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate([300, 150, 300, 150, 500]);
+      } catch (e) {
+        // Ignorer si matériel non compatible
+      }
+    }
+    return () => {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try { navigator.vibrate(0); } catch (e) {}
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (remaining <= 0) {
       onRefuse();
