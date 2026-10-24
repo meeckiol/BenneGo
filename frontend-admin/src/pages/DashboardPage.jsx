@@ -5,16 +5,7 @@ import {
 } from 'recharts';
 import api from '../services/api';
 
-// Données simulées pour le graphique hebdomadaire
-const MOCK_WEEKLY = [
-  { jour: 'Lun', commandes: 8, revenus: 120000 },
-  { jour: 'Mar', commandes: 12, revenus: 185000 },
-  { jour: 'Mer', commandes: 10, revenus: 150000 },
-  { jour: 'Jeu', commandes: 15, revenus: 225000 },
-  { jour: 'Ven', commandes: 18, revenus: 270000 },
-  { jour: 'Sam', commandes: 22, revenus: 330000 },
-  { jour: 'Dim', commandes: 6, revenus: 90000 },
-];
+const JOURS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
 export default function DashboardPage() {
   const [stats, setStats] = useState(null);
@@ -36,6 +27,11 @@ export default function DashboardPage() {
 
   const totalRevenue = parseFloat(stats?.revenue?.total_revenue || 0);
   const totalGMV = parseFloat(stats?.revenue?.total_gmv || 0);
+  const weekly = (stats?.weekly || []).map((d) => ({
+    jour: JOURS[new Date(`${d.day}T00:00:00`).getDay()],
+    commandes: d.commandes,
+    revenus: d.revenus,
+  }));
 
   return (
     <div style={s.page}>
@@ -93,7 +89,7 @@ export default function DashboardPage() {
         <div style={s.chartCard}>
           <h3 style={s.chartTitle}>Revenus cette semaine</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={MOCK_WEEKLY}>
+            <AreaChart data={weekly}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis dataKey="jour" stroke="#64748b" fontSize={12} />
               <YAxis stroke="#64748b" fontSize={12}
@@ -113,7 +109,7 @@ export default function DashboardPage() {
         <div style={s.chartCard}>
           <h3 style={s.chartTitle}>Commandes par jour</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={MOCK_WEEKLY}>
+            <BarChart data={weekly}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis dataKey="jour" stroke="#64748b" fontSize={12} />
               <YAxis stroke="#64748b" fontSize={12} />

@@ -38,10 +38,13 @@ services:
     volumes:
       - ./backend:/app:ro
       - backend_modules:/app/node_modules
-    command: sh -c "npm install --omit=dev && node src/server.js"
+      - ./docker/init.sql:/app/init.sql:ro
+    # Migration idempotente à chaque démarrage : applique les nouvelles tables/colonnes lors d'une mise à jour
+    command: sh -c "npm install --omit=dev && node src/scripts/migrate.js && node src/server.js"
     environment:
       NODE_ENV: production
       PORT: 3000
+      INIT_SQL_PATH: /app/init.sql
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB:-bennego_db}

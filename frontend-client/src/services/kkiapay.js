@@ -29,8 +29,9 @@ const unlisten = (event, cb) => {
 export async function payOrder(orderId) {
   const { data: cfg } = await api.get(`/payments/orders/${orderId}/checkout`);
 
-  // En environnement local sans clé API KKiaPay configurée : simulation immédiate pour test
+  // Développement local sans clé KKiaPay : simulation immédiate. Jamais dans un build de production.
   if (!cfg.api_key) {
+    if (!import.meta.env.DEV) throw new Error('Paiement indisponible pour le moment');
     try {
       const mockTransId = `TEST_KKIAPAY_${Date.now()}`;
       await api.post(`/payments/orders/${orderId}/confirm`, { transaction_id: mockTransId });

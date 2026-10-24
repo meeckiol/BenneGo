@@ -11,7 +11,7 @@ router.use(authenticate, requireRole('admin'));
 // GET /api/admin/stats - Statistiques générales
 router.get('/stats', async (req, res, next) => {
   try {
-    const [orders, revenue, drivers, clients] = await Promise.all([
+    const [orders, revenue, drivers, clients, weekly] = await Promise.all([
       query(`SELECT
         COUNT(*) FILTER (WHERE status = 'completed') AS completed,
         COUNT(*) FILTER (WHERE status IN ('awaiting_payment', 'pending')) AS pending,
@@ -27,6 +27,15 @@ router.get('/stats', async (req, res, next) => {
       query(`SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE dp.is_available) AS available
              FROM users u JOIN driver_profiles dp ON dp.user_id = u.id WHERE u.role = 'driver'`),
       query(`SELECT COUNT(*) AS total FROM users WHERE role = 'client'`),
+      // 7 derniers jours, jours sans commande inclus (0) pour un graphique continu
+      query(`SELECT
+        to_char(d, 'YYYY-MM-DD') AS day,
+        COUNT(o.id)::int AS commandes,
+        COALESCE(SUM(o.commission_amount) FILTER (WHERE o.payment_status IN ('payout_pending', 'released')), 0)::float AS revenus
+       FROM generate_series(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, INTERVAL '1 day') AS d
+       LEFT JOIN orders o ON o.created_at::date = d::date
+       GROUP BY d
+       ORDER BY d`),
     ]);
 
     res.json({
@@ -34,6 +43,7 @@ router.get('/stats', async (req, res, next) => {
       revenue: revenue.rows[0],
       drivers: drivers.rows[0],
       clients: clients.rows[0],
+      weekly: weekly.rows,
     });
   } catch (error) {
     next(error);

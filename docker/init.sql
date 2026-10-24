@@ -185,8 +185,6 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id, i
 CREATE INDEX IF NOT EXISTS idx_transactions_order_type ON transactions(order_id, type);
 CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);
 CREATE INDEX IF NOT EXISTS idx_transactions_created ON transactions(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_promo_codes_code ON promo_codes(code);
-CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
 
 -- =============================================
 -- DONNÉES INITIALES: Types de matériaux
@@ -391,6 +389,8 @@ CREATE TABLE IF NOT EXISTS promo_codes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_promo_codes_code ON promo_codes(code);
+
 -- =============================================
 -- RECRUTEMENT & CARRIÈRES
 -- =============================================
@@ -435,6 +435,8 @@ CREATE TABLE IF NOT EXISTS referrals (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   CONSTRAINT uq_referrals_referee UNIQUE (referee_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
 
 -- =============================================
 -- CHAT TEMPS RÉEL (Socket.IO + Persistance)

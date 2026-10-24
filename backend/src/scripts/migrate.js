@@ -4,8 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const { pool } = require('../config/database');
 
+// INIT_SQL_PATH permet de pointer vers le schéma quand le backend tourne dans un conteneur sans dossier docker/
+const schemaPath = process.env.INIT_SQL_PATH || path.join(__dirname, '../../../docker/init.sql');
+
 (async () => {
-  const sql = fs.readFileSync(path.join(__dirname, '../../../docker/init.sql'), 'utf8');
+  const sql = fs.readFileSync(schemaPath, 'utf8');
   await pool.query(sql);
   console.log('Migration appliquée.');
   await pool.end();
