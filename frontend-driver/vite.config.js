@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['truck-icon.svg'],
+      includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'BenneGo Driver',
         short_name: 'BenneGo',
@@ -18,7 +18,8 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         icons: [
-          { src: 'truck-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
         ],
       },
       workbox: {

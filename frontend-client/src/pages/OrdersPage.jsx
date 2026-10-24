@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 const STATUS = {
@@ -43,7 +44,7 @@ export default function OrdersPage() {
   return (
     <main className="bn-page">
       <header className="bn-page-head">
-        <button className="bn-icon-btn" onClick={() => navigate('/')} aria-label="Retour à l'accueil">←</button>
+        <button className="bn-icon-btn" onClick={() => navigate('/')} aria-label="Retour à l'accueil"><ArrowLeft size={20} aria-hidden="true" /></button>
         <div>
           <p className="bn-kicker">Vos courses</p>
           <h1 className="bn-title">Mes commandes</h1>

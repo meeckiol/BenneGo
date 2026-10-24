@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Star } from 'lucide-react';
 
 /** Notation de 1 à 5 étoiles (modifiable ou lecture seule) */
 export default function StarRating({ value = 0, onChange, size = 36, label = 'Note' }) {
@@ -26,7 +27,7 @@ export default function StarRating({ value = 0, onChange, size = 36, label = 'No
             color: n <= shown ? '#FFB300' : '#D6D6D6',
           }}
         >
-          ★
+          <Star size={size} fill={n <= shown ? 'currentColor' : 'none'} aria-hidden="true" />
         </button>
       ))}
     </div>

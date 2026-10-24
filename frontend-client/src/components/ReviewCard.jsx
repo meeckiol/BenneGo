@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Check } from 'lucide-react';
 import api from '../services/api';
 import StarRating from './StarRating';
 
 /**
- * Après confirmation de la réception : noter le chauffeur (1-5 ★ + avis)
+ * Après confirmation de la réception : noter le chauffeur (1-5 étoiles + avis)
  * et/ou donner son avis sur la plateforme.
  */
 export default function ReviewCard({ order, onDone }) {
@@ -48,11 +49,11 @@ export default function ReviewCard({ order, onDone }) {
       <div style={s.tabs} role="tablist">
         <button role="tab" aria-selected={tab === 'driver'} onClick={() => setTab('driver')}
           style={{ ...s.tab, ...(tab === 'driver' ? s.tabOn : {}) }}>
-          Le chauffeur {driverDone && '✓'}
+          Le chauffeur {driverDone && <Check size={14} aria-hidden="true" />}
         </button>
         <button role="tab" aria-selected={tab === 'platform'} onClick={() => setTab('platform')}
           style={{ ...s.tab, ...(tab === 'platform' ? s.tabOn : {}) }}>
-          La plateforme {platformDone && '✓'}
+          La plateforme {platformDone && <Check size={14} aria-hidden="true" />}
         </button>
       </div>
 

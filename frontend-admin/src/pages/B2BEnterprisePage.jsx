@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { Check } from 'lucide-react';
 
 const fcfa = (amount) => `${Number(amount || 0).toLocaleString('fr-FR')} FCFA`;
 
@@ -122,7 +123,7 @@ export default function B2BEnterprisePage() {
                           <td style={styles.td}>{fcfa(b.total_commission)}</td>
                           <td style={styles.td}>
                             {b.payment_status === 'escrow_held' ? (
-                              <span style={styles.badgeSuccess}>✓ Séquestre Débloqué</span>
+                              <span style={styles.badgeSuccess}><Check size={14} aria-hidden="true" /> Séquestre Débloqué</span>
                             ) : (
                               <span style={styles.badgePending}>En attente de virement</span>
                             )}
@@ -208,7 +209,7 @@ export default function B2BEnterprisePage() {
               </div>
 
               {deviations.length === 0 ? (
-                <div style={styles.empty}>✓ Aucune déviation anormale détectée. Tous les camions suivent les tracés OSRM.</div>
+                <div style={styles.empty}><Check size={14} aria-hidden="true" /> Aucune déviation anormale détectée. Tous les camions suivent les tracés OSRM.</div>
               ) : (
                 <div style={styles.tableWrapper}>
                   <table style={styles.table}>

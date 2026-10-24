@@ -23,7 +23,7 @@ export function InfoBanner({ icon = "info-outline", tone = "neutral", children }
   );
 }
 
-export function EmptyState({ icon = "local-shipping", title, body }: { icon?: React.ComponentProps<typeof MaterialIcons>["name"]; title: string; body: string }) {
+export function EmptyState({ icon = "inbox", title, body }: { icon?: React.ComponentProps<typeof MaterialIcons>["name"]; title: string; body: string }) {
   return (
     <View style={styles.empty}>
       <View style={styles.emptyIcon}><MaterialIcons name={icon} size={28} color="#F26A21" /></View>

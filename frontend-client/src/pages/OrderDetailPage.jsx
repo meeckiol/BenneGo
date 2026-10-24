@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ArrowLeft, Check } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
 import { getSocket } from '../services/socket';
@@ -215,7 +216,7 @@ export default function OrderDetailPage() {
   return (
     <div style={styles.container}>
       <header className="bn-page-head bn-detail-head">
-        <button className="bn-icon-btn" onClick={() => navigate('/orders')} aria-label="Retour aux commandes">←</button>
+        <button className="bn-icon-btn" onClick={() => navigate('/orders')} aria-label="Retour aux commandes"><ArrowLeft size={20} aria-hidden="true" /></button>
         <div className="bn-detail-head__text">
           <p className="bn-kicker">Commande</p>
           <h2 className="bn-title">{order.order_number}</h2>
@@ -408,9 +409,12 @@ export default function OrderDetailPage() {
         {order.status === 'delivered' && !disputeOpenNow && (
           <button onClick={confirmReception} disabled={busy} style={styles.successBtn}>
             {busy ? 'Validation en cours…' : (
-              order.order_type === 'RENTAL' ? '✓ Valider les heures travaillées de l\'engin (Libérer le séquestre)' :
-              order.order_type === 'EVACUATION' ? '✓ Valider la propreté du chantier (Libérer le séquestre)' :
-              '✓ Confirmer la réception des matériaux (Libérer le séquestre)'
+              <>
+                <Check size={16} aria-hidden="true" />{' '}
+                {order.order_type === 'RENTAL' ? 'Valider les heures travaillées de l\'engin (Libérer le séquestre)' :
+                  order.order_type === 'EVACUATION' ? 'Valider la propreté du chantier (Libérer le séquestre)' :
+                  'Confirmer la réception des matériaux (Libérer le séquestre)'}
+              </>
             )}
           </button>
         )}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { X } from 'lucide-react';
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
@@ -134,7 +135,7 @@ export default function ClientsPage() {
               <h3 style={{ color: 'white', margin: 0 }}>
                 {selected.prenom || ''} {selected.nom || selected.full_name}
               </h3>
-              <button onClick={() => setSelected(null)} style={s.closeBtn}>✕</button>
+              <button onClick={() => setSelected(null)} style={s.closeBtn}><X size={18} aria-hidden="true" /></button>
             </div>
             <div style={s.modalBody}>
               <InfoRow label="Prénom" value={selected.prenom || '—'} />

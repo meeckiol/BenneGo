@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
+import { BadgeCheck, HardHat, LogOut, MapPin, Mountain, Minus, MessageCircle, ShieldCheck, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 
 const STATUS = {
   awaiting_payment: { label: 'À payer', tone: 'danger', step: 0 },
@@ -20,29 +21,32 @@ const FINAL = ['validated', 'completed', 'cancelled'];
 const WHATSAPP = 'https://wa.me/22990000000?text=Bonjour%20BenneGo%2C%20j%27ai%20besoin%20d%27aide';
 
 const SERVICES = [
-  { type: 'MATERIAL', title: 'Transport de matériaux', hint: 'Sable, gravier, latérite', brand: true, icon: 'truck' },
-  { type: 'RENTAL', title: "Location d'engins", hint: 'Pelles, bulldozers, chargeurs', icon: 'gear' },
-  { type: 'EVACUATION', title: 'Évacuation de gravats', hint: 'Décharge autorisée', icon: 'bin' },
+  { type: 'MATERIAL', title: 'Transport de matériaux', hint: 'Sable, gravier, latérite', brand: true, icon: 'materials' },
+  { type: 'RENTAL', title: "Location d'engins", hint: 'Pelles, bulldozers, chargeurs', icon: 'machines' },
+  { type: 'EVACUATION', title: 'Évacuation de gravats', hint: 'Décharge autorisée', icon: 'waste' },
   { type: 'WHATSAPP', title: 'Assistance', hint: 'Écrivez-nous sur WhatsApp', icon: 'chat' },
 ];
 
 const ICONS = {
-  truck: 'M3 6h11v9h2.5l2.5-3.5h2V15h-1.1a2.4 2.4 0 1 1-4.8 0H10.1a2.4 2.4 0 1 1-4.8 0H3V6zm2 7.2a1.6 1.6 0 1 0 .01 0zm11.5 0a1.6 1.6 0 1 0 .01 0z',
-  gear: 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm8.4 4.4-2.1-.4a6.6 6.6 0 0 0-.7-1.7l1.2-1.8-1.9-1.9-1.8 1.2a6.6 6.6 0 0 0-1.7-.7L13.9 4h-3.8l-.4 2.1a6.6 6.6 0 0 0-1.7.7L6.2 5.6 4.3 7.5l1.2 1.8a6.6 6.6 0 0 0-.7 1.7L2.6 11v2.7l2.1.4c.2.6.4 1.2.7 1.7l-1.2 1.8 1.9 1.9 1.8-1.2c.5.3 1.1.5 1.7.7l.4 2.1h3.8l.4-2.1c.6-.2 1.2-.4 1.7-.7l1.8 1.2 1.9-1.9-1.2-1.8c.3-.5.5-1.1.7-1.7l2.1-.4V11z',
-  bin: 'M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-1 11H8L7 9z',
-  chat: 'M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
-  check: 'M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z',
-  shield: 'M12 2 4 5v6c0 5.2 3.4 9.7 8 11 4.6-1.3 8-5.8 8-11V5l-8-3z',
-  pin: 'M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z',
-  badge: 'M12 2 9.5 4.5H6v3.5L3.5 12 6 14.5V18h3.5L12 22l2.5-4H18v-3.5l2.5-2.5-2.5-2.5V4.5h-3.5z',
-  logout: 'M10 17l5-5-5-5v3H3v4h7v3zm9-14h-8v2h8v12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z',
+  materials: Mountain,
+  machines: HardHat,
+  waste: Trash2,
+  chat: MessageCircle,
+  shield: ShieldCheck,
+  pin: MapPin,
+  badge: BadgeCheck,
+  logout: LogOut,
+  trendUp: TrendingUp,
+  trendDown: TrendingDown,
+  trendStable: Minus,
 };
 
-const Icon = ({ name, size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d={ICONS[name]} />
-  </svg>
-);
+const TREND_ICON = { up: 'trendUp', down: 'trendDown', stable: 'trendStable' };
+
+const Icon = ({ name, size = 22 }) => {
+  const Glyph = ICONS[name];
+  return Glyph ? <Glyph size={size} aria-hidden="true" /> : null;
+};
 
 const fcfa = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
 const initials = (name = '') => name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'B';
@@ -180,7 +184,7 @@ export default function HomePage() {
                 <span>{item.material_name}</span>
                 <strong className="bn-price">
                   {Math.round(item.avg_price_m3).toLocaleString('fr-FR')} FCFA/m³
-                  <span className="bn-trend">{{ up: ' ↗', down: ' ↘', stable: ' →' }[item.trend] || ''}</span>
+                  <span className="bn-trend">{TREND_ICON[item.trend] && <Icon name={TREND_ICON[item.trend]} size={14} />}</span>
                 </strong>
               </div>
             ))}

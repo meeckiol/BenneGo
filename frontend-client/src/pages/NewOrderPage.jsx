@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
 
@@ -180,7 +181,7 @@ export default function NewOrderPage() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <button onClick={() => navigate(-1)} style={styles.back}>← Retour</button>
+        <button onClick={() => navigate(-1)} style={styles.back}><ArrowLeft size={16} aria-hidden="true" /> Retour</button>
         <h2 style={styles.title}>
           {orderType === 'MATERIAL' && 'Transport de Matériaux'}
           {orderType === 'RENTAL' && 'Location d\'Engin Lourd'}
@@ -477,7 +478,7 @@ export default function NewOrderPage() {
             )}
 
             <button type="submit" disabled={loading} style={styles.primaryBtn}>
-              {loading ? 'Calcul de l\'estimation...' : 'Calculer le tarif officiel BenneGo →'}
+              {loading ? 'Calcul de l\'estimation...' : <>Calculer le tarif officiel BenneGo <ArrowRight size={16} aria-hidden="true" /></>}
             </button>
           </form>
         )}
@@ -631,7 +632,7 @@ export default function NewOrderPage() {
 
             <div style={styles.btnGroup}>
               <button onClick={() => setStep(1)} style={styles.secondaryBtn}>
-                ← Modifier
+                <ArrowLeft size={16} aria-hidden="true" /> Modifier
               </button>
               <button onClick={confirmOrder} disabled={loading} style={styles.primaryBtn}>
                 {loading ? 'Initialisation...' : `Bloquer en séquestre (${estimate.total_amount?.toLocaleString()} FCFA)`}

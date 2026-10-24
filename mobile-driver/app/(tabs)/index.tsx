@@ -43,7 +43,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>
       <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={driver.dashboard.isRefetching} onRefresh={() => void driver.dashboard.refetch()} tintColor="#F26A21" />}>
-        <View style={styles.header}><View><Text style={styles.kicker}>POSTE DE CONDUITE</Text><Text style={styles.greeting}>Bonjour, {profile?.truckPlate ?? "chauffeur"}</Text></View><View style={styles.avatar}><MaterialIcons name="local-shipping" size={23} color="#F26A21" /></View></View>
+        <View style={styles.header}><View><Text style={styles.kicker}>POSTE DE CONDUITE</Text><Text style={styles.greeting}>Bonjour, {profile?.truckPlate ?? "chauffeur"}</Text></View><View style={styles.avatar}><MaterialIcons name="badge" size={23} color="#F26A21" /></View></View>
         <View style={styles.availabilityCard}>
           <View style={styles.ringOuter}><Pressable onPress={toggleAvailability} disabled={driver.isWorking} style={[styles.ring, profile?.isAvailable ? styles.ringOnline : styles.ringOffline]}><View style={[styles.statusDot, { backgroundColor: profile?.isAvailable ? "#FFFFFF" : "#F26A21" }]} /><Text style={[styles.statusTitle, profile?.isAvailable ? styles.textLight : styles.textDark]}>{profile?.isAvailable ? "EN LIGNE" : "HORS LIGNE"}</Text><Text style={[styles.statusHint, profile?.isAvailable ? styles.hintLight : styles.hintDark]}>{profile?.isAvailable ? "Prêt à recevoir" : "Touchez pour activer"}</Text></Pressable></View>
           <Text style={styles.locationText}>{location.state === "idle" ? "La position n’est jamais partagée sans votre action." : location.message}</Text>

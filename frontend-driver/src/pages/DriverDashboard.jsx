@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ArrowRight, LogOut } from 'lucide-react';
 import useDriverAuthStore from '../store/authStore';
 import useGPS from '../hooks/useGPS';
 import useDriverSocket from '../hooks/useDriverSocket';
@@ -192,9 +193,7 @@ export default function DriverDashboard() {
           </div>
         </div>
         <button className="bn-icon-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M10 17l5-5-5-5v3H3v4h7v3zm9-14h-8v2h8v12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" />
-          </svg>
+          <LogOut size={20} aria-hidden="true" />
         </button>
       </header>
 
@@ -228,7 +227,7 @@ export default function DriverDashboard() {
           </span>
           <span className="bn-mission__line">Chargement : {activeOrder.pickup_address}</span>
           <span className="bn-mission__line">Livraison : {activeOrder.delivery_address}</span>
-          <span className="bn-mission__cta">Gérer la livraison →</span>
+          <span className="bn-mission__cta">Gérer la livraison <ArrowRight size={16} aria-hidden="true" /></span>
         </button>
       )}
 

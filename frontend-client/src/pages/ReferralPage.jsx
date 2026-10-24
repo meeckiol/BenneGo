@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 export default function ReferralPage() {
@@ -62,7 +63,7 @@ export default function ReferralPage() {
       {/* Header */}
       <header style={styles.header}>
         <div style={styles.headerLeft}>
-          <button onClick={() => navigate(-1)} style={styles.backBtn}>← Retour</button>
+          <button onClick={() => navigate(-1)} style={styles.backBtn}><ArrowLeft size={16} aria-hidden="true" /> Retour</button>
           <span style={styles.logo}>BenneGo Parrainage</span>
         </div>
       </header>

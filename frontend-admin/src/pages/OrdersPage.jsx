@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { X } from 'lucide-react';
 
 const STATUSES = [
   { value: '', label: 'Toutes' },
@@ -183,7 +184,7 @@ export default function OrdersPage() {
           <div style={s.modalCard} onClick={(e) => e.stopPropagation()}>
             <div style={s.modalHeader}>
               <h3 style={s.modalTitle}>Détail commande {selectedOrder.order_number}</h3>
-              <button onClick={() => setSelectedOrder(null)} style={s.modalCloseBtn}>✕</button>
+              <button onClick={() => setSelectedOrder(null)} style={s.modalCloseBtn}><X size={18} aria-hidden="true" /></button>
             </div>
 
             <div style={s.modalBody}>

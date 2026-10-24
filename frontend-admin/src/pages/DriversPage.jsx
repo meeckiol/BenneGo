@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { IdCard, Star, X } from 'lucide-react';
 
 const fmtDate = (d) =>
   d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
@@ -52,11 +53,11 @@ export default function DriversPage() {
     <div style={s.page}>
       {/* Résumé */}
       <div style={s.summaryRow}>
-        <SummaryCard icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>} label="Total chauffeurs" value={drivers.length} />
+        <SummaryCard icon={<IdCard size={24} aria-hidden="true" />} label="Total chauffeurs" value={drivers.length} />
         <SummaryCard icon={<span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: '50%', background: '#10B981' }} />} label="Disponibles" value={drivers.filter((d) => d.is_available).length} color="#10B981" />
         <SummaryCard icon={<span style={{ display: 'inline-block', width: 14, height: 14, borderRadius: '50%', background: '#EF4444' }} />} label="Indisponibles" value={drivers.filter((d) => !d.is_available).length} color="#EF4444" />
         <SummaryCard
-          icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>}
+          icon={<Star size={24} fill="#F59E0B" color="#F59E0B" aria-hidden="true" />}
           label="Note moyenne"
           value={drivers.length > 0
             ? (drivers.reduce((s, d) => s + parseFloat(d.rating || 5), 0) / drivers.length).toFixed(1)
@@ -171,7 +172,7 @@ export default function DriversPage() {
               <h3 style={{ color: 'white', margin: 0 }}>
                 {selected.prenom || ''} {selected.nom || selected.full_name}
               </h3>
-              <button onClick={() => setSelected(null)} style={s.closeBtn}>✕</button>
+              <button onClick={() => setSelected(null)} style={s.closeBtn}><X size={18} aria-hidden="true" /></button>
             </div>
             <div style={s.modalBody}>
               <SectionTitle>Informations personnelles</SectionTitle>

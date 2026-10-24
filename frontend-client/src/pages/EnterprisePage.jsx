@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import api from '../services/api';
 
 const fcfa = (amount) => `${Number(amount || 0).toLocaleString('fr-FR')} FCFA`;
@@ -153,14 +154,14 @@ export default function EnterprisePage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <div style={styles.headerLeft}>
-          <button onClick={() => navigate('/')} style={styles.backBtn}>← Accueil</button>
+          <button onClick={() => navigate('/')} style={styles.backBtn}><ArrowLeft size={16} aria-hidden="true" /> Accueil</button>
           <span style={styles.logo}>BenneGo Business</span>
           <span style={styles.badge}>Portail Ingénieurs & BTP</span>
         </div>
         <div style={styles.headerRight}>
           {company?.subscription_status === 'active' ? (
             <span style={styles.activePlanBadge}>
-              ✓ {company.subscription_plan === 'monthly_saas' ? 'SaaS Mensuel (Actif)' : 'Pack Chantier (Actif)'}
+              <Check size={14} aria-hidden="true" /> {company.subscription_plan === 'monthly_saas' ? 'SaaS Mensuel (Actif)' : 'Pack Chantier (Actif)'}
             </span>
           ) : (
             <span style={styles.inactivePlanBadge}>Sans abonnement actif</span>
@@ -339,7 +340,7 @@ export default function EnterprisePage() {
             {bulkResult ? (
               <div style={styles.proformaCard}>
                 <div style={styles.proformaHeader}>
-                  <h4 style={styles.proformaTitle}>✓ Facture Proforma Générée : {bulkResult.proforma_invoice_number}</h4>
+                  <h4 style={styles.proformaTitle}><Check size={18} aria-hidden="true" /> Facture Proforma Générée : {bulkResult.proforma_invoice_number}</h4>
                   <span style={styles.proformaStatus}>En attente de virement / chèque séquestre</span>
                 </div>
                 <div style={styles.proformaSummary}>
@@ -442,7 +443,7 @@ export default function EnterprisePage() {
                 </div>
 
                 <button type="submit" style={styles.actionBtn}>
-                  Générer la Facture Proforma ({bulkForm.rotations_per_day * bulkForm.number_of_days} rotations) →
+                  Générer la Facture Proforma ({bulkForm.rotations_per_day * bulkForm.number_of_days} rotations) <ArrowRight size={16} aria-hidden="true" />
                 </button>
               </form>
             )}
@@ -466,11 +467,11 @@ export default function EnterprisePage() {
                 <div style={styles.priceAmount}>45 000 <span style={styles.pricePeriod}>FCFA / mois</span></div>
                 <p style={styles.pricingDesc}>Idéal pour les entreprises BTP actives en continu.</p>
                 <ul style={styles.pricingFeatures}>
-                  <li>✓ Accès illimité pour 3 ingénieurs</li>
-                  <li>✓ Suivi GPS en direct</li>
-                  <li>✓ Alerte d'écart d'itinéraire (&gt; 15 %)</li>
-                  <li>✓ Export illimité des reçus en CSV</li>
-                  <li>✓ Commission réduite à 4%</li>
+                  <li><Check size={14} aria-hidden="true" />Accès illimité pour 3 ingénieurs</li>
+                  <li><Check size={14} aria-hidden="true" />Suivi GPS en direct</li>
+                  <li><Check size={14} aria-hidden="true" />Alerte d'écart d'itinéraire (&gt; 15 %)</li>
+                  <li><Check size={14} aria-hidden="true" />Export illimité des reçus en CSV</li>
+                  <li><Check size={14} aria-hidden="true" />Commission réduite à 4%</li>
                 </ul>
                 <button
                   onClick={() => handleSubscribe('monthly_saas')}
@@ -486,11 +487,11 @@ export default function EnterprisePage() {
                 <div style={styles.priceAmount}>75 000 <span style={styles.pricePeriod}>FCFA / chantier</span></div>
                 <p style={styles.pricingDesc}>Idéal pour les promoteurs construisant un immeuble précis (6 mois max).</p>
                 <ul style={styles.pricingFeatures}>
-                  <li>✓ Valable 6 mois complets</li>
-                  <li>✓ Planification massive de 50 à 500 rotations</li>
-                  <li>✓ Facturation proforma unique & virement séquestre</li>
-                  <li>✓ Suivi GPS en direct sur le chantier</li>
-                  <li>✓ Commission réduite à 4%</li>
+                  <li><Check size={14} aria-hidden="true" />Valable 6 mois complets</li>
+                  <li><Check size={14} aria-hidden="true" />Planification massive de 50 à 500 rotations</li>
+                  <li><Check size={14} aria-hidden="true" />Facturation proforma unique & virement séquestre</li>
+                  <li><Check size={14} aria-hidden="true" />Suivi GPS en direct sur le chantier</li>
+                  <li><Check size={14} aria-hidden="true" />Commission réduite à 4%</li>
                 </ul>
                 <button
                   onClick={() => handleSubscribe('site_pack')}

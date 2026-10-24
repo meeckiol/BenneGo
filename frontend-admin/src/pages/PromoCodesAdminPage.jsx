@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { X } from 'lucide-react';
 
 const EMPTY_FORM = {
   code: '',
@@ -220,7 +221,7 @@ export default function PromoCodesAdminPage() {
               <h3 style={s.modalTitle}>
                 {editing ? 'Modifier le code promo' : 'Nouveau code promo'}
               </h3>
-              <button onClick={closeModal} style={s.closeBtn}>✕</button>
+              <button onClick={closeModal} style={s.closeBtn}><X size={18} aria-hidden="true" /></button>
             </div>
 
             <div style={s.modalBody}>

@@ -21,7 +21,7 @@ export default function TabLayout() {
       tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
     }}>
       <Tabs.Screen name="index" options={{ title: "Accueil", tabBarIcon: ({ color }) => <MaterialIcons name="dashboard" size={23} color={color} /> }} />
-      <Tabs.Screen name="missions" options={{ title: "Missions", tabBarIcon: ({ color }) => <MaterialIcons name="local-shipping" size={23} color={color} /> }} />
+      <Tabs.Screen name="missions" options={{ title: "Missions", tabBarIcon: ({ color }) => <MaterialIcons name="assignment" size={23} color={color} /> }} />
       <Tabs.Screen name="history" options={{ title: "Historique", tabBarIcon: ({ color }) => <MaterialIcons name="timeline" size={23} color={color} /> }} />
       <Tabs.Screen name="profile" options={{ title: "Profil", tabBarIcon: ({ color }) => <MaterialIcons name="person-outline" size={23} color={color} /> }} />
     </Tabs>

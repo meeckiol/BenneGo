@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import toast from 'react-hot-toast';
+import { ArrowLeft, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import useGPS from '../hooks/useGPS';
 import useDriverSocket from '../hooks/useDriverSocket';
@@ -330,7 +331,7 @@ export default function ActiveDeliveryPage() {
     <div style={styles.container}>
       {/* Header */}
       <header style={styles.header}>
-        <button onClick={() => navigate('/')} style={styles.backBtn}>←</button>
+        <button onClick={() => navigate('/')} style={styles.backBtn}><ArrowLeft size={20} aria-hidden="true" /></button>
         <div style={styles.headerCenter}>
           <div style={styles.orderNum}>{order.order_number}</div>
           <div style={styles.orderAmount}>
@@ -548,7 +549,7 @@ export default function ActiveDeliveryPage() {
         style={styles.chatFab}
         aria-label="Chat"
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        <MessageCircle size={22} color="#fff" aria-hidden="true" />
       </button>
 
       {/* Panneau Chat */}

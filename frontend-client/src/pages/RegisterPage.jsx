@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { CheckCircle2 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
@@ -143,7 +144,7 @@ export default function RegisterPage() {
             </div>
           )}
           {verified && (
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--success)', fontWeight: '700' }}>✓ Numéro vérifié</p>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--success)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle2 size={16} aria-hidden="true" /> Numéro vérifié</p>
           )}
 
           <input

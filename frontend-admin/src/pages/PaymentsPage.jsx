@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { Banknote, ChartColumn, Lock, Wallet } from 'lucide-react';
 
 const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR');
 
@@ -52,13 +53,13 @@ export default function PaymentsPage() {
     <div style={s.page}>
       {/* KPI paiements */}
       <div style={s.kpiGrid}>
-        <PayKPI label="Volume total (GMV)" value={Number(stats?.total_gmv || 0)} color="#FF6B00" icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2V7h2v10zm4 0h-2v-4h2v4zm-8 0H6v-7h2v7z"/></svg>}
+        <PayKPI label="Volume total (GMV)" value={Number(stats?.total_gmv || 0)} color="#FF6B00" icon={<ChartColumn size={22} aria-hidden="true" />}
           sub="Commandes payées" />
-        <PayKPI label="Commissions BenneGo" value={Number(stats?.total_revenue || 0)} color="#10B981" icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>}
+        <PayKPI label="Commissions BenneGo" value={Number(stats?.total_revenue || 0)} color="#10B981" icon={<Banknote size={22} aria-hidden="true" />}
           sub="10 % prélevés après confirmation client" />
-        <PayKPI label="En séquestre (bloqué)" value={Number(stats?.escrow_balance || 0)} color="#3B82F6" icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>}
+        <PayKPI label="En séquestre (bloqué)" value={Number(stats?.escrow_balance || 0)} color="#3B82F6" icon={<Lock size={22} aria-hidden="true" />}
           sub="En attente de confirmation de réception" />
-        <PayKPI label="À reverser aux chauffeurs" value={Number(stats?.payouts_due || 0)} color="#8B5CF6" icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg>}
+        <PayKPI label="À reverser aux chauffeurs" value={Number(stats?.payouts_due || 0)} color="#8B5CF6" icon={<Wallet size={22} aria-hidden="true" />}
           sub="Confirmé par le client, pas encore versé" />
       </div>
 

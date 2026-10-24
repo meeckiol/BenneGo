@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 
 export default function DriverHistoryPage() {
@@ -25,7 +26,7 @@ export default function DriverHistoryPage() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <button onClick={() => navigate('/')} style={styles.back}>←</button>
+        <button onClick={() => navigate('/')} style={styles.back}><ArrowLeft size={20} aria-hidden="true" /></button>
         <h2 style={styles.title}>Mes courses</h2>
       </header>
 

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
+import { Star } from 'lucide-react';
 
-const stars = (n) => (n ? '★'.repeat(n) + '☆'.repeat(5 - n) : '—');
+const stars = (n) => (n ? Array.from({ length: 5 }, (_, i) => (
+  <Star key={i} size={14} fill={i < n ? 'currentColor' : 'none'} aria-hidden="true" />
+)) : '—');
 
 export default function ReviewsPage() {
   const [data, setData] = useState({ platform_reviews: [], driver_reviews: [] });
@@ -40,7 +43,7 @@ const Row = ({ who, rating, comment, date, sub }) => (
   <div style={s.row}>
     <div style={s.rowTop}>
       <strong style={{ color: 'white' }}>{who}</strong>
-      <span style={{ color: 'var(--warning)', letterSpacing: 2 }}>{stars(rating)}</span>
+      <span style={{ color: 'var(--warning)', display: 'flex', gap: 2 }}>{stars(rating)}</span>
     </div>
     {comment && <p style={s.comment}>{comment}</p>}
     <div style={s.meta}>{sub ? `${sub} · ` : ''}{new Date(date).toLocaleString('fr-FR')}</div>

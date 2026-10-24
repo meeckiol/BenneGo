@@ -1,16 +1,22 @@
 import React, { useEffect, useRef } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Navigation } from 'lucide-react';
 
-const truckIcon = L.divIcon({
+const driverIcon = L.divIcon({
   className: '',
-  html: '<svg width="30" height="30" viewBox="0 0 24 24" fill="#FF6B00" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-2 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>',
-  iconSize: [30, 30],
-  iconAnchor: [15, 15],
+  html: renderToStaticMarkup(
+    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: '#FF6B00', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,.4)' }}>
+      <Navigation size={16} fill="currentColor" aria-hidden="true" />
+    </span>
+  ),
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
 });
 
 /**
- * Carte de suivi : point de chargement, point de livraison, camion en direct et trajet parcouru.
+ * Carte de suivi : point de chargement, point de livraison, position du chauffeur en direct et trajet parcouru.
  * `driver` = { lat, lng } (dernière position), `route` = [{lat,lng}, ...]
  */
 export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
@@ -41,8 +47,8 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
     layers.current.line?.setLatLngs(pts);
     if (driver) {
       const pos = [driver.lat, driver.lng];
-      if (!layers.current.truck) layers.current.truck = L.marker(pos, { icon: truckIcon, zIndexOffset: 1000 }).addTo(map.current);
-      else layers.current.truck.setLatLng(pos);
+      if (!layers.current.driver) layers.current.driver = L.marker(pos, { icon: driverIcon, zIndexOffset: 1000 }).addTo(map.current);
+      else layers.current.driver.setLatLng(pos);
       map.current.panTo(pos, { animate: true });
     }
   }, [driver, route]);
