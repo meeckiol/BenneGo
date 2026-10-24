@@ -84,15 +84,6 @@ async function seed() {
     ON CONFLICT (code) DO UPDATE SET is_active = true
   `);
 
-  // 7. Careers
-  await query(`
-    INSERT INTO careers (title, department, location, contract_type, description, requirements)
-    VALUES
-      ('Superviseur Logistique & Pesée Carrières', 'Opérations', 'Cotonou / Tori', 'CDI', 'Supervision des chargements de gravier et sable en carrières partenaires avec contrôle des bons de pesée.', 'Bac+3 en logistique ou génie civil, permis B requis.'),
-      ('Développeur Backend Node.js / GPS', 'Tech & Produit', 'Cotonou (Hybride)', 'CDI', 'Évolution de la plateforme BenneGo, intégration OSRM, tracking temps réel et séquestre financier.', '3 ans d expérience Node.js, PostgreSQL et Socket.IO.')
-    ON CONFLICT DO NOTHING
-  `);
-
   // 8. Sample Orders for Demonstration
   // Order 1: Validated (in Escrow, ready to release funds!)
   await query(`

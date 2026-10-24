@@ -122,6 +122,13 @@ export default function ActiveDeliveryPage() {
   const [podNotes, setPodNotes] = useState('');
   const [podSubmitted, setPodSubmitted] = useState(false);
 
+  // ---- Chargement avant départ ----
+  const [loadingVolume, setLoadingVolume] = useState('');
+  const [loadingPhotos, setLoadingPhotos] = useState([]);
+  const [weighbridgePhoto, setWeighbridgePhoto] = useState(null);
+  const [weighbridgeKg, setWeighbridgeKg] = useState('');
+  const [submittingLoading, setSubmittingLoading] = useState(false);
+
   // ---- Chat states ----
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -196,6 +203,10 @@ export default function ActiveDeliveryPage() {
     if (!order) return;
     const step = deliverySteps.find((s) => s.status === order.status);
     if (!step) return;
+    if (order.status === 'loading' && !order.loading_volume_m3) {
+      toast.error('Enregistrez le volume chargé et les photos avant de partir');
+      return;
+    }
 
     setUpdating(true);
     try {
@@ -216,6 +227,39 @@ export default function ActiveDeliveryPage() {
     } finally {
       setUpdating(false);
     }
+  };
+
+  const submitLoading = async (e) => {
+    e.preventDefault();
+    setSubmittingLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('volume_m3', loadingVolume);
+      loadingPhotos.forEach((file) => formData.append('photos', file));
+      if (weighbridgePhoto) formData.append('weighbridge', weighbridgePhoto);
+      if (weighbridgeKg) formData.append('weighbridge_net_kg', weighbridgeKg);
+      // Content-Type fixé à undefined : le navigateur ajoute la frontière multipart
+      await api.post(`/orders/${orderId}/loading`, formData, { headers: { 'Content-Type': undefined } });
+      toast.success('Chargement enregistré');
+      await loadOrder();
+    } catch { /* message affiché par l'intercepteur */ } finally {
+      setSubmittingLoading(false);
+    }
+  };
+
+  const reportBreakdown = (reason) => {
+    if (!navigator.geolocation) {
+      toast.error('Position GPS indisponible sur cet appareil');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        await api.post(`/orders/${orderId}/breakdown`, {
+          reason, lat: pos.coords.latitude, lng: pos.coords.longitude,
+        });
+        toast.success('Panne signalée : BenneGo cherche une benne de réserve');
+      } catch { /* message affiché par l'intercepteur */ }
+    }, () => toast.error('Activez la localisation pour signaler une panne'), { enableHighAccuracy: true, timeout: 10000 });
   };
 
   // ---- PoD upload ----
@@ -383,15 +427,75 @@ export default function ActiveDeliveryPage() {
                 <div style={styles.stepDescription}>{currentStep.description}</div>
               </div>
             </div>
+            {order.status === 'loading' && !order.loading_volume_m3 && (
+              <form onSubmit={submitLoading} style={styles.loadingForm}>
+                <div style={styles.loadingTitle}>Avant de partir : volume et photos du chargement</div>
+                <label style={styles.loadingLabel}>
+                  Volume chargé (m³)
+                  <input
+                    type="number" inputMode="decimal" min="0.5" max="100" step="0.5"
+                    value={loadingVolume} onChange={(e) => setLoadingVolume(e.target.value)} required
+                    style={styles.loadingInput}
+                  />
+                </label>
+                <label style={styles.loadingLabel}>
+                  Photos du camion chargé (1 à 5)
+                  <input
+                    type="file" accept="image/jpeg,image/png,image/webp" multiple required
+                    onChange={(e) => setLoadingPhotos(Array.from(e.target.files || []).slice(0, 5))}
+                    style={styles.loadingInput}
+                  />
+                </label>
+                <label style={styles.loadingLabel}>
+                  Ticket de pesée (facultatif) : photo
+                  <input
+                    type="file" accept="image/jpeg,image/png,image/webp"
+                    onChange={(e) => setWeighbridgePhoto((e.target.files || [])[0] || null)}
+                    style={styles.loadingInput}
+                  />
+                </label>
+                <label style={styles.loadingLabel}>
+                  Poids net du ticket (kg, facultatif)
+                  <input
+                    type="number" inputMode="numeric" min="1" step="1"
+                    value={weighbridgeKg} onChange={(e) => setWeighbridgeKg(e.target.value)}
+                    style={styles.loadingInput}
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={submittingLoading || !loadingVolume || loadingPhotos.length === 0}
+                  style={{ ...styles.actionBtn, background: '#9C27B0', marginTop: '8px' }}
+                >
+                  {submittingLoading ? 'Enregistrement…' : 'Enregistrer le chargement'}
+                </button>
+              </form>
+            )}
             <button
               onClick={advanceStatus}
-              disabled={updating}
+              disabled={updating || (order.status === 'loading' && !order.loading_volume_m3)}
               style={{ ...styles.actionBtn, background: currentStep.color }}
             >
               {updating ? 'Mise à jour...' : currentStep.label}
             </button>
+            {tracking && (
+              <div style={styles.breakdownBox}>
+                <div style={styles.breakdownTitle}>Problème sur la route ?</div>
+                <div style={styles.breakdownRow}>
+                  <button onClick={() => reportBreakdown('crevaison')} style={styles.breakdownBtn}>Crevaison</button>
+                  <button onClick={() => reportBreakdown('panne_moteur')} style={styles.breakdownBtn}>Panne</button>
+                  <button onClick={() => reportBreakdown('accident')} style={styles.breakdownBtn}>Accident</button>
+                </div>
+              </div>
+            )}
           </div>
         ) : null}
+
+        {order.dispute_status === 'open' && (
+          <div style={styles.disputeBox}>
+            Le client a refusé la livraison. BenneGo examine le litige avec les photos ; le paiement reste bloqué jusqu'à la décision.
+          </div>
+        )}
 
         {/* Section Preuve de Livraison (PoD) */}
         {showPoD && !podSubmitted && (
@@ -529,6 +633,15 @@ const styles = {
   stepInfo: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' },
   stepDot: { width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0 },
   stepDescription: { color: 'rgba(255,255,255,0.6)', fontSize: '13px' },
+  loadingForm: { display: 'flex', flexDirection: 'column', gap: '10px', background: 'white', borderRadius: '12px', padding: '16px', marginBottom: '14px' },
+  loadingTitle: { fontSize: '15px', fontWeight: '800', color: '#1E293B' },
+  loadingLabel: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', color: '#475569', fontWeight: '600' },
+  loadingInput: { padding: '10px', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', width: '100%' },
+  breakdownBox: { marginTop: '14px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '12px' },
+  breakdownTitle: { color: 'white', fontSize: '13px', fontWeight: '700', marginBottom: '8px' },
+  breakdownRow: { display: 'flex', gap: '8px' },
+  breakdownBtn: { flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.25)', background: 'transparent', color: 'white', fontWeight: '700', cursor: 'pointer' },
+  disputeBox: { marginTop: '14px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#7F1D1D', borderRadius: '12px', padding: '12px', fontSize: '14px', lineHeight: '1.5' },
   actionBtn: { width: '100%', padding: '16px', border: 'none', borderRadius: '12px', color: 'white', fontSize: '16px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
   completedBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center' },
   completedText: { color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: '1.5' },

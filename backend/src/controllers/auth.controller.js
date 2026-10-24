@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
-const { query } = require('../config/database');
+const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
+const otp = require('../services/otp.service');
 
 /**
  * Génère un numéro de commande unique
@@ -64,15 +65,26 @@ const register = async (req, res, next) => {
     // Hacher le mot de passe
     const password_hash = await bcrypt.hash(password, 12);
 
-    // Créer l'utilisateur avec tous les champs profil
-    const result = await query(
-      `INSERT INTO users (phone, full_name, prenom, nom, date_naissance, adresse, email, role, password_hash)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       RETURNING id, phone, full_name, prenom, nom, date_naissance, adresse, email, role, created_at`,
-      [phone, full_name, prenom.trim(), nom.trim(), date_naissance || null, adresse || null, email || null, role, password_hash]
-    );
-
-    const user = result.rows[0];
+    // Le numéro doit venir d'être vérifié par SMS. Consommation du code et création : une seule transaction.
+    const db = await getClient();
+    let user;
+    try {
+      await db.query('BEGIN');
+      await otp.consumeVerifiedPhone(db, phone);
+      const result = await db.query(
+        `INSERT INTO users (phone, full_name, prenom, nom, date_naissance, adresse, email, role, password_hash)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, phone, full_name, prenom, nom, date_naissance, adresse, email, role, created_at`,
+        [phone, full_name, prenom.trim(), nom.trim(), date_naissance || null, adresse || null, email || null, role, password_hash]
+      );
+      await db.query('COMMIT');
+      user = result.rows[0];
+    } catch (error) {
+      await db.query('ROLLBACK');
+      throw error;
+    } finally {
+      db.release();
+    }
     const token = generateToken(user.id, user.role);
 
     res.status(201).json({
@@ -90,6 +102,30 @@ const register = async (req, res, next) => {
         role: user.role,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/auth/otp/request { phone } — envoie un code à 6 chiffres par SMS
+ */
+const requestOtp = async (req, res, next) => {
+  try {
+    const result = await otp.requestCode(req.body.phone);
+    res.json({ message: 'Code envoyé par SMS', ...result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/auth/otp/verify { phone, code } — valide le code ; le compte peut alors être créé
+ */
+const verifyOtp = async (req, res, next) => {
+  try {
+    await otp.verifyCode(req.body.phone, req.body.code);
+    res.json({ message: 'Numéro vérifié', verified: true });
   } catch (error) {
     next(error);
   }
@@ -225,4 +261,4 @@ const createDriverProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe, createDriverProfile };
+module.exports = { register, requestOtp, verifyOtp, login, getMe, createDriverProfile };

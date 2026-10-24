@@ -22,7 +22,7 @@ le client paie à la commande, l'argent reste bloqué sur BenneGo, et n'est rép
 4. **Confirmation** : le client voit « Livré » et appuie sur **Confirmer la réception** (seul lui peut le faire). C'est **uniquement à cet instant** que :
    - **10 %** sont prélevés par la plateforme (`platform_fee`),
    - **90 %** sont dus au chauffeur (`driver_payout`).
-5. **Reversement chauffeur** : voir « Limites » ci‑dessous (manuel par défaut, automatique si vous branchez un service de virement).
+5. **Reversement chauffeur** : voir « Services externes » ci‑dessous (manuel par défaut, automatique si vous branchez un service de virement).
 6. **Avis** : après confirmation, le client note son chauffeur (1 à 5 ★ + commentaire) et peut donner son avis sur la plateforme. La moyenne du chauffeur est recalculée à partir des notes réelles.
 7. **Annulation** : avant paiement → simple annulation ; payée mais pas encore acceptée → remboursement intégral (KKiaPay `refund`) ; après acceptation → litige géré par l'admin.
 
@@ -57,10 +57,30 @@ DB_NAME=bennego_test npm test
 
 Ils rejouent sur un vrai PostgreSQL : le parcours complet (paiement séquestré → livraison → confirmation → 10 %/90 % → avis), le webhook, l'annulation/remboursement, les doubles clics et reversements concurrents, et le suivi temps réel Socket.IO. KKiaPay et OSRM y sont simulés.
 
-## Limites connues (à traiter avant la mise en production)
+## Services externes à connecter
 
-- **Reversement automatique au chauffeur** : le SDK serveur officiel de KKiaPay n'expose que `verify` et `refund`, pas de virement vers un tiers. Par défaut (`PAYOUT_MODE=manual`) l'admin voit la liste « à reverser » (numéro MoMo du chauffeur, montant) dans *Paiements*, envoie le virement puis clique **Marquer payé** avec la référence. Pour l'automatiser, branchez un service de virement (`PAYOUT_MODE=webhook`, voir `backend/src/services/payout.service.js`) — l'idempotence et le verrouillage sont déjà gérés.
-- **Widget de paiement** (`frontend-client/src/services/kkiapay.js`) : intégré selon la doc publique de KKiaPay mais **non testé contre leur sandbox** ici. À valider de bout en bout (paiement test, webhook).
-- **Rétention GPS** : `order_tracking` grossit sans purge ; définir une durée de conservation et l'information/consentement des chauffeurs.
-- **Interfaces** compilées mais non testées visuellement dans un navigateur / sur appareil.
-- Jeton d'authentification des fronts web stocké en `localStorage` (risque XSS) ; à durcir si la surface d'attaque augmente.
+| Service | Variables | Sans cette configuration |
+|---|---|---|
+| **SMS (vérification à l'inscription)** | `SMS_WEBHOOK_URL`, `SMS_WEBHOOK_TOKEN` | Dev : le code s'affiche dans la console du backend. **Production : inscription bloquée** (503). |
+| **WhatsApp Cloud API (Meta)** | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Les messages entrants sont vérifiés et traités, les réponses sont seulement journalisées. |
+| **Reversement MoMo automatique** | `PAYOUT_MODE=webhook`, `PAYOUT_WEBHOOK_URL`, `PAYOUT_WEBHOOK_TOKEN` | Mode `manual` : l'admin vire et saisit la référence. |
+| **Photos** | `UPLOAD_DIR` (défaut `backend/uploads`) | Les fichiers sont écrits sur disque et servis par `/uploads`. En production, un volume persistant (`uploads_data`) est monté. |
+
+URL du webhook WhatsApp à déclarer chez Meta : `https://<votre-domaine>/api/whatsapp/webhook`.
+
+Le virement MoMo automatique demande un contrat avec un prestataire de transfert : le serveur appelle `PAYOUT_WEBHOOK_URL` avec une clé d'idempotence et relance automatiquement les virements en échec toutes les 10 minutes. Brancher un prestataire donné revient à écrire un adaptateur dans `backend/src/services/payout.service.js`.
+
+## Fonctionnement des litiges et des pannes
+
+- **Chargement** : le chauffeur saisit le volume chargé et envoie au moins une photo avant de partir. Le ticket de pesée (photo et poids net) est facultatif. Le départ est refusé sans ces éléments.
+- **Refus de livraison** : le client peut refuser avant de confirmer, avec des photos et un motif. Le séquestre reste bloqué. L'admin rembourse ou valide depuis la console *Litiges*.
+- **Panne** : le chauffeur signale une crevaison, une panne ou un accident. L'admin réassigne la course à une benne de réserve disponible (*Pannes & relèves*). Le reversement suit le chauffeur qui termine la course.
+
+## Limites connues
+
+- **Commandes WhatsApp en texte uniquement** : les messages vocaux ne sont pas transcrits. Le bot demande une commande écrite, et ne crée pas de commande : le client confirme et paie dans l'application.
+- **Application mobile `mobile-driver/`** (Expo) : elle n'a pas été mise à jour avec le chargement, les litiges et les pannes, et n'est pas incluse dans ce déploiement. La PWA `frontend-driver/` est la seule application chauffeur de référence.
+- **Rétention GPS** : `order_tracking` grossit sans purge ; définir une durée de conservation et l'information des chauffeurs.
+- **Jeton des fronts web** stocké en `localStorage` (risque XSS) ; à durcir si la surface d'attaque augmente.
+- **Interfaces** : vérifiées dans un navigateur mobile pour les pages principales, pas sur appareils réels.
+

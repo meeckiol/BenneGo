@@ -10,6 +10,7 @@ jest.mock('../src/services/pricing.service', () => ({
 }));
 
 const request = require('supertest');
+const { verifiedRegister } = require("./helpers/verified-register");
 const { io: connect } = require('socket.io-client');
 const { query, pool } = require('../src/config/database');
 const { app, server } = require('../src/server');
@@ -17,7 +18,7 @@ const { app, server } = require('../src/server');
 let port;
 const phone = () => `+2298${String(Date.now()).slice(-6)}${Math.floor(Math.random() * 90 + 10)}`;
 const reg = async (role, name) => {
-  const r = await request(app).post('/api/auth/register').send({ phone: phone(), full_name: name, prenom: name, nom: 'Test', date_naissance: '1990-01-01', adresse: 'Cotonou', password: 'Motdepasse123', role });
+  const r = await verifiedRegister(app, { phone: phone(), full_name: name, prenom: name, nom: 'Test', date_naissance: '1990-01-01', adresse: 'Cotonou', password: 'Motdepasse123', role });
   return { token: r.body.token, id: r.body.user.id, auth: { Authorization: `Bearer ${r.body.token}` } };
 };
 const sock = (token) => new Promise((resolve, reject) => {

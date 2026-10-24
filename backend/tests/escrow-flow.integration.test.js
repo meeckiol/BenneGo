@@ -16,6 +16,7 @@ jest.mock('../src/services/pricing.service', () => ({
 }));
 
 const request = require('supertest');
+const { verifiedRegister } = require("./helpers/verified-register");
 const bcrypt = require('bcryptjs');
 const kkiapay = require('../src/providers/kkiapay');
 const { query, pool } = require('../src/config/database');
@@ -30,8 +31,7 @@ let seq = 0;
 const nextPhone = () => `+2299${String(Date.now()).slice(-5)}${String(++seq).padStart(2, '0')}`;
 
 const register = async (role, name) => {
-  const res = await request(app).post('/api/auth/register')
-    .send({ phone: nextPhone(), full_name: name, prenom: name, nom: 'Test', date_naissance: '1990-01-01', adresse: 'Cotonou', password: 'Motdepasse123', role });
+  const res = await verifiedRegister(app, { phone: nextPhone(), full_name: name, prenom: name, nom: 'Test', date_naissance: '1990-01-01', adresse: 'Cotonou', password: 'Motdepasse123', role });
   expect(res.status).toBe(201);
   return { token: res.body.token, id: res.body.user.id, auth: { Authorization: `Bearer ${res.body.token}` } };
 };
@@ -65,8 +65,19 @@ const pay = async (client, order, { amount = TOTAL, transactionId = `tx_${Date.n
     .set(client.auth).send({ transaction_id: transactionId });
 };
 
+// Image JPEG minimale (signature valide) pour les photos de chargement
+const JPEG = Buffer.concat([Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]), Buffer.alloc(64)]);
+const recordLoading = (driver, order, volume = 10) => request(app)
+  .post(`/api/orders/${order.id}/loading`).set(driver.auth)
+  .field('volume_m3', String(volume))
+  .attach('photos', JPEG, { filename: 'chargement.jpg', contentType: 'image/jpeg' });
+
 const advanceToDelivered = async (driver, order) => {
-  for (const status of ['driver_en_route_pickup', 'loading', 'driver_en_route_delivery', 'delivered']) {
+  for (const status of ['driver_en_route_pickup', 'loading']) {
+    await request(app).patch(`/api/orders/${order.id}/status`).set(driver.auth).send({ status }).expect(200);
+  }
+  await recordLoading(driver, order).expect(200);
+  for (const status of ['driver_en_route_delivery', 'delivered']) {
     await request(app).patch(`/api/orders/${order.id}/status`).set(driver.auth).send({ status }).expect(200);
   }
 };

@@ -11,6 +11,14 @@ const errorHandler = (err, req, res, next) => {
     method: req.method,
   });
 
+  // Erreurs d'upload (multer) : taille, nombre ou champ inattendu
+  if (err.name === 'MulterError') {
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Photo trop lourde (2 Mo maximum par image)'
+      : 'Envoi de fichiers invalide';
+    return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({ error: message });
+  }
+
   // Erreur de validation
   if (err.name === 'ValidationError') {
     return res.status(400).json({ error: err.message });

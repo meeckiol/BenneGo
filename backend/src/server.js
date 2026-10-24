@@ -9,13 +9,18 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth.routes');
+const otpRoutes = require('./routes/otp.routes');
 const orderRoutes = require('./routes/order.routes');
+const adminOpsRoutes = require('./routes/admin-ops.routes');
+const barometerRoutes = require('./routes/barometer.routes');
+const whatsappRoutes = require('./routes/whatsapp.routes');
+const { UPLOAD_DIR } = require('./services/photo.service');
+const { startPayoutRetryWorker } = require('./services/payout-retry.service');
 const driverRoutes = require('./routes/driver.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminRoutes = require('./routes/admin.routes');
 const companyRoutes = require('./routes/company.routes');
 const promoRoutes = require('./routes/promo.routes');
-const careerRoutes = require('./routes/career.routes');
 const referralRoutes = require('./routes/referral.routes');
 const recurringRoutes = require('./routes/recurring.routes');
 const { errorHandler } = require('./middlewares/error.middleware');
@@ -68,6 +73,22 @@ const authLimiter = rateLimit({
   skip: () => process.env.NODE_ENV === 'test',
 });
 
+// Inscriptions : plusieurs personnes partagent souvent une même IP mobile (NAT opérateur) ; la vérification par SMS limite déjà chaque numéro
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { error: 'Trop de créations de compte depuis cette connexion. Réessayez dans quelques minutes.' },
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
+// Codes SMS : plus souple que la connexion (inscription = demande + vérification), mais borné par IP
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { error: 'Trop de demandes de code. Réessayez dans quelques minutes.' },
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
 // =============================================
 // Middlewares généraux
 // =============================================
@@ -75,7 +96,18 @@ app.use(compression());
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
-app.use(express.json({ limit: '100kb' }));
+// Le corps brut sert à vérifier la signature des webhooks (WhatsApp)
+app.use(express.json({
+  limit: '100kb',
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}));
+
+// Photos de commande (chargement, pesée, litige, preuve de livraison) : noms aléatoires, non listables
+app.use('/uploads', express.static(UPLOAD_DIR, {
+  index: false,
+  dotfiles: 'deny',
+  setHeaders: (res) => res.setHeader('Cache-Control', 'private, max-age=86400'),
+}));
 
 // =============================================
 // Routes
@@ -111,15 +143,20 @@ app.get('/health', async (req, res) => {
   }
 });
 
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth/otp', otpLimiter, otpRoutes);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', registerLimiter);
+app.use('/api/auth', authRoutes);
+app.use('/api/barometer', barometerRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/promo', promoRoutes);
-app.use('/api/careers', careerRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/orders/recurring', recurringRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/drivers', driverRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminOpsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/vehicle-types', companyRoutes);
@@ -148,6 +185,7 @@ if (require.main === module) {
   server.listen(PORT, () => {
     console.log(`BenneGo API démarrée sur le port ${PORT} (${process.env.NODE_ENV || 'development'})`);
   });
+  startPayoutRetryWorker();
 
   const shutdown = (signal) => {
     console.log(`Signal ${signal} reçu. Arrêt gracieux en cours...`);

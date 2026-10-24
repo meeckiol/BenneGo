@@ -134,7 +134,7 @@ const confirmEscrow = async (orderId, transactionId, { clientId } = {}) => {
  * ÉTAPE 3 — Le client confirme la livraison.
  * Prélève les 10 % (commission) et ouvre le reversement des 90 % au chauffeur.
  */
-const confirmDelivery = async (orderId, clientId) => {
+const confirmDelivery = async (orderId, clientId, { adminOverride = false } = {}) => {
   const db = await getClient();
   let order;
   let alreadyDone = false;
@@ -144,7 +144,7 @@ const confirmDelivery = async (orderId, clientId) => {
     if (!rows.length) throw new AppError('Commande introuvable', 404);
     order = rows[0];
 
-    if (order.client_id !== clientId) throw new AppError('Accès refusé', 403);
+    if (!adminOverride && order.client_id !== clientId) throw new AppError('Accès refusé', 403);
 
     if (['validated', 'completed'].includes(order.status)) {
       alreadyDone = true; // double clic / rejeu : rien à refaire
@@ -154,6 +154,9 @@ const confirmDelivery = async (orderId, clientId) => {
       }
       if (order.payment_status !== 'escrow_held') {
         throw new AppError('Aucun paiement en séquestre pour cette commande', 409);
+      }
+      if (order.dispute_status === 'open' && !adminOverride) {
+        throw new AppError('Un litige est en cours sur cette commande', 409);
       }
       const total = Number(order.total_amount);
       const commission = Number(order.commission_amount);
@@ -169,7 +172,10 @@ const confirmDelivery = async (orderId, clientId) => {
 
       await db.query(
         `UPDATE orders SET status = 'validated', validated_at = NOW(),
-                payment_status = 'payout_pending', updated_at = NOW() WHERE id = $1`,
+                payment_status = 'payout_pending',
+                dispute_status = CASE WHEN dispute_status = 'open' THEN 'released' ELSE dispute_status END,
+                dispute_resolved_at = CASE WHEN dispute_status = 'open' THEN NOW() ELSE dispute_resolved_at END,
+                updated_at = NOW() WHERE id = $1`,
         [order.id]
       );
       // 10 % : prélevés par la plateforme
@@ -338,7 +344,10 @@ const refundEscrow = async (orderId, { actor, reason }) => {
     );
     await db.query(
       `UPDATE orders SET payment_status = 'refunded', status = 'cancelled', cancelled_at = NOW(),
-              cancellation_reason = $2, updated_at = NOW() WHERE id = $1`,
+              cancellation_reason = $2,
+              dispute_status = CASE WHEN dispute_status = 'open' THEN 'refunded' ELSE dispute_status END,
+              dispute_resolved_at = CASE WHEN dispute_status = 'open' THEN NOW() ELSE dispute_resolved_at END,
+              updated_at = NOW() WHERE id = $1`,
       [order.id, reason || null]
     );
     await db.query('COMMIT');

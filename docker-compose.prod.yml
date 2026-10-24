@@ -39,12 +39,21 @@ services:
       - ./backend:/app:ro
       - backend_modules:/app/node_modules
       - ./docker/init.sql:/app/init.sql:ro
+      - uploads_data:/data/uploads
     # Migration idempotente à chaque démarrage : applique les nouvelles tables/colonnes lors d'une mise à jour
     command: sh -c "npm install --omit=dev && node src/scripts/migrate.js && node src/server.js"
     environment:
       NODE_ENV: production
       PORT: 3000
       INIT_SQL_PATH: /app/init.sql
+      UPLOAD_DIR: /data/uploads
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:?Définissez APP_PUBLIC_URL dans .env.prod}
+      SMS_WEBHOOK_URL: ${SMS_WEBHOOK_URL:-}
+      SMS_WEBHOOK_TOKEN: ${SMS_WEBHOOK_TOKEN:-}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-}
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB:-bennego_db}
@@ -119,6 +128,7 @@ services:
 volumes:
   postgres_data:
   backend_modules:
+  uploads_data:
   letsencrypt_certs:
   letsencrypt_www:
 

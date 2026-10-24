@@ -10,7 +10,6 @@ const NewOrderPage = lazy(() => import('./pages/NewOrderPage'));
 const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'));
 const EnterprisePage = lazy(() => import('./pages/EnterprisePage'));
-const CareersPage = lazy(() => import('./pages/CareersPage'));
 const ReferralPage = lazy(() => import('./pages/ReferralPage'));
 
 // Composant de chargement avec animation sobre BenneGo
@@ -54,7 +53,6 @@ function App() {
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/careers" element={<CareersPage />} />
 
         {/* Routes protégées */}
         <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />

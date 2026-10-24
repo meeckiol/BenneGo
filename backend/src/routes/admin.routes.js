@@ -556,28 +556,6 @@ router.get('/referrals', async (req, res, next) => {
   }
 });
 
-// =============================================
-// CARRIÈRES & CANDIDATURES (ADMIN)
-// =============================================
-
-// GET /api/admin/careers
-router.get('/careers', async (req, res, next) => {
-  try {
-    const { rows } = await query(
-      `SELECT c.*,
-              COUNT(ja.id) AS applications_count,
-              COUNT(ja.id) FILTER (WHERE ja.status = 'pending') AS pending_count
-       FROM careers c
-       LEFT JOIN job_applications ja ON ja.career_id = c.id
-       GROUP BY c.id
-       ORDER BY c.created_at DESC`
-    );
-    res.json({ careers: rows });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // PATCH /api/admin/companies/:id/activate-subscription — valide le paiement d'un abonnement B2B
 router.patch('/companies/:id/activate-subscription', [
   param('id').isUUID(),

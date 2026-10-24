@@ -1,20 +1,31 @@
-const parseWhatsAppAudioOrder = (transcript) => {                                                                           
-      const text = (transcript || '').toLowerCase();                                                                                                                                       
-      let quantity_m3 = 10;                                                                                                                                                                
-      if (text.includes('16') || text.includes('double')) quantity_m3 = 16;                                                                                                                
-      if (text.includes('25') || text.includes('semi')) quantity_m3 = 25;                                                                                                                  
-                                                                                                                                                                                           
-      let material = 'Sable de rivière';                                                                                                                                                   
-      if (text.includes('gravier') || text.includes('kpe')) material = 'Gravier concassé';                                                                                                 
-      if (text.includes('latérite') || text.includes('rouge') || text.includes('vovo')) material = 'Latérite';                                                                             
-                                                                                                                                                                                           
-      return {                                                                                                                                                                             
-        quantity_m3,                                                                                                                                                                       
-        material,                                                                                                                                                                          
-        confidence: 0.94,                                                                                                                                                                  
-        ussd_payload: `*400*1*1#`,                                                                                                                                                       
-      };                                                                                                                                                                                   
-    };                                                                                                                                                                                     
-                                                                                                                                                                                           
-    module.exports = { parseWhatsAppAudioOrder };                                                                                                                                          
-    
+/**
+ * Lecture d'une commande écrite envoyée par WhatsApp (ex. « 16 m3 de sable lavé »).
+ * Analyse par mots-clés, sans IA ni transcription : une quantité ou un matériau manquant
+ * déclenche une question, jamais une commande devinée.
+ */
+const QUANTITIES = [
+  { pattern: /\b(semi|25)\b/, m3: 25 },
+  { pattern: /\b(double|8 roues|16)\b/, m3: 16 },
+  { pattern: /\b(6 roues|simple|10)\b/, m3: 10 },
+];
+
+const MATERIALS = [
+  { pattern: /sable.*lav|lav.*sable/, label: 'sable lavé' },
+  { pattern: /sable/, label: 'sable de rivière' },
+  { pattern: /gravier|kpe/, label: 'gravier concassé' },
+  { pattern: /lat[ée]rite|vovo|rouge/, label: 'latérite' },
+];
+
+/** @returns {{quantity_m3: number|null, material: string|null}} */
+const parseTextOrder = (text) => {
+  const normalized = (text || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const quantity = QUANTITIES.find((q) => q.pattern.test(normalized));
+  const explicit = normalized.match(/(\d+(?:[.,]\d+)?)\s*(m3|m³|m\b)/);
+  const quantity_m3 = explicit
+    ? Number(explicit[1].replace(',', '.'))
+    : (quantity ? quantity.m3 : null);
+  const material = MATERIALS.find((m) => m.pattern.test(normalized));
+  return { quantity_m3, material: material ? material.label : null };
+};
+
+module.exports = { parseTextOrder };

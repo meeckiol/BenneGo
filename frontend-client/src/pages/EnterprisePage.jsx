@@ -467,8 +467,8 @@ export default function EnterprisePage() {
                 <p style={styles.pricingDesc}>Idéal pour les entreprises BTP actives en continu.</p>
                 <ul style={styles.pricingFeatures}>
                   <li>✓ Accès illimité pour 3 ingénieurs</li>
-                  <li>✓ Suivi GPS certifié en direct</li>
-                  <li>✓ Alertes détournement & vols (&gt; 15% OSRM)</li>
+                  <li>✓ Suivi GPS en direct</li>
+                  <li>✓ Alerte d'écart d'itinéraire (&gt; 15 %)</li>
                   <li>✓ Export illimité des reçus en CSV</li>
                   <li>✓ Commission réduite à 4%</li>
                 </ul>
@@ -489,7 +489,7 @@ export default function EnterprisePage() {
                   <li>✓ Valable 6 mois complets</li>
                   <li>✓ Planification massive de 50 à 500 rotations</li>
                   <li>✓ Facturation proforma unique & virement séquestre</li>
-                  <li>✓ Suivi GPS certifié sur le chantier</li>
+                  <li>✓ Suivi GPS en direct sur le chantier</li>
                   <li>✓ Commission réduite à 4%</li>
                 </ul>
                 <button

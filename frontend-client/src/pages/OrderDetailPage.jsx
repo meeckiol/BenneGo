@@ -41,6 +41,9 @@ export default function OrderDetailPage() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputePhotos, setDisputePhotos] = useState([]);
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -173,6 +176,25 @@ export default function OrderDetailPage() {
     }
   };
 
+  const openDispute = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const body = new FormData();
+      body.append('reason', disputeReason.trim());
+      disputePhotos.forEach((file) => body.append('photos', file));
+      // Content-Type fixé à undefined : le navigateur ajoute la frontière multipart
+      const { data } = await api.post(`/orders/${id}/dispute`, body, { headers: { 'Content-Type': undefined } });
+      toast.success(data.message);
+      setDisputeOpen(false);
+      setDisputeReason('');
+      setDisputePhotos([]);
+      await fetchOrder();
+    } catch { /* message affiché par l'intercepteur */ } finally {
+      setBusy(false);
+    }
+  };
+
   const pickup = useMemo(() => order && ({ lat: Number(order.pickup_lat), lng: Number(order.pickup_lng) }), [order?.pickup_lat, order?.pickup_lng]);
   const delivery = useMemo(() => order && ({ lat: Number(order.delivery_lat), lng: Number(order.delivery_lng) }), [order?.delivery_lat, order?.delivery_lng]);
 
@@ -184,6 +206,11 @@ export default function OrderDetailPage() {
   const cancelled = order.status === 'cancelled';
   const canCancel = !cancelled && (order.status === 'awaiting_payment' || order.status === 'pending');
   const confirmed = ['validated', 'completed'].includes(order.status);
+  const disputeOpenNow = order.dispute_status === 'open';
+  const loadingPhotos = (order.photos || []).filter((p) => p.kind === 'loading');
+  const weighbridgePhotos = (order.photos || []).filter((p) => p.kind === 'weighbridge');
+  const disputePhotosShown = (order.photos || []).filter((p) => p.kind === 'dispute');
+  const canDispute = order.status === 'delivered' && order.payment_status === 'escrow_held' && !order.dispute_status;
 
   return (
     <div style={styles.container}>
@@ -244,6 +271,34 @@ export default function OrderDetailPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Chargement constaté avant départ */}
+        {(order.loading_volume_m3 || loadingPhotos.length > 0) && (
+          <div style={styles.card}>
+            <h3 style={styles.cardTitle}>Chargement constaté avant départ</h3>
+            {order.loading_volume_m3 && <InfoRow label="Volume chargé déclaré" value={`${Number(order.loading_volume_m3)} m³`} bold />}
+            {order.weighbridge_net_kg && <InfoRow label="Poids net (ticket de pesée)" value={`${Number(order.weighbridge_net_kg).toLocaleString('fr-FR')} kg`} />}
+            <PhotoStrip photos={loadingPhotos} label="Photos du chargement" />
+            <PhotoStrip photos={weighbridgePhotos} label="Ticket de pesée" />
+          </div>
+        )}
+
+        {/* Litige */}
+        {order.dispute_status && (
+          <div style={order.dispute_status === 'open' ? styles.deviationAlert : styles.secure}>
+            <div style={styles.cardTitle}>
+              {order.dispute_status === 'open' && 'Litige ouvert'}
+              {order.dispute_status === 'refunded' && 'Litige résolu : vous êtes remboursé'}
+              {order.dispute_status === 'released' && 'Litige résolu : livraison validée'}
+            </div>
+            <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
+              {order.dispute_status === 'open' && 'BenneGo examine votre dossier avec les photos. Le paiement reste bloqué jusqu\'à la décision.'}
+              {order.dispute_status === 'refunded' && 'Le remboursement intégral a été demandé à KKiaPay.'}
+              {order.dispute_status === 'released' && 'Le paiement est transmis au chauffeur.'}
+            </p>
+            <PhotoStrip photos={disputePhotosShown} label="Vos photos" />
           </div>
         )}
 
@@ -348,7 +403,7 @@ export default function OrderDetailPage() {
           </button>
         )}
 
-        {order.status === 'delivered' && (
+        {order.status === 'delivered' && !disputeOpenNow && (
           <button onClick={confirmReception} disabled={busy} style={styles.successBtn}>
             {busy ? 'Validation en cours…' : (
               order.order_type === 'RENTAL' ? '✓ Valider les heures travaillées de l\'engin (Libérer le séquestre)' :
@@ -358,6 +413,44 @@ export default function OrderDetailPage() {
           </button>
         )}
 
+        {canDispute && !disputeOpen && (
+          <button onClick={() => setDisputeOpen(true)} disabled={busy} style={styles.linkBtn}>
+            Un problème avec la livraison ? Refuser avec photos
+          </button>
+        )}
+
+        {canDispute && disputeOpen && (
+          <form onSubmit={openDispute} style={{ ...styles.card, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 style={styles.cardTitle}>Refuser la livraison</h3>
+            <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+              Votre paiement reste bloqué. Décrivez le problème et joignez des photos de la marchandise livrée.
+            </p>
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              placeholder="Ex. : sable argileux, volume inférieur au ticket de pesée…"
+              minLength={10}
+              maxLength={1000}
+              required
+              rows={4}
+              style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '14px', fontFamily: 'inherit' }}
+            />
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              required
+              onChange={(e) => setDisputePhotos(Array.from(e.target.files || []).slice(0, 5))}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button type="button" onClick={() => setDisputeOpen(false)} style={styles.linkBtn}>Annuler</button>
+              <button type="submit" disabled={busy || disputePhotos.length === 0} style={styles.primaryBtn}>
+                {busy ? 'Envoi…' : 'Ouvrir le litige'}
+              </button>
+            </div>
+          </form>
+        )}
+
         {confirmed && <ReviewCard order={order} onDone={fetchOrder} />}
 
         {canCancel && (
@@ -365,6 +458,22 @@ export default function OrderDetailPage() {
             {order.payment_status === 'escrow_held' ? 'Annuler et me faire rembourser' : 'Annuler la commande'}
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+function PhotoStrip({ photos, label }) {
+  if (!photos.length) return null;
+  return (
+    <div style={{ marginTop: '12px' }}>
+      <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>{label}</div>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {photos.map((p) => (
+          <a key={p.url} href={p.url} target="_blank" rel="noopener noreferrer">
+            <img src={p.url} alt={label} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+          </a>
+        ))}
       </div>
     </div>
   );

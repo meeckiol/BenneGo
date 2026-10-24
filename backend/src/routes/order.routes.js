@@ -5,7 +5,9 @@ const {
   acceptOrder, updateOrderStatus, confirmDelivery, confirmRental, confirmEvacuation,
   driverConfirmDump, cancelOrder, getTracking,
   getReceiptClient, getReceiptDriver,
+  recordLoading, openDispute, reportBreakdown,
 } = require('../controllers/order.controller');
+const { uploadPhotos, saveImage } = require('../services/photo.service');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
 const { validateRequest } = require('../middlewares/validate.middleware');
 
@@ -124,28 +126,12 @@ router.get('/:id/receipt/driver', [
 // =============================================
 // PREUVE DE LIVRAISON (PoD) & CHAT EN MISSION
 // =============================================
-const multer = require('multer');
 const { query } = require('../config/database');
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024, files: 5 }, // max 2Mo par photo, 5 photos
-  fileFilter: (req, file, cb) => (
-    ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)
-      ? cb(null, true)
-      : cb(new Error('Format image invalide (JPEG, PNG ou WebP uniquement)'))
-  ),
-});
-// Vérifie la signature réelle du fichier (le mimetype vient du client)
-const hasImageSignature = (buf) => (
-  (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF)
-  || (buf.slice(0, 4).toString('hex') === '89504e47')
-  || (buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP')
-);
 const POD_ALLOWED_STATUSES = ['driver_en_route_delivery', 'dumping', 'machine_operating', 'delivered'];
 const MAX_POD_PHOTOS = 10;
 
 // POST /api/orders/:id/pod - Upload photos preuve de livraison (Chauffeur)
-router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
+router.post('/:id/pod', requireRole('driver'), uploadPhotos.array('photos', 5), [
   param('id').isUUID(),
 ], validateRequest, async (req, res, next) => {
   try {
@@ -164,11 +150,7 @@ router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
       return res.status(409).json({ error: 'Cette commande n\'accepte plus de photos de livraison' });
     }
 
-    const files = req.files || [];
-    if (files.some((f) => !hasImageSignature(f.buffer))) {
-      return res.status(400).json({ error: 'Fichier image invalide' });
-    }
-    const photoData = files.map((f) => `data:${f.mimetype};base64,${f.buffer.toString('base64')}`);
+    const photoUrls = await Promise.all((req.files || []).map(saveImage));
     const notes = typeof req.body.notes === 'string' ? req.body.notes.slice(0, 500) : null;
 
     const updateRes = await query(
@@ -180,7 +162,7 @@ router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
        WHERE id = $3
          AND jsonb_array_length(COALESCE(pod_photos, '[]'::jsonb)) + jsonb_array_length($1::jsonb) <= ${MAX_POD_PHOTOS}
        RETURNING id, order_number, pod_photos, pod_notes, pod_submitted_at`,
-      [JSON.stringify(photoData), notes, req.params.id]
+      [JSON.stringify(photoUrls), notes, req.params.id]
     );
 
     if (!updateRes.rows.length) {
@@ -195,6 +177,34 @@ router.post('/:id/pod', requireRole('driver'), upload.array('photos', 5), [
     next(error);
   }
 });
+
+// =============================================
+// CHARGEMENT, LITIGE & PANNE
+// =============================================
+
+// POST /api/orders/:id/loading - Volume chargé + photos du chargement (et ticket de pesée) avant le départ
+router.post('/:id/loading', requireRole('driver'), uploadPhotos.fields([
+  { name: 'photos', maxCount: 5 },
+  { name: 'weighbridge', maxCount: 1 },
+]), [
+  param('id').isUUID(),
+  body('volume_m3').isFloat({ min: 0.5, max: 100 }).withMessage('Volume chargé invalide (0,5 à 100 m³)'),
+  body('weighbridge_net_kg').optional({ checkFalsy: true }).isInt({ min: 1, max: 100000 }).withMessage('Poids net invalide'),
+], validateRequest, recordLoading);
+
+// POST /api/orders/:id/dispute - Le client refuse la livraison (photos + motif) avant de confirmer
+router.post('/:id/dispute', requireRole('client'), uploadPhotos.array('photos', 5), [
+  param('id').isUUID(),
+  body('reason').isString().trim().isLength({ min: 10, max: 1000 }).withMessage('Décrivez le problème (10 à 1000 caractères)'),
+], validateRequest, openDispute);
+
+// POST /api/orders/:id/breakdown - Le chauffeur signale une panne ou une crevaison en course
+router.post('/:id/breakdown', requireRole('driver'), [
+  param('id').isUUID(),
+  body('reason').isIn(['crevaison', 'panne_moteur', 'accident', 'autre']).withMessage('Motif invalide'),
+  body('lat').isFloat({ min: -90, max: 90 }).withMessage('Position GPS requise'),
+  body('lng').isFloat({ min: -180, max: 180 }).withMessage('Position GPS requise'),
+], validateRequest, reportBreakdown);
 
 // GET /api/orders/:id/chat - Historique du chat
 router.get('/:id/chat', [

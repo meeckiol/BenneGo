@@ -3,15 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
+const TREND_ARROW = { up: '↗', down: '↘', stable: '→' };
+
 export default function HomePage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const [companyInfo, setCompanyInfo] = useState(null);
+  const [barometer, setBarometer] = useState([]);
 
   useEffect(() => {
     api.get('/companies/my-company')
       .then(({ data }) => setCompanyInfo(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    api.get('/barometer')
+      .then(({ data }) => setBarometer(data.items || []))
       .catch(() => {});
   }, []);
 
@@ -28,7 +37,6 @@ export default function HomePage() {
           <span style={styles.userName}>{user?.full_name}</span>
           <button onClick={() => navigate('/enterprise')} style={{ ...styles.navLink, background: '#FF6B00', color: '#fff', fontWeight: 'bold', padding: '6px 12px', borderRadius: '6px' }}>BenneGoPRO</button>
           <button onClick={() => navigate('/referral')} style={styles.navLink}>Parrainage</button>
-          <button onClick={() => navigate('/careers')} style={styles.navLink}>Emplois</button>
           <button onClick={logout} style={styles.logoutBtn}>Déconnexion</button>
         </div>
       </header>
@@ -115,7 +123,7 @@ export default function HomePage() {
               Grands Comptes, Promoteurs & Entreprises BTP
             </h3>
             <p style={styles.enterpriseDesc}>
-              Planifiez des rotations de 50 camions en proforma unique, bénéficiez du <strong>Suivi GPS Certifié</strong> (anti-détournement) et de commissions réduites (3% à 5%).
+              Commandez plusieurs rotations sur une seule proforma, suivez chaque camion en direct et bénéficiez d'une commission réduite.
             </p>
             {companyInfo?.has_company && companyInfo?.company?.subscription_status === 'active' ? (
               <div style={styles.enterpriseStatusActive}>
@@ -139,6 +147,23 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Indice des prix BTP (publié chaque semaine par BenneGo) */}
+        {barometer.length > 0 && (
+          <section style={styles.trustSection}>
+            <h3 style={styles.trustTitle}>Indice des prix BTP · semaine {barometer[0].week_number}</h3>
+            <div style={{ display: 'grid', gap: '10px' }}>
+              {barometer.map((item) => (
+                <div key={item.material_name} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '14px' }}>
+                  <span style={{ color: '#1E293B' }}>{item.material_name}</span>
+                  <strong style={{ color: '#1E293B', whiteSpace: 'nowrap' }}>
+                    {Math.round(item.avg_price_m3).toLocaleString('fr-FR')} FCFA/m³ {TREND_ARROW[item.trend] || ''}
+                  </strong>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Badges de confiance */}
         <section style={styles.trustSection}>
           <h3 style={styles.trustTitle}>Pourquoi faire confiance à BenneGo ?</h3>
@@ -152,12 +177,12 @@ export default function HomePage() {
               <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Suivez votre camion en direct</p>
             </div>
             <div style={styles.trustBadge}>
-              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Chauffeurs vérifiés</strong>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Profils contrôlés par BenneGo</p>
+              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Numéros vérifiés</strong>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Chaque compte est validé par SMS</p>
             </div>
             <div style={styles.trustBadge}>
-              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Support 24/7</strong>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Assistance disponible à tout moment</p>
+              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Support WhatsApp</strong>
+              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Écrivez-nous, bouton en bas à droite</p>
             </div>
           </div>
         </section>
@@ -167,11 +192,11 @@ export default function HomePage() {
           <h4 style={styles.escrowTitle}>Pourquoi le Séquestre BenneGo change tout au Bénin ?</h4>
           <div style={styles.escrowGrid}>
             <div style={styles.escrowItem}>
-              <strong>1. Zéro Risque de Vol</strong>
-              <p>Votre argent reste bloqué sur la plateforme tant que la marchandise n'est pas vérifiée au déchargement.</p>
+              <strong>1. Paiement bloqué jusqu'à la livraison</strong>
+              <p>Votre argent reste bloqué sur BenneGo jusqu'à votre confirmation. En cas de problème, vous pouvez refuser la livraison avec photos.</p>
             </div>
             <div style={styles.escrowItem}>
-              <strong>2. Suivi GPS Certifié OSRM</strong>
+              <strong>2. Suivi GPS en direct</strong>
               <p>Alerte automatique transmise si le chauffeur s'écarte de plus de 15% de l'itinéraire prévu.</p>
             </div>
             <div style={styles.escrowItem}>
@@ -201,9 +226,9 @@ export default function HomePage() {
               <div style={styles.comparisonColHeaderGood}>BenneGo & BenneGoPRO (Spécialiste BTP)</div>
               <ul style={styles.comparisonList}>
                 <li><strong>Flotte lourde dédiée :</strong> 6 roues (10m³), 8 roues (16m³), semi 25m³ & engins</li>
-                <li><strong>Double vérification :</strong> Cubage certifié + ticket de pesée dématérialisé</li>
-                <li><strong>Réseau carrières partenaires :</strong> Tori, Sèmè, Ouidah, Dan, Akassato</li>
-                <li><strong>Séquestre garanti :</strong> Fonds sécurisés, 100% garanti pour client et chauffeur</li>
+                <li><strong>Double vérification :</strong> Volume déclaré et photographié avant départ, ticket de pesée en photo</li>
+                <li><strong>Carrières de la région :</strong> Tori, Sèmè, Ouidah, Dan, Akassato</li>
+                <li><strong>Séquestre :</strong> Fonds bloqués jusqu'à votre confirmation, litiges traités par BenneGo</li>
                 <li><strong>Multi-rotations chantiers :</strong> 10 à 100 voyages gérés en 1 bon de commande</li>
                 <li><strong>Conformité fiscale complète :</strong> Factures proforma, TVA 18%, AIB</li>
               </ul>

@@ -11,7 +11,7 @@ const B2B_PRICING_PLANS = {
     price: 45000,
     currency: 'XOF',
     duration_days: 30,
-    features: ['Accès illimité pour 3 ingénieurs', 'Suivi GPS certifié en direct', 'Export CSV & Rapports de chantier', 'Commission réduite (4%)'],
+    features: ['Accès illimité pour 3 ingénieurs', 'Suivi GPS en direct', 'Export CSV & Rapports de chantier', 'Commission réduite (4%)'],
   },
   site_pack: {
     name: 'Frais Fixes par Chantier (Pack)',

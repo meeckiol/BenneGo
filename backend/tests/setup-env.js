@@ -9,6 +9,8 @@ const defaults = {
   PAYOUT_MODE: 'manual',
 };
 for (const [k, v] of Object.entries(defaults)) if (!process.env[k]) process.env[k] = v;
+// Photos de test écrites hors du dépôt
+if (!process.env.UPLOAD_DIR) process.env.UPLOAD_DIR = require("path").join(require("os").tmpdir(), "bennego-test-uploads");
 
 // Les tests vident les tables : on refuse de tourner sur autre chose qu'une base de test.
 if (!/test/i.test(process.env.DB_NAME)) {

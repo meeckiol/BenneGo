@@ -392,33 +392,6 @@ CREATE TABLE IF NOT EXISTS promo_codes (
 CREATE INDEX IF NOT EXISTS idx_promo_codes_code ON promo_codes(code);
 
 -- =============================================
--- RECRUTEMENT & CARRIÈRES
--- =============================================
-CREATE TABLE IF NOT EXISTS careers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  title VARCHAR(150) NOT NULL,
-  department VARCHAR(100) NOT NULL,
-  location VARCHAR(100) DEFAULT 'Cotonou, Bénin',
-  contract_type VARCHAR(50) DEFAULT 'CDI',
-  description TEXT NOT NULL,
-  requirements TEXT,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS job_applications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  career_id UUID REFERENCES careers(id) ON DELETE CASCADE,
-  full_name VARCHAR(150) NOT NULL,
-  email VARCHAR(150) NOT NULL,
-  phone VARCHAR(30) NOT NULL,
-  resume_url TEXT,
-  cover_letter TEXT,
-  status VARCHAR(30) DEFAULT 'pending',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- =============================================
 -- SYSTÈME DE PARRAINAGE
 -- =============================================
 ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_code VARCHAR(30) UNIQUE;
@@ -480,13 +453,6 @@ INSERT INTO promo_codes (code, discount_type, discount_value, min_order_amount, 
   ('BTP2026', 'fixed', 5000, 30000, 5000, 200, true),
   ('BENNEGO5', 'percentage', 5, 0, 10000, 1000, true)
 ON CONFLICT (code) DO NOTHING;
-
--- Initialisation d'offres d'emploi de test
-INSERT INTO careers (title, department, location, contract_type, description, requirements) VALUES
-  ('Superviseur Logistique & Chantiers', 'Opérations', 'Cotonou, Bénin', 'CDI', 'Supervision des rotations de camions bennes et coordination sur les chantiers partenaires.', 'Minimum 3 ans d''expérience en logistique BTP ou transport.'),
-  ('Développeur Full-Stack Node/React', 'Technologie', 'Télétravail / Cotonou', 'CDI', 'Maintenance et développement de nouvelles fonctionnalités pour la plateforme BenneGo.', 'Expérience confirmée Node.js, PostgreSQL, React, WebSockets.'),
-  ('Responsable Relations Transporteurs', 'Commercial', 'Cotonou / Parakou', 'CDI', 'Recrutement et fidélisation des chauffeurs et propriétaires d''engins lourds.', 'Excellentes compétences relationnelles et connaissance du secteur du transport au Bénin.')
-ON CONFLICT DO NOTHING;
 
 -- Le compte administrateur se crée avec : npm run create-admin (backend)
 
@@ -622,10 +588,6 @@ CREATE INDEX IF NOT EXISTS idx_alerts_order ON site_delay_alerts(order_id);
     -- =============================================================================                                                                                                       
     -- EXTENSION DU MASTERPLAN LANCEMENT.MD & CORRECTIFS SCHEMA DDL                                                                                                                        
     -- =============================================================================                                                                                                       
-    ALTER TABLE careers ADD COLUMN IF NOT EXISTS salary_range VARCHAR(100);                                                                                                                
-    ALTER TABLE careers ALTER COLUMN department DROP NOT NULL;                                                                                                                             
-    ALTER TABLE careers ALTER COLUMN department SET DEFAULT 'Général';                                                                                                                     
-    ALTER TABLE job_applications ALTER COLUMN phone DROP NOT NULL;                                                                                                                         
                                                                                                                                                                                            
     -- 1. Mode Flotte & Télémétrie "Œil de Patron"                                                                                                                                         
     CREATE TABLE IF NOT EXISTS fleets (                                                                                                                                                    
@@ -662,31 +624,6 @@ CREATE INDEX IF NOT EXISTS idx_alerts_order ON site_delay_alerts(order_id);
       status VARCHAR(30) DEFAULT 'active',                                                                                                                                                 
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),                                                                                                                                   
       resolved_at TIMESTAMP WITH TIME ZONE                                                                                                                                                 
-    );                                                                                                                                                                                     
-                                                                                                                                                                                           
-    -- 2. Avance Carburant "BenneGo Fuel" & Retrait 60s                                                                                                                                    
-    CREATE TABLE IF NOT EXISTS fuel_advances (                                                                                                                                             
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
-      driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,                                                                                                                      
-      station_partner VARCHAR(100) NOT NULL,                                                                                                                                               
-      voucher_code VARCHAR(50) UNIQUE NOT NULL,                                                                                                                                            
-      amount_fcfa DECIMAL(10,2) NOT NULL,                                                                                                                                                  
-      status VARCHAR(30) DEFAULT 'issued',                                                                                                                                                 
-      repaid_amount DECIMAL(10,2) DEFAULT 0,                                                                                                                                               
-      issued_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),                                                                                                                                    
-      repaid_at TIMESTAMP WITH TIME ZONE                                                                                                                                                   
-    );                                                                                                                                                                                     
-                                                                                                                                                                                           
-    CREATE TABLE IF NOT EXISTS driver_instant_cashouts (                                                                                                                                   
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),                                                                                                                                      
-      driver_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,                                                                                                                      
-      order_id UUID REFERENCES orders(id) ON DELETE SET NULL,                                                                                                                              
-      amount_fcfa DECIMAL(10,2) NOT NULL,                                                                                                                                                  
-      momo_number VARCHAR(30) NOT NULL,                                                                                                                                                    
-      momo_provider VARCHAR(20) NOT NULL,                                                                                                                                                  
-      kkiapay_payout_ref VARCHAR(100),                                                                                                                                                     
-      status VARCHAR(30) DEFAULT 'completed',                                                                                                                                              
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()                                                                                                                                    
     );                                                                                                                                                                                     
                                                                                                                                                                                            
     -- 3. Continuité de Chantier (SLA Béton Relève)                                                                                                                                        
@@ -726,3 +663,56 @@ CREATE INDEX IF NOT EXISTS idx_alerts_order ON site_delay_alerts(order_id);
       ('Latérite de remblai', 6000, 5500, 6500, 42, 2026, 'stable')                                                                                                                        
     ON CONFLICT DO NOTHING;                                                                                                                                                                
     
+-- =============================================
+-- NETTOYAGE : fonctions retirées (carrières, avance carburant, retrait instantané)
+-- =============================================
+DROP TABLE IF EXISTS job_applications;
+DROP TABLE IF EXISTS careers;
+DROP TABLE IF EXISTS fuel_advances;
+DROP TABLE IF EXISTS driver_instant_cashouts;
+
+-- =============================================
+-- VÉRIFICATION DU NUMÉRO (OTP à l'inscription) — le code n'est jamais stocké en clair
+-- =============================================
+CREATE TABLE IF NOT EXISTS phone_otps (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  phone VARCHAR(20) NOT NULL,
+  code_hash VARCHAR(64) NOT NULL,
+  attempts INT NOT NULL DEFAULT 0,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  verified_at TIMESTAMP WITH TIME ZONE,
+  consumed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_phone_otps_phone ON phone_otps(phone, created_at DESC);
+
+-- =============================================
+-- PHOTOS DE COMMANDE (chargement, ticket de pesée, litige) — fichiers stockés hors base
+-- =============================================
+CREATE TABLE IF NOT EXISTS order_photos (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  kind VARCHAR(20) NOT NULL,
+  url TEXT NOT NULL,
+  uploaded_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CONSTRAINT order_photos_kind_check CHECK (kind IN ('loading', 'weighbridge', 'dispute'))
+);
+CREATE INDEX IF NOT EXISTS idx_order_photos_order ON order_photos(order_id, kind);
+
+-- =============================================
+-- CHARGEMENT & PESÉE : volume déclaré par le chauffeur avant le départ
+-- =============================================
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS loading_volume_m3 DECIMAL(6,2);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS loading_recorded_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS weighbridge_net_kg INT;
+
+-- =============================================
+-- LITIGE À LA LIVRAISON (refus avec photo, traité par l'admin)
+-- =============================================
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispute_status VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispute_reason TEXT;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispute_opened_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispute_resolved_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_dispute_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_dispute_status_check CHECK (dispute_status IN ('open', 'refunded', 'released'));

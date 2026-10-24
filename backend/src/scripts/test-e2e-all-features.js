@@ -120,12 +120,8 @@ async function runTests() {
     assertStep('Connexion Client BTP (+22997000003)', clientAuth.status === 200 && clientAuth.data.token, `role: ${clientAuth.data?.user?.role}`);
     const clientToken = clientAuth.data?.token;
 
-    // 3. Public modules (Careers, Promo)
-    console.log('\n3. MODULES PUBLICS & PROMOTIONS');
-    const careers = await request('GET', '/api/careers');
-    const careerList = careers.data?.careers || (Array.isArray(careers.data) ? careers.data : []);
-    assertStep('Liste des offres d\'emploi (Carrières)', careers.status === 200 && Array.isArray(careerList) && careerList.length > 0, `${careerList.length} offres actives`);
-
+    // 3. Promotions
+    console.log("\n3. PROMOTIONS");
     const promoCheck = await request('POST', '/api/promo/validate', {
       code: 'BENNEGO2026',
       order_amount: 45000,

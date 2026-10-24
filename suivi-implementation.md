@@ -1,45 +1,30 @@
-# BenneGo — Suivi d'implémentation des features manquantes
+# BenneGo — Suivi d'implémentation
 
-> Dernière mise à jour : 2026-10-19
+> Dernière mise à jour : 2026-10-24
 
-## État global
+## Fonctions livrées et branchées
 
-| Agent | Périmètre | État |
-|-------|-----------|------|
-| Backend API | Codes promo, Carrières, Parrainage, PoD, Chat, Récurrentes, Rapport | ✅ Terminé |
-| Frontend Client | WhatsApp, Promo, Carrières, Badges, Chat, Récurrente, Parrainage | ✅ Terminé |
-| Frontend Admin | Rapport mensuel, Parrainage dashboard, Codes promo, PoD photos | ✅ Terminé |
-| Frontend Driver | Upload PoD, Chat, Parrainage, Mode hors-ligne PWA | ✅ Terminé |
+| Domaine | Fonction | Où |
+|---|---|---|
+| Inscription | Vérification du numéro par code SMS (5 min, 5 essais, 1 demande/min) | `backend/src/services/otp.service.js`, client `RegisterPage` |
+| Chargement | Volume déclaré + photos avant départ, ticket de pesée facultatif | `POST /api/orders/:id/loading`, PWA chauffeur `ActiveDeliveryPage` |
+| Litige | Refus de livraison avec photos ; séquestre bloqué ; décision admin | `POST /api/orders/:id/dispute`, console admin *Litiges* |
+| Panne | Signalement en course ; réassignation à une benne de réserve | `POST /api/orders/:id/breakdown`, console admin *Pannes & relèves* |
+| Versement | Automatique à la confirmation si `PAYOUT_MODE=webhook` ; relance des échecs | `payout-retry.service.js` |
+| Baromètre | Indice hebdomadaire public, publié par l'admin | `GET /api/barometer`, console admin *Baromètre BTP* |
+| WhatsApp | Webhook signé ; lecture de commandes écrites ; renvoi vers l'app | `POST /api/whatsapp/webhook` |
+| Photos | Stockage fichier (plus de base64 en base) | `photo.service.js`, `/uploads` |
 
-## Détail des features
+## Retiré
 
-### Backend
-- [x] `POST /api/promo/validate` — Codes promo
-- [x] `GET/POST /api/careers` — Offres d'emploi & candidatures
-- [x] `POST /api/referrals` — Parrainage & code parrain
-- [x] `POST /api/orders/:id/pod` — Upload photos preuve de livraison (multer)
-- [x] Chat Socket.IO (room `chat_<orderId>` + persistance `order_chat_messages`)
-- [x] `POST /api/orders/recurring` — Commandes récurrentes
-- [x] `GET /api/admin/report/monthly` — Rapport mensuel PDF (pdfkit) & JSON stats
-- [x] Intégration SMS (simulé / webhook sans clé externe requise)
+- **Page Carrières (offres d'emploi)** : routes, pages, tables et données de démonstration supprimées.
+- **Avance carburant** : requête cassée (colonnes inversées), aucun partenaire station, aucun remboursement prévu.
+- **Retrait instantané** : jamais branché ; le reversement reste celui de la confirmation.
+- **Promesses commerciales non étayées** (« 100 % garanti », « 24/7 », « Suivi GPS certifié », commission « 3 à 5 % » ) reformulées ou retirées de l'interface.
 
-### Frontend Client
-- [x] Bouton WhatsApp flottant (HomePage)
-- [x] Input code promo dans NewOrderPage
-- [x] Page `/careers` — Offres d'emploi (liste + formulaire de candidature)
-- [x] Badges de confiance sur HomePage
-- [x] Chat in-app dans OrderDetailPage
-- [x] Commande récurrente dans NewOrderPage
-- [x] Page `/referral` — Programme de parrainage (code + partage WhatsApp + stats)
+## Reste à faire avant la mise en production
 
-### Frontend Admin
-- [x] Page `/report` — Rapport mensuel PDF
-- [x] Page `/referrals` — Dashboard parrainage
-- [x] Page `/promos` — Codes promo CRUD
-- [x] Vue photos PoD dans détail commande (modal + zoom)
-
-### Frontend Driver
-- [x] Upload photos PoD dans ActiveDeliveryPage
-- [x] Chat chauffeur dans ActiveDeliveryPage
-- [x] Section parrainage dans DriverDashboard
-- [x] PWA manifest + service worker (hors-ligne)
+- Connecter une passerelle SMS (sans elle l'inscription est bloquée en production).
+- Connecter un prestataire de virement MoMo (`PAYOUT_WEBHOOK_URL`).
+- Déclarer le webhook WhatsApp chez Meta et renseigner les quatre variables `WHATSAPP_*`.
+- Mettre à jour `mobile-driver/` ou la retirer du dépôt.

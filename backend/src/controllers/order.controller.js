@@ -5,6 +5,8 @@ const { calculateRoute, calculatePrice } = require('../services/pricing.service'
 const payments = require('../services/payment.service');
 const events = require('../services/order-events');
 const { generateReceiptPDF } = require('../services/receipt.service');
+const photos = require('../services/photo.service');
+const relief = require('../services/sla-quarry.service');
 
 /**
  * Génère un numéro de commande unique
@@ -510,7 +512,11 @@ const getOrder = async (req, res, next) => {
       throw new AppError('Accès refusé', 403);
     }
 
-    res.json({ order });
+    const photosRes = await query(
+      'SELECT kind, url, created_at FROM order_photos WHERE order_id = $1 ORDER BY created_at',
+      [req.params.id]
+    );
+    res.json({ order: { ...order, photos: photosRes.rows } });
   } catch (error) {
     next(error);
   }
@@ -600,6 +606,9 @@ const updateOrderStatus = async (req, res, next) => {
     const allowedNext = getDriverNextStatuses(order.order_type, order.status);
     if (!allowedNext.includes(status)) {
       throw new AppError(`Transition de statut invalide: ${order.status} → ${status}`, 400);
+    }
+    if (status === 'driver_en_route_delivery' && order.loading_volume_m3 === null) {
+      throw new AppError('Enregistrez le volume chargé et les photos du chargement avant de partir', 409);
     }
 
     const timestampColumns = {
@@ -907,7 +916,122 @@ const getReceiptDriver = async (req, res, next) => {
   }
 };
 
+/**
+ * POST /api/orders/:id/loading (chauffeur)
+ * Volume chargé déclaré + photos du chargement, et ticket de pesée optionnel. Étape « chargement » uniquement.
+ */
+const recordLoading = async (req, res, next) => {
+  const loadingFiles = req.files?.photos || [];
+  const weighbridgeFile = req.files?.weighbridge?.[0] || null;
+  const db = await getClient();
+  try {
+    if (!loadingFiles.length) throw new AppError('Au moins une photo du chargement est requise', 400);
+    const volume = Number(req.body.volume_m3);
+    const netKg = req.body.weighbridge_net_kg ? Number(req.body.weighbridge_net_kg) : null;
+
+    await db.query('BEGIN');
+    const { rows } = await db.query('SELECT id, driver_id, status FROM orders WHERE id = $1 FOR UPDATE', [req.params.id]);
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    if (rows[0].driver_id !== req.user.id) throw new AppError('Accès refusé', 403);
+    if (rows[0].status !== 'loading') {
+      throw new AppError('Le chargement ne peut être enregistré qu\'à l\'étape « chargement »', 409);
+    }
+
+    const loadingUrls = await Promise.all(loadingFiles.map(photos.saveImage));
+    const weighbridgeUrls = weighbridgeFile ? [await photos.saveImage(weighbridgeFile)] : [];
+    const urls = [...loadingUrls, ...weighbridgeUrls];
+    const kinds = [...loadingUrls.map(() => 'loading'), ...weighbridgeUrls.map(() => 'weighbridge')];
+    await db.query(
+      `INSERT INTO order_photos (order_id, kind, url, uploaded_by)
+       SELECT $1, t.kind, t.url, $2 FROM unnest($3::text[], $4::text[]) AS t(kind, url)`,
+      [req.params.id, req.user.id, kinds, urls]
+    );
+    await db.query(
+      `UPDATE orders SET loading_volume_m3 = $2, loading_recorded_at = NOW(),
+              weighbridge_net_kg = COALESCE($3, weighbridge_net_kg), updated_at = NOW()
+       WHERE id = $1`,
+      [req.params.id, volume, netKg]
+    );
+    await db.query('COMMIT');
+    res.json({ message: 'Chargement enregistré', loading_volume_m3: volume, photos_added: urls.length });
+  } catch (error) {
+    await db.query('ROLLBACK');
+    next(error);
+  } finally {
+    db.release();
+  }
+};
+
+/**
+ * POST /api/orders/:id/dispute (client)
+ * Refus de la livraison avant confirmation : le séquestre reste bloqué jusqu'à la décision de l'admin.
+ */
+const openDispute = async (req, res, next) => {
+  const db = await getClient();
+  try {
+    const reason = String(req.body.reason || '').trim();
+    const disputeFiles = req.files || [];
+    if (reason.length < 10) throw new AppError('Décrivez le problème (10 caractères minimum)', 400);
+    if (!disputeFiles.length) throw new AppError('Ajoutez au moins une photo de la marchandise livrée', 400);
+
+    await db.query('BEGIN');
+    const { rows } = await db.query(
+      'SELECT id, client_id, driver_id, status, payment_status, dispute_status FROM orders WHERE id = $1 FOR UPDATE',
+      [req.params.id]
+    );
+    if (!rows.length) throw new AppError('Commande introuvable', 404);
+    const order = rows[0];
+    if (order.client_id !== req.user.id) throw new AppError('Accès refusé', 403);
+    if (order.status !== 'delivered' || order.payment_status !== 'escrow_held') {
+      throw new AppError('Un litige ne peut être ouvert qu\'après la livraison, tant que le paiement est bloqué', 409);
+    }
+    if (order.dispute_status) throw new AppError('Un litige a déjà été ouvert sur cette commande', 409);
+
+    const urls = await Promise.all(disputeFiles.map(photos.saveImage));
+    await db.query(
+      `INSERT INTO order_photos (order_id, kind, url, uploaded_by)
+       SELECT $1, 'dispute', t.url, $2 FROM unnest($3::text[]) AS t(url)`,
+      [order.id, req.user.id, urls]
+    );
+    await db.query(
+      `UPDATE orders SET dispute_status = 'open', dispute_reason = $2, dispute_opened_at = NOW(), updated_at = NOW()
+       WHERE id = $1`,
+      [order.id, reason.slice(0, 1000)]
+    );
+    await db.query('COMMIT');
+
+    const io = req.app.get('io');
+    if (io && order.driver_id) io.to(`driver_${order.driver_id}`).emit('dispute_opened', { order_id: order.id });
+    res.status(201).json({ message: 'Litige ouvert. Le paiement reste bloqué jusqu\'à la décision de BenneGo.' });
+  } catch (error) {
+    await db.query('ROLLBACK');
+    next(error);
+  } finally {
+    db.release();
+  }
+};
+
+/**
+ * POST /api/orders/:id/breakdown (chauffeur)
+ * Panne ou crevaison en cours de course : demande de relève envoyée à l'admin.
+ */
+const reportBreakdown = async (req, res, next) => {
+  try {
+    const request = await relief.reportBreakdown(req.params.id, req.user.id, {
+      reason: req.body.reason,
+      lat: Number(req.body.lat),
+      lng: Number(req.body.lng),
+    });
+    res.status(201).json({ message: 'Panne signalée. BenneGo cherche une benne de réserve.', request });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
+  recordLoading,
+  openDispute,
+  reportBreakdown,
   estimatePrice,
   createOrder,
   createBulkOrders,
