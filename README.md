@@ -40,9 +40,25 @@ cp backend/.env.example backend/.env  # DB_PASSWORD identique, JWT_SECRET (opens
 npm install
 docker compose up -d                  # PostgreSQL (127.0.0.1:5433), applique docker/init.sql
 npm run migrate                       # (re)applique le schéma, sans risque : idempotent
+npm run seed:demo                     # comptes et données de démonstration (développement uniquement)
 ADMIN_PHONE=+229XXXXXXXX ADMIN_PASSWORD='mot-de-passe-de-12-caracteres-min' npm run create-admin -w backend
 npm run dev                           # backend + client + chauffeur + admin
 ```
+
+### Tester sur votre machine
+
+Après `npm run dev` (et `npm run seed:demo`), ouvrez l'espace voulu et connectez-vous avec un compte de démonstration :
+
+| Espace | Adresse | Téléphone | Mot de passe |
+|---|---|---|---|
+| Client | http://localhost:5173 | +22997000003 | ClientPassword123! |
+| Chauffeur | http://localhost:5174 | +22997000002 | DriverPassword123! |
+| Administration | http://localhost:5175 | +22997000001 | AdminPassword123! |
+
+- En développement sans passerelle SMS, le code de vérification de l'inscription s'affiche dans le terminal du backend (`[SMS dev]`).
+- En développement sans clés KKiaPay, le paiement est simulé : la commande passe en séquestre sans argent réel. Ce mode n'existe pas en production.
+- La carte de suivi demande une connexion Internet (tuiles OpenStreetMap).
+- Pour une adresse publique (tester depuis un téléphone), `npm run online` crée des adresses Cloudflare temporaires pendant que la pile tourne (le script télécharge le binaire Linux amd64).
 
 Appli mobile : `cd mobile-driver && cp .env.example .env && npm install && npx expo start` (renseigner `EXPO_PUBLIC_API_URL`).
 

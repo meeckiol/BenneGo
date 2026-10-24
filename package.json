@@ -20,7 +20,8 @@
     "migrate": "npm run migrate -w backend",
     "test": "npm test -w backend",
     "docker:up": "docker compose up -d",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "seed:demo": "npm run seed-demo -w backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
