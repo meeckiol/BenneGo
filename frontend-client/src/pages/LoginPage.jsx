@@ -40,116 +40,55 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        {/* Logo */}
-        <div style={styles.logo}>
-          <img src="/logo-icon.png" alt="BenneGo" style={{ width: 72, height: 72, borderRadius: 16, marginBottom: 12, boxShadow: "0 8px 24px rgba(255,107,0,0.25)" }} />
-          <h1 style={styles.logoText}>BenneGo</h1>
-          <p style={styles.logoSub}>Livraison de matériaux & BTP au Bénin</p>
-        </div>
+    <main className="bn-auth">
+      <section className="bn-auth__hero">
+        <img src="/logo-icon.png" alt="" width="68" height="68" className="bn-auth__logo" />
+        <p className="bn-kicker bn-auth__brand">BenneGo</p>
+        <h1 className="bn-auth__title">Gérez vos livraisons de matériaux en toute simplicité</h1>
+        <p className="bn-subtitle">Sable, gravier, latérite, engins et évacuation. Votre paiement reste bloqué jusqu'à la livraison.</p>
+      </section>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.field}>
-            <label style={styles.label}>Numéro de téléphone</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+229 XX XX XX XX"
-              style={styles.input}
-              required
-            />
-          </div>
+      <form className="bn-card bn-auth__card" onSubmit={handleSubmit}>
+        <label className="bn-field">
+          <span className="bn-label">Numéro de téléphone</span>
+          <input
+            className="bn-input"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+229 XX XX XX XX"
+            autoComplete="username"
+            required
+          />
+        </label>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Mot de passe</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={styles.input}
-              required
-            />
-          </div>
+        <label className="bn-field">
+          <span className="bn-label">Mot de passe</span>
+          <input
+            className="bn-input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            required
+          />
+        </label>
 
-          <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? 'Connexion...' : 'Se connecter'}
+        <button type="submit" disabled={loading} className="bn-btn bn-btn--primary bn-btn--block">
+          {loading ? 'Connexion…' : 'Se connecter'}
+        </button>
+
+        {import.meta.env.DEV && (
+          <button type="button" onClick={handleDemoAccess} className="bn-btn bn-btn--block">
+            Accès démo (développement)
           </button>
+        )}
+      </form>
 
-          {import.meta.env.DEV && (
-            <button
-              type="button"
-              onClick={handleDemoAccess}
-              style={styles.demoButton}
-            >
-              Accès Démo Direct (Voir le Dashboard)
-            </button>
-          )}
-        </form>
-
-        <p style={styles.footer}>
-          Pas encore de compte ?{' '}
-          <Link to="/register" style={styles.link}>S'inscrire</Link>
-        </p>
-      </div>
-    </div>
+      <p className="bn-auth__foot">
+        Pas encore de compte ? <Link to="/register" className="bn-link">S'inscrire</Link>
+      </p>
+    </main>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    background: 'linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-  },
-  card: {
-    background: 'white',
-    borderRadius: '16px',
-    padding: '40px',
-    width: '100%',
-    maxWidth: '400px',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-  },
-  logo: { textAlign: 'center', marginBottom: '32px' },
-  logoText: { fontSize: '28px', fontWeight: '800', color: '#FF6B00', margin: '8px 0 4px' },
-  logoSub: { color: '#666', fontSize: '14px', margin: 0 },
-  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  field: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  label: { fontWeight: '600', color: '#333', fontSize: '14px' },
-  input: {
-    padding: '12px 16px',
-    borderRadius: '8px',
-    border: '2px solid #eee',
-    fontSize: '16px',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  },
-  button: {
-    padding: '14px',
-    background: '#FF6B00',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    marginTop: '8px',
-  },
-  demoButton: {
-    padding: '12px',
-    background: '#0F172A',
-    color: '#FFB74D',
-    border: '1px solid #FF6B00',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  footer: { textAlign: 'center', marginTop: '24px', color: '#666', fontSize: '14px' },
-  link: { color: '#FF6B00', fontWeight: '600', textDecoration: 'none' },
-};

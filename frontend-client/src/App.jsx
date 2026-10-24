@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/authStore';
+import BottomNav from './components/BottomNav';
 
 // Code-splitting via React.lazy
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -21,12 +22,12 @@ const PageFallback = () => (
     alignItems: 'center',
     justifyContent: 'center',
     gap: '16px',
-    color: '#64748B',
+    color: 'var(--text-2)',
   }}>
     <div style={{
       width: '40px',
       height: '40px',
-      border: '3px solid #E2E8F0',
+      border: '3px solid var(--border)',
       borderTopColor: '#FF6B00',
       borderRadius: '50%',
       animation: 'spin 0.8s linear infinite',
@@ -43,7 +44,13 @@ const PageFallback = () => (
 // Guard pour les routes protégées
 const PrivateRoute = ({ children }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return (
+    <div className="bn-shell">
+      {children}
+      <BottomNav />
+    </div>
+  );
 };
 
 function App() {

@@ -26,17 +26,17 @@ const AdminFallback = () => (
     alignItems: 'center',
     justifyContent: 'center',
     gap: '14px',
-    color: '#94A3B8',
+    color: 'var(--text-3)',
   }}>
     <div style={{
       width: '38px',
       height: '38px',
-      border: '3px solid #26334A',
+      border: '3px solid var(--border-2)',
       borderTopColor: '#FF6B00',
       borderRadius: '50%',
       animation: 'adminSpin 0.75s linear infinite',
     }} />
-    <span style={{ fontSize: '13px', fontWeight: 500, color: '#A3B1C6' }}>Chargement console BenneGo...</span>
+    <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-2)' }}>Chargement console BenneGo...</span>
     <style>{`@keyframes adminSpin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );

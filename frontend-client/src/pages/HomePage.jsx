@@ -1,392 +1,207 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
-const TREND_ARROW = { up: '↗', down: '↘', stable: '→' };
+const STATUS = {
+  awaiting_payment: { label: 'À payer', tone: 'danger', step: 0 },
+  pending: { label: 'Recherche chauffeur', tone: 'warning', step: 1 },
+  accepted: { label: 'Chauffeur assigné', tone: 'info', step: 2 },
+  driver_en_route_pickup: { label: 'Chauffeur en route', tone: 'violet', step: 3 },
+  loading: { label: 'Chargement', tone: 'brand', step: 4 },
+  driver_en_route_delivery: { label: 'En livraison', tone: 'info', step: 5 },
+  delivered: { label: 'Livré · à confirmer', tone: 'warning', step: 6 },
+  validated: { label: 'Terminée', tone: 'success', step: 7 },
+  completed: { label: 'Terminée', tone: 'success', step: 7 },
+  cancelled: { label: 'Annulée', tone: 'danger', step: 0 },
+};
+const STEP_COUNT = 7;
+const FINAL = ['validated', 'completed', 'cancelled'];
+const WHATSAPP = 'https://wa.me/22990000000?text=Bonjour%20BenneGo%2C%20j%27ai%20besoin%20d%27aide';
+
+const SERVICES = [
+  { type: 'MATERIAL', title: 'Transport de matériaux', hint: 'Sable, gravier, latérite', brand: true, icon: 'truck' },
+  { type: 'RENTAL', title: "Location d'engins", hint: 'Pelles, bulldozers, chargeurs', icon: 'gear' },
+  { type: 'EVACUATION', title: 'Évacuation de gravats', hint: 'Décharge autorisée', icon: 'bin' },
+  { type: 'WHATSAPP', title: 'Assistance', hint: 'Écrivez-nous sur WhatsApp', icon: 'chat' },
+];
+
+const ICONS = {
+  truck: 'M3 6h11v9h2.5l2.5-3.5h2V15h-1.1a2.4 2.4 0 1 1-4.8 0H10.1a2.4 2.4 0 1 1-4.8 0H3V6zm2 7.2a1.6 1.6 0 1 0 .01 0zm11.5 0a1.6 1.6 0 1 0 .01 0z',
+  gear: 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm8.4 4.4-2.1-.4a6.6 6.6 0 0 0-.7-1.7l1.2-1.8-1.9-1.9-1.8 1.2a6.6 6.6 0 0 0-1.7-.7L13.9 4h-3.8l-.4 2.1a6.6 6.6 0 0 0-1.7.7L6.2 5.6 4.3 7.5l1.2 1.8a6.6 6.6 0 0 0-.7 1.7L2.6 11v2.7l2.1.4c.2.6.4 1.2.7 1.7l-1.2 1.8 1.9 1.9 1.8-1.2c.5.3 1.1.5 1.7.7l.4 2.1h3.8l.4-2.1c.6-.2 1.2-.4 1.7-.7l1.8 1.2 1.9-1.9-1.2-1.8c.3-.5.5-1.1.7-1.7l2.1-.4V11z',
+  bin: 'M9 3h6l1 2h4v2H4V5h4l1-2zm-2 6h10l-1 11H8L7 9z',
+  chat: 'M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
+  check: 'M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z',
+  shield: 'M12 2 4 5v6c0 5.2 3.4 9.7 8 11 4.6-1.3 8-5.8 8-11V5l-8-3z',
+  pin: 'M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z',
+  badge: 'M12 2 9.5 4.5H6v3.5L3.5 12 6 14.5V18h3.5L12 22l2.5-4H18v-3.5l2.5-2.5-2.5-2.5V4.5h-3.5z',
+  logout: 'M10 17l5-5-5-5v3H3v4h7v3zm9-14h-8v2h8v12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z',
+};
+
+const Icon = ({ name, size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d={ICONS[name]} />
+  </svg>
+);
+
+const fcfa = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
+const initials = (name = '') => name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'B';
 
 export default function HomePage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
-  const [companyInfo, setCompanyInfo] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [barometer, setBarometer] = useState([]);
 
   useEffect(() => {
-    api.get('/companies/my-company')
-      .then(({ data }) => setCompanyInfo(data))
-      .catch(() => {});
+    api.get('/orders').then(({ data }) => setOrders(data.orders || [])).catch(() => {});
+    api.get('/barometer').then(({ data }) => setBarometer(data.items || [])).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    api.get('/barometer')
-      .then(({ data }) => setBarometer(data.items || []))
-      .catch(() => {});
-  }, []);
+  const current = useMemo(
+    () => orders.find((o) => !FINAL.includes(o.status)),
+    [orders],
+  );
+  const recent = useMemo(() => orders.slice(0, 3), [orders]);
+  const firstName = user?.full_name?.split(' ')[0] || 'vous';
+
+  const openService = (service) => {
+    if (service.type === 'WHATSAPP') window.open(WHATSAPP, '_blank', 'noopener,noreferrer');
+    else navigate(`/orders/new?type=${service.type}`);
+  };
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <img src="/logo-icon.png" alt="BenneGo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" }} />
-          <span style={styles.logo}>BenneGo</span>
-          <span style={styles.badge}>B2B & BTP Bénin</span>
+    <main className="bn-page">
+      <header className="bn-hello">
+        <div className="bn-hello__who">
+          <span className="bn-avatar" aria-hidden="true">{initials(user?.full_name)}</span>
+          <div>
+            <p className="bn-kicker">Bonjour</p>
+            <h1 className="bn-hello__name">{firstName}</h1>
+          </div>
         </div>
-        <div style={styles.headerRight}>
-          <span style={styles.userName}>{user?.full_name}</span>
-          <button onClick={() => navigate('/enterprise')} style={{ ...styles.navLink, background: '#FF6B00', color: '#fff', fontWeight: 'bold', padding: '6px 12px', borderRadius: '6px' }}>BenneGoPRO</button>
-          <button onClick={() => navigate('/referral')} style={styles.navLink}>Parrainage</button>
-          <button onClick={logout} style={styles.logoutBtn}>Déconnexion</button>
-        </div>
+        <button className="bn-icon-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter">
+          <Icon name="logout" size={20} />
+        </button>
       </header>
 
-      {/* Contenu principal */}
-      <main style={styles.main}>
-        <div style={styles.welcome}>
-          <h2 style={styles.welcomeTitle}>
-            Bonjour, {user?.full_name?.split(' ')[0]}
-          </h2>
-          <p style={styles.welcomeSub}>
-            Sélectionnez votre besoin logistique de chantier avec paiement bloqué en séquestre :
-          </p>
+      <section className="bn-hero">
+        <p className="bn-kicker bn-hero__kicker">Livraison de matériaux & BTP</p>
+        <h2 className="bn-hero__title">Commandez, suivez, payez en sécurité.</h2>
+        <p className="bn-subtitle">Votre paiement reste bloqué sur BenneGo jusqu'à ce que vous confirmiez la réception.</p>
+        <button className="bn-btn bn-btn--primary bn-btn--block bn-hero__cta" onClick={() => navigate('/orders/new')}>
+          Nouvelle commande
+        </button>
+      </section>
+
+      <section className="bn-quick" aria-label="Services">
+        {SERVICES.map((service) => (
+          <button
+            key={service.type}
+            className={`bn-quick__tile${service.brand ? ' bn-quick__tile--brand' : ''}`}
+            onClick={() => openService(service)}
+          >
+            <span className="bn-quick__chip"><Icon name={service.icon} /></span>
+            <span>
+              <strong className="bn-quick__title">{service.title}</strong>
+              <span className="bn-quick__hint">{service.hint}</span>
+            </span>
+          </button>
+        ))}
+      </section>
+
+      {current && (
+        <section className="bn-card bn-current" aria-label="Commande en cours">
+          <div className="bn-current__head">
+            <div>
+              <p className="bn-kicker">Commande en cours</p>
+              <h3 className="bn-current__ref">{current.order_number}</h3>
+            </div>
+            <span className={`bn-pill bn-pill--${STATUS[current.status]?.tone || 'neutral'}`}>
+              {STATUS[current.status]?.label || current.status}
+            </span>
+          </div>
+          <div className="bn-route">
+            <span className="bn-route__dot bn-route__dot--from" />
+            <p>{current.pickup_address}</p>
+            <span className="bn-route__dot bn-route__dot--to" />
+            <p>{current.delivery_address}</p>
+          </div>
+          <div className="bn-progress" aria-hidden="true">
+            <span style={{ width: `${Math.round(((STATUS[current.status]?.step || 0) / STEP_COUNT) * 100)}%` }} />
+          </div>
+          <button className="bn-btn bn-btn--primary bn-btn--block" onClick={() => navigate(`/orders/${current.id}`)}>
+            {current.status === 'awaiting_payment' ? 'Finaliser le paiement' : 'Suivre la commande'}
+          </button>
+        </section>
+      )}
+
+      {recent.length > 0 && (
+        <section>
+          <div className="bn-section-head">
+            <h2>Dernières commandes</h2>
+            <button className="bn-link" onClick={() => navigate('/orders')}>Tout voir</button>
+          </div>
+          <div className="bn-list">
+            {recent.map((order) => (
+              <button key={order.id} className="bn-card bn-row" onClick={() => navigate(`/orders/${order.id}`)}>
+                <span className="bn-row__main">
+                  <strong>{order.order_number}</strong>
+                  <span className="bn-subtitle">{new Date(order.created_at).toLocaleDateString('fr-FR')} · {fcfa(order.total_amount)}</span>
+                </span>
+                <span className={`bn-pill bn-pill--${STATUS[order.status]?.tone || 'neutral'}`}>
+                  {STATUS[order.status]?.label || order.status}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="bn-card bn-card--dark bn-b2b">
+        <span className="bn-pill bn-pill--brand">BenneGo Business</span>
+        <h2 className="bn-b2b__title">Grands comptes, promoteurs et entreprises BTP</h2>
+        <p className="bn-subtitle">Plusieurs rotations sur une seule proforma, suivi GPS en direct et commission réduite.</p>
+        <div className="bn-b2b__actions">
+          <button className="bn-btn bn-btn--primary" onClick={() => navigate('/enterprise')}>Tableau de bord chantiers</button>
+          <button className="bn-btn" onClick={() => navigate('/orders')}>Mes courses</button>
         </div>
+      </section>
 
-        {/* 3 GROS BOUTONS D'ACTION (SERVICES BENNEGO B2B) */}
-        <div style={styles.servicesGrid}>
-          {/* Service 1 : Transport de Matériaux */}
-          <div
-            onClick={() => navigate('/orders/new?type=MATERIAL')}
-            style={{ ...styles.serviceCard, borderColor: '#FF6B00' }}
-          >
-            <div style={styles.serviceIconContainer}>
-              <span style={{ ...styles.serviceTag, background: '#FFF3E0', color: '#E65100' }}>
-                Service Cœur
-              </span>
-            </div>
-            <h3 style={styles.serviceTitle}>Transport de Matériaux</h3>
-            <p style={styles.serviceDesc}>
-              Livraison de sable (mer, carrière), gravier concassé, latérite, ciment ou briques par camions bennes (10m³, 16m³) et plateaux.
-            </p>
-            <div style={styles.serviceFooter}>
-              <span style={styles.servicePrice}>À partir de 35 000 FCFA</span>
-              <span style={styles.serviceArrow}>Commander →</span>
-            </div>
+      {barometer.length > 0 && (
+        <section className="bn-card">
+          <div className="bn-section-head">
+            <h2>Indice des prix BTP · semaine {barometer[0].week_number}</h2>
           </div>
-
-          {/* Service 2 : Location d'Engins Lourds */}
-          <div
-            onClick={() => navigate('/orders/new?type=RENTAL')}
-            style={{ ...styles.serviceCard, borderColor: '#1976D2' }}
-          >
-            <div style={styles.serviceIconContainer}>
-              <span style={{ ...styles.serviceTag, background: '#E3F2FD', color: '#0D47A1' }}>
-                Service Premium
-              </span>
-            </div>
-            <h3 style={styles.serviceTitle}>Location d'Engins Lourds</h3>
-            <p style={styles.serviceDesc}>
-              Mise à disposition à l'heure ou à la journée de pelles mécaniques, bulldozers, chargeuses, compacteurs et niveleuses pour terrassement.
-            </p>
-            <div style={styles.serviceFooter}>
-              <span style={styles.servicePrice}>Dès 25 000 FCFA / heure</span>
-              <span style={{ ...styles.serviceArrow, color: '#1976D2' }}>Réserver →</span>
-            </div>
-          </div>
-
-          {/* Service 3 : Évacuation de Gravats */}
-          <div
-            onClick={() => navigate('/orders/new?type=EVACUATION')}
-            style={{ ...styles.serviceCard, borderColor: '#388E3C' }}
-          >
-            <div style={styles.serviceIconContainer}>
-              <span style={{ ...styles.serviceTag, background: '#E8F5E9', color: '#1B5E20' }}>
-                Service Évacuation
-              </span>
-            </div>
-            <h3 style={styles.serviceTitle}>Logistique d'Évacuation</h3>
-            <p style={styles.serviceDesc}>
-              Nettoyage de chantiers, évacuation rapide de gravats de démolition et transport de terre excédentaire vers sites de remblai autorisés.
-            </p>
-            <div style={styles.serviceFooter}>
-              <span style={styles.servicePrice}>Prise en charge dès 25 000 FCFA</span>
-              <span style={{ ...styles.serviceArrow, color: '#388E3C' }}>Évacuer →</span>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION B2B GRANDS COMPTES (BENNEGO BUSINESS) */}
-        <section style={styles.enterpriseBanner}>
-          <div style={styles.enterpriseContent}>
-            <div style={styles.enterpriseBadge}>BenneGo Business (B2B)</div>
-            <h3 style={styles.enterpriseTitle}>
-              Grands Comptes, Promoteurs & Entreprises BTP
-            </h3>
-            <p style={styles.enterpriseDesc}>
-              Commandez plusieurs rotations sur une seule proforma, suivez chaque camion en direct et bénéficiez d'une commission réduite.
-            </p>
-            {companyInfo?.has_company && companyInfo?.company?.subscription_status === 'active' ? (
-              <div style={styles.enterpriseStatusActive}>
-                ✓ Entreprise active : <strong>{companyInfo.company.name}</strong> ({companyInfo.company.subscription_plan === 'monthly_saas' ? 'SaaS Mensuel' : 'Pack Chantier'})
+          <div className="bn-list">
+            {barometer.map((item) => (
+              <div key={item.material_name} className="bn-row bn-row--static">
+                <span>{item.material_name}</span>
+                <strong className="bn-price">
+                  {Math.round(item.avg_price_m3).toLocaleString('fr-FR')} FCFA/m³
+                  <span className="bn-trend">{{ up: ' ↗', down: ' ↘', stable: ' →' }[item.trend] || ''}</span>
+                </strong>
               </div>
-            ) : null}
-          </div>
-          <div style={styles.enterpriseActions}>
-            <button
-              onClick={() => navigate('/enterprise')}
-              style={styles.enterpriseBtn}
-            >
-              Tableau de bord Chantiers & B2B →
-            </button>
-            <button
-              onClick={() => navigate('/orders')}
-              style={styles.historyBtn}
-            >
-              Mes courses en cours
-            </button>
+            ))}
           </div>
         </section>
+      )}
 
-        {/* Indice des prix BTP (publié chaque semaine par BenneGo) */}
-        {barometer.length > 0 && (
-          <section style={styles.trustSection}>
-            <h3 style={styles.trustTitle}>Indice des prix BTP · semaine {barometer[0].week_number}</h3>
-            <div style={{ display: 'grid', gap: '10px' }}>
-              {barometer.map((item) => (
-                <div key={item.material_name} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontSize: '14px' }}>
-                  <span style={{ color: '#1E293B' }}>{item.material_name}</span>
-                  <strong style={{ color: '#1E293B', whiteSpace: 'nowrap' }}>
-                    {Math.round(item.avg_price_m3).toLocaleString('fr-FR')} FCFA/m³ {TREND_ARROW[item.trend] || ''}
-                  </strong>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+      <section className="bn-trust" aria-label="Garanties">
+        <div className="bn-card bn-trust__item"><span className="bn-quick__chip"><Icon name="shield" size={20} /></span><strong>Séquestre sécurisé</strong><span>Votre argent est protégé jusqu'à la livraison</span></div>
+        <div className="bn-card bn-trust__item"><span className="bn-quick__chip"><Icon name="pin" size={20} /></span><strong>GPS en direct</strong><span>Suivez votre camion pendant la course</span></div>
+        <div className="bn-card bn-trust__item"><span className="bn-quick__chip"><Icon name="badge" size={20} /></span><strong>Numéros vérifiés</strong><span>Chaque compte est validé par SMS</span></div>
+      </section>
 
-        {/* Badges de confiance */}
-        <section style={styles.trustSection}>
-          <h3 style={styles.trustTitle}>Pourquoi faire confiance à BenneGo ?</h3>
-          <div style={styles.trustGrid}>
-            <div style={styles.trustBadge}>
-              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Séquestre sécurisé</strong>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Votre argent protégé jusqu'à livraison</p>
-            </div>
-            <div style={styles.trustBadge}>
-              <strong style={{ fontSize: '13px', color: '#1E293B' }}>GPS Temps réel</strong>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Suivez votre camion en direct</p>
-            </div>
-            <div style={styles.trustBadge}>
-              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Numéros vérifiés</strong>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Chaque compte est validé par SMS</p>
-            </div>
-            <div style={styles.trustBadge}>
-              <strong style={{ fontSize: '13px', color: '#1E293B' }}>Support WhatsApp</strong>
-              <p style={{ fontSize: '12px', color: '#64748B', margin: 0 }}>Écrivez-nous, bouton en bas à droite</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Pourquoi le Séquestre BenneGo ? */}
-        <section style={styles.escrowCard}>
-          <h4 style={styles.escrowTitle}>Pourquoi le Séquestre BenneGo change tout au Bénin ?</h4>
-          <div style={styles.escrowGrid}>
-            <div style={styles.escrowItem}>
-              <strong>1. Paiement bloqué jusqu'à la livraison</strong>
-              <p>Votre argent reste bloqué sur BenneGo jusqu'à votre confirmation. En cas de problème, vous pouvez refuser la livraison avec photos.</p>
-            </div>
-            <div style={styles.escrowItem}>
-              <strong>2. Suivi GPS en direct</strong>
-              <p>Alerte automatique transmise si le chauffeur s'écarte de plus de 15% de l'itinéraire prévu.</p>
-            </div>
-            <div style={styles.escrowItem}>
-              <strong>3. Facture Proforma Unique</strong>
-              <p>Pour vos chantiers d'envergure à Cotonou, Calavi, Ouidah ou Porto-Novo, réglez par virement bancaire.</p>
-            </div>
-          </div>
-        </section>
-        {/* Comparatif BenneGo vs Apps de VTC / Gozem */}
-        <section style={styles.comparisonSection}>
-          <div style={styles.comparisonHeader}>
-            <h4 style={styles.comparisonTitle}>L'avantage BenneGo & BenneGoPRO : L'expert BTP face aux applications de taxi urbain</h4>
-          </div>
-          <div style={styles.comparisonGrid}>
-            <div style={styles.comparisonCol}>
-              <div style={styles.comparisonColHeaderBad}>Applications de VTC / Taxi standards</div>
-              <ul style={styles.comparisonList}>
-                <li>Conçues pour motos et petites voitures (passagers)</li>
-                <li>Incapables de gérer le cubage (m³) et le tonnage utile (20T - 35T)</li>
-                <li>Aucune liaison avec les carrières d'extraction de sable et gravier</li>
-                <li>Pas de bons de pesée pont-bascule certifiés</li>
-                <li>Paiement immédiat sans séquestre adapté aux gros montants</li>
-                <li>Pas de factures fiscales B2B (IFU, RCCM, TVA, AIB)</li>
-              </ul>
-            </div>
-            <div style={styles.comparisonCol}>
-              <div style={styles.comparisonColHeaderGood}>BenneGo & BenneGoPRO (Spécialiste BTP)</div>
-              <ul style={styles.comparisonList}>
-                <li><strong>Flotte lourde dédiée :</strong> 6 roues (10m³), 8 roues (16m³), semi 25m³ & engins</li>
-                <li><strong>Double vérification :</strong> Volume déclaré et photographié avant départ, ticket de pesée en photo</li>
-                <li><strong>Carrières de la région :</strong> Tori, Sèmè, Ouidah, Dan, Akassato</li>
-                <li><strong>Séquestre :</strong> Fonds bloqués jusqu'à votre confirmation, litiges traités par BenneGo</li>
-                <li><strong>Multi-rotations chantiers :</strong> 10 à 100 voyages gérés en 1 bon de commande</li>
-                <li><strong>Conformité fiscale complète :</strong> Factures proforma, TVA 18%, AIB</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Bouton WhatsApp flottant */}
-      <a
-        href="https://wa.me/22990000000?text=Bonjour%20BenneGo%2C%20j%27ai%20besoin%20d%27aide"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={styles.whatsappBtn}
-        aria-label="Contacter via WhatsApp"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-      </a>
-    </div>
+      <section className="bn-card">
+        <h2 className="bn-steps__title">Comment ça marche</h2>
+        <ol className="bn-steps">
+          <li><strong>Commandez et payez</strong><span>Le paiement est bloqué sur BenneGo.</span></li>
+          <li><strong>Un chauffeur part</strong><span>Vous suivez le camion sur la carte.</span></li>
+          <li><strong>Confirmez la réception</strong><span>Seulement alors le chauffeur est payé.</span></li>
+        </ol>
+      </section>
+    </main>
   );
 }
-
-const styles = {
-  container: { minHeight: '100vh', background: '#F8F9FA' },
-  header: {
-    background: '#1E293B',
-    padding: '16px 24px',
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '12px',
-    color: 'white',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  headerLeft: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' },
-  logo: { fontSize: '22px', fontWeight: '900', color: '#FF6B00', letterSpacing: '-0.5px' },
-  badge: { background: 'rgba(255,107,0,0.2)', color: '#FFB74D', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' },
-  headerRight: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px' },
-  comparisonSection: { background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0', marginBottom: '32px' },
-  comparisonHeader: { marginBottom: '16px' },
-  comparisonTitle: { fontSize: '16px', fontWeight: '800', color: '#1E293B', margin: 0, lineHeight: '1.3' },
-  comparisonGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' },
-  comparisonCol: { border: '1px solid #E2E8F0', borderRadius: '12px', padding: '16px', background: '#F8F9FA' },
-  comparisonColHeaderBad: { color: '#B91C1C', fontWeight: '700', fontSize: '14px', marginBottom: '10px' },
-  comparisonColHeaderGood: { color: '#15803D', fontWeight: '700', fontSize: '14px', marginBottom: '10px' },
-  comparisonList: { margin: 0, paddingLeft: '18px', listStyle: 'disc', fontSize: '13px', color: '#475569', lineHeight: '1.6' },
-  userName: { fontSize: '14px', fontWeight: '500' },
-  logoutBtn: {
-    background: 'rgba(255,255,255,0.15)',
-    border: 'none',
-    color: 'white',
-    padding: '6px 14px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-  },
-  main: { padding: '28px 20px', maxWidth: '850px', margin: '0 auto' },
-  welcome: { marginBottom: '28px', textAlign: 'center' },
-  welcomeTitle: { fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 8px' },
-  welcomeSub: { color: '#64748B', fontSize: '15px', margin: 0 },
-  servicesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '20px',
-    marginBottom: '32px',
-  },
-  serviceCard: {
-    background: 'white',
-    borderRadius: '16px',
-    padding: '24px',
-    border: '2px solid transparent',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-  },
-  serviceIconContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' },
-  serviceEmoji: { fontSize: '32px' },
-  serviceTag: { fontSize: '11px', fontWeight: '800', padding: '4px 8px', borderRadius: '6px', textTransform: 'uppercase' },
-  serviceTitle: { fontSize: '18px', fontWeight: '800', color: '#1E293B', margin: '0 0 8px' },
-  serviceDesc: { color: '#64748B', fontSize: '13.5px', lineHeight: '1.5', margin: '0 0 16px', flex: 1 },
-  serviceFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #F1F5F9' },
-  servicePrice: { fontSize: '12px', fontWeight: '700', color: '#334155' },
-  serviceArrow: { fontSize: '13px', fontWeight: '800', color: '#FF6B00' },
-  enterpriseBanner: {
-    background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-    borderRadius: '16px',
-    padding: '28px',
-    color: 'white',
-    boxShadow: '0 8px 24px rgba(15,23,42,0.15)',
-    marginBottom: '32px',
-  },
-  enterpriseContent: { marginBottom: '20px' },
-  enterpriseBadge: { display: 'inline-block', background: 'rgba(255,107,0,0.25)', color: '#FF9E40', fontSize: '12px', fontWeight: '700', padding: '4px 10px', borderRadius: '20px', marginBottom: '10px' },
-  enterpriseTitle: { fontSize: '20px', fontWeight: '800', margin: '0 0 8px', color: '#F8FAFC' },
-  enterpriseDesc: { color: '#94A3B8', fontSize: '14px', lineHeight: '1.6', margin: 0 },
-  enterpriseStatusActive: { marginTop: '12px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ADE80', padding: '8px 12px', borderRadius: '8px', fontSize: '13px' },
-  enterpriseActions: { display: 'flex', gap: '14px', flexWrap: 'wrap' },
-  enterpriseBtn: {
-    background: '#FF6B00',
-    color: 'white',
-    border: 'none',
-    padding: '12px 20px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  historyBtn: {
-    background: 'rgba(255,255,255,0.1)',
-    color: 'white',
-    border: '1px solid rgba(255,255,255,0.2)',
-    padding: '12px 20px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  escrowCard: {
-    background: 'white',
-    borderRadius: '16px',
-    padding: '24px',
-    border: '1px solid #E2E8F0',
-  },
-  escrowTitle: { fontSize: '16px', fontWeight: '800', color: '#1E293B', margin: '0 0 16px' },
-  escrowGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' },
-  escrowItem: { fontSize: '13px', color: '#475569', lineHeight: '1.5' },
-  trustSection: { background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0', marginBottom: '32px' },
-  trustTitle: { fontSize: '16px', fontWeight: '800', color: '#1E293B', margin: '0 0 16px' },
-  trustGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' },
-  trustBadge: { textAlign: 'center', padding: '16px', background: '#F8F9FA', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' },
-  whatsappBtn: {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    zIndex: 1000,
-    background: '#25D366',
-    borderRadius: '50%',
-    width: '56px',
-    height: '56px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 4px 12px rgba(37,211,102,0.4)',
-    textDecoration: 'none',
-  },
-  navLink: {
-    background: 'rgba(255,255,255,0.1)',
-    border: '1px solid rgba(255,255,255,0.2)',
-    color: 'white',
-    padding: '6px 12px',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-};

@@ -176,130 +176,96 @@ export default function DriverDashboard() {
     toast('Commande ignorée');
   };
 
+
+  const truck = user?.truck_type === 'double_benne' ? 'Double benne'
+    : user?.truck_type === 'simple_benne' ? 'Benne simple' : 'Plateau';
+
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div>
-          <div style={styles.headerName}>{user?.full_name}</div>
-          <div style={styles.headerSub}>
-            {user?.truck_type === 'double_benne' ? 'Double benne' :
-             user?.truck_type === 'simple_benne' ? 'Benne simple' : 'Plateau'}
-            {' · '}{user?.truck_plate || '—'}
+    <main className="bn-page">
+      <header className="bn-hello">
+        <div className="bn-hello__who">
+          <span className="bn-avatar" aria-hidden="true">{initials(user?.full_name)}</span>
+          <div>
+            <p className="bn-kicker">Espace chauffeur</p>
+            <h1 className="bn-hello__name">{user?.full_name || 'Chauffeur'}</h1>
+            <p className="bn-subtitle">{truck} · {user?.truck_plate || '—'}</p>
           </div>
         </div>
-        <button onClick={logout} style={styles.logoutBtn}>Déconnexion</button>
+        <button className="bn-icon-btn" onClick={logout} aria-label="Se déconnecter" title="Se déconnecter">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M10 17l5-5-5-5v3H3v4h7v3zm9-14h-8v2h8v12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z" />
+          </svg>
+        </button>
       </header>
 
-      {/* Bouton ON/OFF principal */}
-      <div style={styles.toggleSection}>
-        <div style={{
-          ...styles.toggleRing,
-          boxShadow: isAvailable
-            ? '0 0 0 12px rgba(76,175,80,0.15), 0 0 0 24px rgba(76,175,80,0.08)'
-            : '0 0 0 12px rgba(255,107,0,0.1)',
-        }}>
-          <button
-            onClick={toggleAvailability}
-            disabled={toggling}
-            style={{
-              ...styles.toggleBtn,
-              background: isAvailable
-                ? 'linear-gradient(135deg, #4CAF50, #388E3C)'
-                : 'linear-gradient(135deg, #FF6B00, #E65100)',
-            }}
-          >
-            <span style={styles.toggleText}>
-              {toggling ? '...' : isAvailable ? 'EN LIGNE' : 'HORS LIGNE'}
+      <section className={`bn-card bn-online${isAvailable ? ' is-online' : ''}`}>
+        <button
+          className="bn-online__switch"
+          onClick={toggleAvailability}
+          disabled={toggling}
+          aria-pressed={isAvailable}
+        >
+          <span className="bn-online__label">{toggling ? '…' : isAvailable ? 'En ligne' : 'Hors ligne'}</span>
+        </button>
+        <div className="bn-online__text">
+          <strong>{isAvailable ? 'Vous recevez les nouvelles commandes' : 'Mettez-vous en ligne pour recevoir des courses'}</strong>
+          {isAvailable && (
+            <span className={`bn-pill bn-pill--${gpsError ? 'danger' : 'success'}`}>
+              {gpsError ? gpsError : position ? `GPS actif · précision ${accuracy} m` : 'Acquisition GPS…'}
             </span>
-          </button>
+          )}
         </div>
-        <p style={styles.toggleHint}>
-          {isAvailable
-            ? 'Vous recevrez les nouvelles commandes'
-            : 'Appuyez pour vous mettre disponible'}
-        </p>
-      </div>
+      </section>
 
-      {/* GPS Status */}
-      {isAvailable && (
-        <div style={{
-          ...styles.gpsBar,
-          background: gpsError ? '#FFEBEE' : '#E8F5E9',
-          borderColor: gpsError ? '#EF9A9A' : '#A5D6A7',
-        }}>
-          {gpsError
-            ? gpsError
-            : position
-              ? `GPS actif · précision ${accuracy}m`
-              : 'Acquisition GPS...'}
-        </div>
-      )}
-
-      {/* Commande active */}
       {activeOrder && (
-        <div style={styles.activeOrderCard} onClick={() => navigate(`/order/${activeOrder.id || activeOrder.order_id}`)}>
-          <div style={styles.activeOrderHeader}>
-            <span style={styles.activeBadge}>EN COURS</span>
-            <span style={styles.activeAmount}>
-              {parseFloat(activeOrder.driver_amount || 0).toLocaleString()} FCFA
-            </span>
-          </div>
-          <p style={styles.activeAddress}>Chargement : {activeOrder.pickup_address}</p>
-          <p style={styles.activeAddress}>Livraison : {activeOrder.delivery_address}</p>
-          <div style={styles.activeBtn}>Gérer la livraison →</div>
-        </div>
+        <button
+          className="bn-card bn-card--brand bn-mission"
+          onClick={() => navigate(`/order/${activeOrder.id || activeOrder.order_id}`)}
+        >
+          <span className="bn-mission__head">
+            <span className="bn-pill bn-mission__pill">En cours</span>
+            <strong className="bn-mission__amount">{parseFloat(activeOrder.driver_amount || 0).toLocaleString()} FCFA</strong>
+          </span>
+          <span className="bn-mission__line">Chargement : {activeOrder.pickup_address}</span>
+          <span className="bn-mission__line">Livraison : {activeOrder.delivery_address}</span>
+          <span className="bn-mission__cta">Gérer la livraison →</span>
+        </button>
       )}
 
-      {/* Stats du jour */}
-      <div style={styles.statsGrid}>
-        <StatCard
-          label="Aujourd'hui"
-          value={`${earnings.today.toLocaleString()} FCFA`}
-        />
-        <StatCard
-          label="Courses totales"
-          value={summary?.total_trips ?? 0}
-        />
+      <section className="bn-kpis" aria-label="Indicateurs">
+        <StatCard label="Aujourd'hui" value={`${earnings.today.toLocaleString()} FCFA`} />
+        <StatCard label="Courses totales" value={summary?.total_trips ?? 0} />
         <StatCard
           label="Note"
-          value={summary?.rating ? `${summary.rating.toFixed(1)}/5 (${summary.rating_count})` : 'Pas encore noté'}
+          value={summary?.rating ? `${summary.rating.toFixed(1)} / 5` : 'Pas encore noté'}
+          sub={summary?.rating_count ? `${summary.rating_count} avis` : null}
         />
-        <StatCard
-          label="En attente de paiement"
-          value={`${earnings.pending.toLocaleString('fr-FR')} FCFA`}
-        />
-        <StatCard
-          label="Historique"
-          value="Voir →"
-          onClick={() => navigate('/history')}
-        />
-      </div>
+        <StatCard label="En attente de paiement" value={`${earnings.pending.toLocaleString('fr-FR')} FCFA`} />
+        <StatCard label="Historique" value="Voir" onClick={() => navigate('/history')} accent />
+      </section>
 
-      {/* Section Programme de Parrainage */}
-      <div style={styles.referralCard}>
-        <h3 style={styles.referralTitle}>Programme de Parrainage</h3>
-        <p style={styles.referralDesc}>Parrainez un ami chauffeur et gagnez 2 500 FCFA chacun !</p>
+      <section className="bn-card bn-referral">
+        <h2 className="bn-steps__title">Programme de parrainage</h2>
+        <p className="bn-subtitle">Parrainez un ami chauffeur et gagnez 2 500 FCFA chacun.</p>
         {referralCode ? (
           <>
-            <div style={styles.referralCodeBox}>
-              <span style={styles.referralCode}>{referralCode}</span>
-              <button onClick={copyCode} style={styles.copyBtn}>Copier</button>
+            <div className="bn-code">
+              <span className="bn-code__value">{referralCode}</span>
+              <button className="bn-btn bn-code__copy" onClick={copyCode}>Copier</button>
             </div>
-            <div style={styles.referralStats}>
+            <div className="bn-referral__stats">
               <span>{referralStats.total} filleul(s)</span>
               <span>{Number(referralStats.totalRewards).toLocaleString()} FCFA gagnés</span>
             </div>
-            <button onClick={shareWhatsApp} style={styles.whatsappBtn}>
+            <button className="bn-btn bn-btn--primary bn-btn--block" onClick={shareWhatsApp}>
               Partager via WhatsApp
             </button>
           </>
         ) : (
-          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Chargement de votre code...</div>
+          <p className="bn-subtitle">Chargement de votre code…</p>
         )}
-      </div>
+      </section>
 
-      {/* Alerte nouvelle commande */}
       {pendingOrder && (
         <NewOrderAlert
           order={pendingOrder}
@@ -308,144 +274,19 @@ export default function DriverDashboard() {
           timeoutSeconds={30}
         />
       )}
-    </div>
+    </main>
   );
 }
 
-function StatCard({ label, value, onClick }) {
+const initials = (name = '') => name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'C';
+
+function StatCard({ label, value, sub, onClick, accent }) {
+  const Tag = onClick ? 'button' : 'div';
   return (
-    <div style={{ ...styles.statCard, cursor: onClick ? 'pointer' : 'default' }}
-      onClick={onClick}>
-      <span style={styles.statValue}>{value}</span>
-      <span style={styles.statLabel}>{label}</span>
-    </div>
+    <Tag className={`bn-card bn-kpi${accent ? ' bn-kpi--accent' : ''}`} onClick={onClick}>
+      <span className="bn-kpi__label">{label}</span>
+      <strong className="bn-kpi__value">{value}</strong>
+      {sub && <span className="bn-kpi__sub">{sub}</span>}
+    </Tag>
   );
 }
-
-const styles = {
-  container: {
-    minHeight: '100vh',
-    background: '#0f0f1a',
-    color: 'white',
-    paddingBottom: '40px',
-  },
-  header: {
-    background: 'rgba(255,255,255,0.05)',
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-    padding: '16px 20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerName: { fontWeight: '700', fontSize: '16px' },
-  headerSub: { color: 'rgba(255,255,255,0.5)', fontSize: '12px', marginTop: '2px' },
-  logoutBtn: {
-    background: 'rgba(255,255,255,0.08)',
-    border: 'none',
-    color: 'white',
-    padding: '8px 12px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '16px',
-  },
-  toggleSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '40px 20px 24px',
-  },
-  toggleRing: {
-    borderRadius: '50%',
-    transition: 'box-shadow 0.3s ease',
-    marginBottom: '16px',
-  },
-  toggleBtn: {
-    width: '140px',
-    height: '140px',
-    borderRadius: '50%',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-  },
-  toggleText: { fontSize: '13px', fontWeight: '800', color: 'white', letterSpacing: '1px' },
-  toggleHint: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: '13px',
-    textAlign: 'center',
-    margin: 0,
-  },
-  gpsBar: {
-    margin: '0 16px 16px',
-    padding: '10px 14px',
-    borderRadius: '8px',
-    border: '1px solid',
-    fontSize: '13px',
-    color: '#333',
-  },
-  activeOrderCard: {
-    margin: '0 16px 20px',
-    background: 'linear-gradient(135deg, #FF6B00, #E65100)',
-    borderRadius: '16px',
-    padding: '16px',
-    cursor: 'pointer',
-  },
-  activeOrderHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '10px',
-  },
-  activeBadge: {
-    background: 'rgba(255,255,255,0.2)',
-    padding: '4px 10px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '700',
-  },
-  activeAmount: { fontWeight: '800', fontSize: '18px' },
-  activeAddress: { fontSize: '13px', opacity: 0.9, margin: '3px 0' },
-  activeBtn: {
-    marginTop: '10px',
-    textAlign: 'right',
-    fontSize: '13px',
-    fontWeight: '700',
-    opacity: 0.9,
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
-    margin: '0 16px',
-  },
-  statCard: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '12px',
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  statValue: { fontWeight: '700', fontSize: '18px' },
-  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: '12px' },
-  referralCard: {
-    margin: '16px 16px 0',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '16px',
-    padding: '20px',
-  },
-  referralTitle: { fontSize: '16px', fontWeight: '800', color: 'white', margin: '0 0 8px' },
-  referralDesc: { color: 'rgba(255,255,255,0.6)', fontSize: '13px', margin: '0 0 16px' },
-  referralCodeBox: { display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px' },
-  referralCode: { flex: 1, fontSize: '18px', fontWeight: '900', color: '#FF6B00', letterSpacing: '2px' },
-  copyBtn: { background: '#FF6B00', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' },
-  referralStats: { display: 'flex', gap: '16px', fontSize: '13px', color: 'rgba(255,255,255,0.8)', marginBottom: '12px' },
-  whatsappBtn: { background: '#25D366', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', width: '100%' },
-};

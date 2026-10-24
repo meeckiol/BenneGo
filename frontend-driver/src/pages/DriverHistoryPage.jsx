@@ -78,7 +78,7 @@ export default function DriverHistoryPage() {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#0f0f1a', color: 'white' },
+  container: { minHeight: '100vh', background: 'var(--bg)', color: 'white' },
   header: { background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px' },
   back: { background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px' },
   title: { fontSize: '18px', fontWeight: '700', margin: 0 },

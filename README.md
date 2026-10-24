@@ -14,6 +14,12 @@ le client paie à la commande, l'argent reste bloqué sur BenneGo, et n'est rép
 | `mobile-driver/` | Appli mobile chauffeur (Expo / React Native), branchée sur la même API | 8081 |
 | `docker/init.sql` | Schéma SQL (idempotent) | |
 
+## Design
+
+Les trois frontends web (client, chauffeur, administration) partagent un thème sombre à accent orange, défini dans `shared/theme.css` : tokens de couleur, typographie, rayons, ombres, et composants `bn-*` (cartes, pastilles de statut, boutons, barre de navigation basse, timeline).
+
+Pour changer une couleur de marque, modifiez ce fichier : les pages utilisent les variables `var(--surface)`, `var(--text-2)`, `var(--brand)`, etc. L'application mobile `mobile-driver/` (Expo) a son propre système de style et n'a pas été restylée dans cette itération.
+
 ## Flux de l'argent
 
 1. **Commande + paiement** : le client commande et règle dans la foulée (KKiaPay, MTN MoMo / Moov Money). La commande reste `awaiting_payment`, **invisible des chauffeurs**, tant que KKiaPay n'a pas confirmé le paiement.

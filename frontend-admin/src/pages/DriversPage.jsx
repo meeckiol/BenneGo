@@ -97,9 +97,9 @@ export default function DriversPage() {
                   <td style={{ ...s.td, fontWeight: '600', color: '#FF6B00' }}>
                     {driver.nom || driver.full_name?.split(' ').slice(1).join(' ') || '—'}
                   </td>
-                  <td style={{ ...s.td, color: '#94a3b8' }}>{driver.phone}</td>
-                  <td style={{ ...s.td, color: '#64748b' }}>{fmtDate(driver.date_naissance)}</td>
-                  <td style={{ ...s.td, color: '#64748b', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ ...s.td, color: 'var(--text-3)' }}>{driver.phone}</td>
+                  <td style={{ ...s.td, color: 'var(--text-2)' }}>{fmtDate(driver.date_naissance)}</td>
+                  <td style={{ ...s.td, color: 'var(--text-2)', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {driver.adresse || driver.driver_adresse || '—'}
                   </td>
                   <td style={s.td}>
@@ -120,7 +120,7 @@ export default function DriversPage() {
                       <span style={{ color: driver.momo_provider === 'mtn' ? '#FFD700' : '#00BFFF' }}>
                         {driver.momo_provider === 'mtn' ? 'MTN' : driver.momo_provider === 'moov' ? 'Moov' : '—'}
                       </span>
-                      <span style={{ color: '#64748b', fontSize: '11px' }}>{driver.momo_number}</span>
+                      <span style={{ color: 'var(--text-2)', fontSize: '11px' }}>{driver.momo_number}</span>
                     </div>
                   </td>
                   <td style={{ ...s.td, textAlign: 'center' }}>
@@ -213,7 +213,7 @@ function SummaryCard({ icon, label, value, color = '#FF6B00' }) {
       <span style={{ fontSize: '24px' }}>{icon}</span>
       <div>
         <div style={{ fontSize: '22px', fontWeight: '800', color }}>{value}</div>
-        <div style={{ fontSize: '12px', color: '#64748b' }}>{label}</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-2)' }}>{label}</div>
       </div>
     </div>
   );
@@ -221,7 +221,7 @@ function SummaryCard({ icon, label, value, color = '#FF6B00' }) {
 
 function SectionTitle({ children }) {
   return (
-    <div style={{ background: '#0f172a', borderRadius: '6px', padding: '6px 10px', marginTop: '14px', marginBottom: '4px' }}>
+    <div style={{ background: 'var(--bg)', borderRadius: '6px', padding: '6px 10px', marginTop: '14px', marginBottom: '4px' }}>
       <span style={{ color: '#FF6B00', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
         {children}
       </span>
@@ -232,7 +232,7 @@ function SectionTitle({ children }) {
 function InfoRow({ label, value }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid #1e293b' }}>
-      <span style={{ color: '#64748b', fontSize: '13px' }}>{label}</span>
+      <span style={{ color: 'var(--text-2)', fontSize: '13px' }}>{label}</span>
       <span style={{ color: 'white', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
     </div>
   );
@@ -241,27 +241,27 @@ function InfoRow({ label, value }) {
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
   summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' },
-  summaryCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center' },
-  tableCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' },
-  tableHeader: { padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
-  searchInput: { flex: 1, minWidth: '200px', maxWidth: '420px', padding: '9px 14px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
+  summaryCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center' },
+  tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
+  tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
+  searchInput: { flex: 1, minWidth: '200px', maxWidth: '420px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
+  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
   tableWrapper: { overflow: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '1100px' },
-  thead: { background: '#0f172a' },
-  th: { padding: '10px 12px', color: '#64748b', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
+  thead: { background: 'var(--bg)' },
+  th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
   tr: { borderBottom: '1px solid #0f172a', cursor: 'pointer' },
-  td: { padding: '12px', color: '#cbd5e1', fontSize: '13px', verticalAlign: 'middle' },
+  td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px', verticalAlign: 'middle' },
   truckType: { fontSize: '12px' },
-  rating: { fontSize: '13px', color: '#F59E0B', fontWeight: '600' },
+  rating: { fontSize: '13px', color: 'var(--warning)', fontWeight: '600' },
   momoInfo: { display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '12px', fontWeight: '600' },
   badge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
   toggleBtn: { padding: '5px 10px', border: '1px solid', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
-  empty: { padding: '32px', textAlign: 'center', color: '#475569' },
+  empty: { padding: '32px', textAlign: 'center', color: 'var(--text-2)' },
   // Modal
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#1e293b', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto' },
-  modalHeader: { padding: '20px 24px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f172a', borderRadius: '16px 16px 0 0', position: 'sticky', top: 0 },
+  modal: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '16px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflow: 'auto' },
+  modalHeader: { padding: '20px 24px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg)', borderRadius: '16px 16px 0 0', position: 'sticky', top: 0 },
   modalBody: { padding: '20px 24px' },
-  closeBtn: { background: 'none', border: 'none', color: '#64748b', fontSize: '18px', cursor: 'pointer' },
+  closeBtn: { background: 'none', border: 'none', color: 'var(--text-2)', fontSize: '18px', cursor: 'pointer' },
 };

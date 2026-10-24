@@ -40,7 +40,7 @@ const Row = ({ who, rating, comment, date, sub }) => (
   <div style={s.row}>
     <div style={s.rowTop}>
       <strong style={{ color: 'white' }}>{who}</strong>
-      <span style={{ color: '#FFB300', letterSpacing: 2 }}>{stars(rating)}</span>
+      <span style={{ color: 'var(--warning)', letterSpacing: 2 }}>{stars(rating)}</span>
     </div>
     {comment && <p style={s.comment}>{comment}</p>}
     <div style={s.meta}>{sub ? `${sub} · ` : ''}{new Date(date).toLocaleString('fr-FR')}</div>
@@ -49,12 +49,12 @@ const Row = ({ who, rating, comment, date, sub }) => (
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: 24 },
-  card: { background: '#1e293b', border: '1px solid #334155', borderRadius: 12, overflow: 'hidden' },
-  cardHeader: { padding: '16px 20px', borderBottom: '1px solid #334155' },
+  card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' },
+  cardHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)' },
   title: { color: 'white', fontSize: 15, fontWeight: 700, margin: 0 },
   row: { padding: '14px 20px', borderBottom: '1px solid #0f172a' },
   rowTop: { display: 'flex', justifyContent: 'space-between', gap: 12 },
-  comment: { color: '#cbd5e1', fontSize: 14, margin: '8px 0 4px' },
-  meta: { color: '#64748b', fontSize: 12 },
-  empty: { padding: 32, textAlign: 'center', color: '#475569' },
+  comment: { color: 'var(--text-2)', fontSize: 14, margin: '8px 0 4px' },
+  meta: { color: 'var(--text-2)', fontSize: 12 },
+  empty: { padding: 32, textAlign: 'center', color: 'var(--text-2)' },
 };

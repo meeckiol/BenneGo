@@ -10,8 +10,8 @@ const DriverHistoryPage = lazy(() => import('./pages/DriverHistoryPage'));
 const DriverFallback = () => (
   <div style={{
     minHeight: '100vh',
-    background: '#0F172A',
-    color: '#94A3B8',
+    background: 'var(--bg)',
+    color: 'var(--text-3)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -22,12 +22,12 @@ const DriverFallback = () => (
     <div style={{
       width: '44px',
       height: '44px',
-      border: '4px solid #334155',
+      border: '4px solid var(--border-2)',
       borderTopColor: '#FF6B00',
       borderRadius: '50%',
       animation: 'driverSpin 0.7s linear infinite',
     }} />
-    <span style={{ fontSize: '15px', fontWeight: 600, color: '#E2E8F0' }}>BenneGo Chauffeur...</span>
+    <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text)' }}>BenneGo Chauffeur...</span>
     <style>{`@keyframes driverSpin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );

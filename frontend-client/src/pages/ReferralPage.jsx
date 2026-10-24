@@ -101,7 +101,7 @@ export default function ReferralPage() {
                 <span style={styles.statLabel}>Filleuls inscrits</span>
               </div>
               <div style={styles.statCard}>
-                <span style={{ ...styles.statValue, color: '#10B981' }}>
+                <span style={{ ...styles.statValue, color: 'var(--success)' }}>
                   {Number(data?.total_rewards || 0).toLocaleString()} FCFA
                 </span>
                 <span style={styles.statLabel}>Gains totaux</span>
@@ -133,28 +133,28 @@ export default function ReferralPage() {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#F8F9FA' },
-  header: { background: '#1E293B', padding: '16px 24px', display: 'flex', alignItems: 'center', color: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
+  container: { minHeight: '100vh', background: 'var(--bg)' },
+  header: { background: 'var(--surface)', padding: '16px 24px', display: 'flex', alignItems: 'center', color: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: '16px' },
   backBtn: { background: 'rgba(255,255,255,0.12)', border: 'none', color: 'white', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   logo: { fontSize: '18px', fontWeight: '800', color: '#FF6B00' },
   main: { padding: '32px 20px', maxWidth: '640px', margin: '0 auto' },
   hero: { textAlign: 'center', marginBottom: '32px' },
-  heroTitle: { fontSize: '26px', fontWeight: '800', color: '#0F172A', margin: '0 0 10px' },
-  heroSub: { color: '#64748B', fontSize: '15px', lineHeight: '1.5', margin: 0 },
-  loading: { textAlign: 'center', color: '#64748B', padding: '40px' },
-  card: { background: 'white', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' },
-  cardTitle: { fontSize: '17px', fontWeight: '800', color: '#1E293B', margin: '0 0 6px' },
-  cardSub: { color: '#64748B', fontSize: '13.5px', margin: '0 0 16px' },
-  codeBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F8F9FA', border: '2px dashed #CBD5E1', borderRadius: '12px', padding: '14px 18px', marginBottom: '16px' },
+  heroTitle: { fontSize: '26px', fontWeight: '800', color: 'var(--text-strong)', margin: '0 0 10px' },
+  heroSub: { color: 'var(--text-2)', fontSize: '15px', lineHeight: '1.5', margin: 0 },
+  loading: { textAlign: 'center', color: 'var(--text-2)', padding: '40px' },
+  card: { background: 'var(--surface)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' },
+  cardTitle: { fontSize: '17px', fontWeight: '800', color: 'var(--text-strong)', margin: '0 0 6px' },
+  cardSub: { color: 'var(--text-2)', fontSize: '13.5px', margin: '0 0 16px' },
+  codeBox: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg)', border: '2px dashed var(--border-2)', borderRadius: '12px', padding: '14px 18px', marginBottom: '16px' },
   codeText: { fontSize: '24px', fontWeight: '900', color: '#FF6B00', letterSpacing: '3px' },
-  copyBtn: { background: '#1E293B', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' },
+  copyBtn: { background: 'var(--surface)', color: 'white', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' },
   whatsappBtn: { width: '100%', background: '#25D366', color: 'white', border: 'none', padding: '14px', borderRadius: '10px', cursor: 'pointer', fontWeight: '800', fontSize: '15px' },
   statsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '16px' },
-  statCard: { background: 'white', borderRadius: '14px', padding: '18px', textAlign: 'center', border: '1px solid #E2E8F0' },
-  statValue: { display: 'block', fontSize: '24px', fontWeight: '800', color: '#1E293B', marginBottom: '4px' },
-  statLabel: { fontSize: '12.5px', color: '#64748B' },
+  statCard: { background: 'var(--surface)', borderRadius: '14px', padding: '18px', textAlign: 'center', border: '1px solid var(--border)' },
+  statValue: { display: 'block', fontSize: '24px', fontWeight: '800', color: 'var(--text-strong)', marginBottom: '4px' },
+  statLabel: { fontSize: '12.5px', color: 'var(--text-2)' },
   formRow: { display: 'flex', gap: '10px' },
-  input: { flex: 1, padding: '12px 14px', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '15px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', outline: 'none' },
+  input: { flex: 1, padding: '12px 14px', border: '1px solid var(--border-2)', borderRadius: '8px', fontSize: '15px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', outline: 'none' },
   applyBtn: { background: '#FF6B00', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 };

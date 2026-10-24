@@ -22,6 +22,14 @@
 - **Retrait instantané** : jamais branché ; le reversement reste celui de la confirmation.
 - **Promesses commerciales non étayées** (« 100 % garanti », « 24/7 », « Suivi GPS certifié », commission « 3 à 5 % » ) reformulées ou retirées de l'interface.
 
+## Refonte visuelle des frontends web
+
+- Thème sombre partagé (`shared/theme.css`), accent orange de la marque, pastilles de statut, cartes arrondies.
+- Client : accueil (salutation, tuiles d'action, commande en cours, dernières commandes, comment ça marche), navigation basse, connexion en version « hero », liste et détail de commande avec timeline.
+- Chauffeur : tableau de bord avec grand bouton de disponibilité, carte de mission, indicateurs, parrainage ; connexion en version « hero ».
+- Administration : connexion en version « hero » ; toutes les pages migrées vers les couleurs du thème.
+- Non restylé : l'application mobile `mobile-driver/` (Expo), à traiter séparément.
+
 ## Reste à faire avant la mise en production
 
 - Connecter une passerelle SMS (sans elle l'inscription est bloquée en production).

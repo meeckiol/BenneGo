@@ -1,95 +1,107 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
-const STATUS_LABELS = {
-  awaiting_payment: { label: 'À payer', color: '#B71C1C', bg: '#FFEBEE' },
-  pending: { label: 'Payée · recherche chauffeur', color: '#FF9800', bg: '#FFF3E0' },
-  accepted: { label: 'Acceptée', color: '#2196F3', bg: '#E3F2FD' },
-  driver_en_route_pickup: { label: 'Chauffeur en route', color: '#9C27B0', bg: '#F3E5F5' },
-  loading: { label: 'Chargement', color: '#FF5722', bg: '#FBE9E7' },
-  driver_en_route_delivery: { label: 'En livraison', color: '#3F51B5', bg: '#E8EAF6' },
-  delivered: { label: 'Livré', color: '#4CAF50', bg: '#E8F5E9' },
-  validated: { label: 'Validé', color: '#4CAF50', bg: '#E8F5E9' },
-  completed: { label: 'Terminé', color: '#607D8B', bg: '#ECEFF1' },
-  cancelled: { label: 'Annulé', color: '#F44336', bg: '#FFEBEE' },
+const STATUS = {
+  awaiting_payment: { label: 'À payer', tone: 'danger' },
+  pending: { label: 'Recherche chauffeur', tone: 'warning' },
+  accepted: { label: 'Chauffeur assigné', tone: 'info' },
+  driver_en_route_pickup: { label: 'Chauffeur en route', tone: 'violet' },
+  loading: { label: 'Chargement', tone: 'brand' },
+  driver_en_route_delivery: { label: 'En livraison', tone: 'info' },
+  delivered: { label: 'Livré · à confirmer', tone: 'warning' },
+  validated: { label: 'Réception confirmée', tone: 'success' },
+  completed: { label: 'Terminée', tone: 'success' },
+  cancelled: { label: 'Annulée', tone: 'danger' },
 };
+
+const FILTERS = [
+  { key: 'all', label: 'Toutes' },
+  { key: 'active', label: 'En cours' },
+  { key: 'done', label: 'Terminées' },
+];
+const DONE = ['validated', 'completed', 'cancelled'];
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/orders').then(({ data }) => {
-      setOrders(data.orders);
-      setLoading(false);
-    });
+    api.get('/orders')
+      .then(({ data }) => setOrders(data.orders || []))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={styles.loading}>Chargement...</div>;
+  const visible = useMemo(() => orders.filter((o) => {
+    if (filter === 'active') return !DONE.includes(o.status);
+    if (filter === 'done') return DONE.includes(o.status);
+    return true;
+  }), [orders, filter]);
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <button onClick={() => navigate('/')} style={styles.back}>← Accueil</button>
-        <h2 style={styles.title}>Mes commandes</h2>
+    <main className="bn-page">
+      <header className="bn-page-head">
+        <button className="bn-icon-btn" onClick={() => navigate('/')} aria-label="Retour à l'accueil">←</button>
+        <div>
+          <p className="bn-kicker">Vos courses</p>
+          <h1 className="bn-title">Mes commandes</h1>
+        </div>
       </header>
 
-      <div style={styles.content}>
-        {orders.length === 0 ? (
-          <div style={styles.empty}>
-            <p>Aucune commande pour l'instant</p>
-            <button onClick={() => navigate('/orders/new')} style={styles.btn}>
+      <div className="bn-segment" role="tablist" aria-label="Filtrer">
+        {FILTERS.map((f) => (
+          <button
+            key={f.key}
+            role="tab"
+            aria-selected={filter === f.key}
+            className={`bn-segment__btn${filter === f.key ? ' is-active' : ''}`}
+            onClick={() => setFilter(f.key)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {loading && <p className="bn-subtitle">Chargement…</p>}
+
+      {!loading && visible.length === 0 && (
+        <section className="bn-card bn-empty">
+          <p>{orders.length === 0 ? "Aucune commande pour l'instant." : 'Aucune commande dans cette catégorie.'}</p>
+          {orders.length === 0 && (
+            <button className="bn-btn bn-btn--primary" onClick={() => navigate('/orders/new')}>
               Passer ma première commande
             </button>
-          </div>
-        ) : (
-          orders.map((order) => {
-            const st = STATUS_LABELS[order.status] || { label: order.status, color: '#666', bg: '#eee' };
-            return (
-              <div key={order.id} style={styles.orderCard}
-                onClick={() => navigate(`/orders/${order.id}`)}>
-                <div style={styles.orderHeader}>
-                  <span style={styles.orderNum}>{order.order_number}</span>
-                  <span style={{ ...styles.badge, color: st.color, background: st.bg }}>
-                    {st.label}
-                  </span>
-                </div>
-                <p style={styles.addresses}>
-                  Chargement : {order.pickup_address}
-                  <br />Livraison : {order.delivery_address}
-                </p>
-                <div style={styles.orderFooter}>
-                  <span style={styles.amount}>{Number(order.total_amount).toLocaleString('fr-FR')} FCFA</span>
-                  <span style={styles.date}>
-                    {new Date(order.created_at).toLocaleDateString('fr-FR')}
-                  </span>
-                </div>
-              </div>
-            );
-          })
-        )}
+          )}
+        </section>
+      )}
+
+      <div className="bn-list">
+        {visible.map((order) => {
+          const st = STATUS[order.status] || { label: order.status, tone: 'neutral' };
+          return (
+            <button key={order.id} className="bn-card bn-order" onClick={() => navigate(`/orders/${order.id}`)}>
+              <span className="bn-order__head">
+                <strong className="bn-order__ref">{order.order_number}</strong>
+                <span className={`bn-pill bn-pill--${st.tone}`}>{st.label}</span>
+              </span>
+              <span className="bn-order__route">
+                <span className="bn-route__dot bn-route__dot--from bn-route__dot--inline" />
+                {order.pickup_address}
+              </span>
+              <span className="bn-order__route">
+                <span className="bn-route__dot bn-route__dot--to bn-route__dot--inline" />
+                {order.delivery_address}
+              </span>
+              <span className="bn-order__foot">
+                <span className="bn-price">{Number(order.total_amount).toLocaleString('fr-FR')} FCFA</span>
+                <span className="bn-subtitle">{new Date(order.created_at).toLocaleDateString('fr-FR')}</span>
+              </span>
+            </button>
+          );
+        })}
       </div>
-    </div>
+    </main>
   );
 }
-
-const styles = {
-  container: { minHeight: '100vh', background: '#f5f5f5' },
-  header: { background: '#FF6B00', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' },
-  back: { background: 'none', border: 'none', color: 'white', fontSize: '16px', cursor: 'pointer' },
-  title: { color: 'white', fontSize: '18px', fontWeight: '700', margin: 0 },
-  content: { padding: '20px', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' },
-  loading: { padding: '40px', textAlign: 'center', color: '#666' },
-  empty: { textAlign: 'center', padding: '60px 20px', color: '#666' },
-  btn: { marginTop: '16px', padding: '12px 24px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' },
-  orderCard: { background: 'white', borderRadius: '12px', padding: '16px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
-  orderHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' },
-  orderNum: { fontWeight: '700', color: '#333' },
-  badge: { padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' },
-  addresses: { fontSize: '13px', color: '#555', lineHeight: '1.6', margin: '0 0 8px' },
-  orderFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  amount: { fontWeight: '800', color: '#FF6B00', fontSize: '16px' },
-  date: { color: '#999', fontSize: '12px' },
-};

@@ -101,19 +101,19 @@ export default function ReliefsPage() {
 }
 
 const s = {
-  page: { padding: 24, color: '#E2E8F0', maxWidth: 1000 },
+  page: { padding: 24, color: 'var(--text)', maxWidth: 1000 },
   title: { margin: '0 0 6px', fontSize: 22, fontWeight: 800 },
-  sub: { margin: '0 0 16px', color: '#94A3B8', fontSize: 14 },
-  pool: { background: '#1E293B', border: '1px solid #334155', borderRadius: 10, padding: 12, marginBottom: 16, fontSize: 14 },
-  muted: { color: '#94A3B8', fontSize: 13 },
-  empty: { background: '#1E293B', borderRadius: 12, padding: 24, color: '#94A3B8', textAlign: 'center' },
-  card: { background: '#1E293B', border: '1px solid #334155', borderRadius: 12, padding: 18, marginBottom: 16 },
+  sub: { margin: '0 0 16px', color: 'var(--text-3)', fontSize: 14 },
+  pool: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 10, padding: 12, marginBottom: 16, fontSize: 14 },
+  muted: { color: 'var(--text-3)', fontSize: 13 },
+  empty: { background: 'var(--surface)', borderRadius: 12, padding: 24, color: 'var(--text-3)', textAlign: 'center' },
+  card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 18, marginBottom: 16 },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   orderNumber: { fontSize: 16, color: '#FF6B00' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, fontSize: 14 },
-  label: { display: 'block', fontSize: 11, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
+  label: { display: 'block', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
   warn: { marginTop: 14, background: '#422006', color: '#FDE68A', borderRadius: 8, padding: 12, fontSize: 14 },
   actions: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' },
-  select: { flex: 1, minWidth: 260, padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0F172A', color: '#E2E8F0' },
+  select: { flex: 1, minWidth: 260, padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)' },
   primaryBtn: { padding: '10px 16px', borderRadius: 8, border: 'none', background: '#FF6B00', color: 'white', fontWeight: 700, cursor: 'pointer' },
 };

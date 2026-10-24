@@ -107,15 +107,15 @@ export default function BarometerAdminPage() {
 }
 
 const s = {
-  page: { padding: 24, color: '#E2E8F0', maxWidth: 1000 },
+  page: { padding: 24, color: 'var(--text)', maxWidth: 1000 },
   title: { margin: '0 0 6px', fontSize: 22, fontWeight: 800 },
-  sub: { margin: '0 0 16px', color: '#94A3B8', fontSize: 14 },
+  sub: { margin: '0 0 16px', color: 'var(--text-3)', fontSize: 14 },
   sub2: { margin: '24px 0 10px', fontSize: 15, fontWeight: 700 },
-  card: { background: '#1E293B', border: '1px solid #334155', borderRadius: 12, padding: 18 },
+  card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 18 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 },
-  label: { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: '#94A3B8', fontWeight: 600 },
-  input: { padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0F172A', color: '#E2E8F0', fontSize: 14 },
+  label: { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--text-3)', fontWeight: 600 },
+  input: { padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)', fontSize: 14 },
   primaryBtn: { padding: '11px 18px', borderRadius: 8, border: 'none', background: '#FF6B00', color: 'white', fontWeight: 700, cursor: 'pointer' },
-  empty: { background: '#1E293B', borderRadius: 12, padding: 20, color: '#94A3B8', textAlign: 'center' },
-  row: { display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderBottom: '1px solid #334155', fontSize: 14 },
+  empty: { background: 'var(--surface)', borderRadius: 12, padding: 20, color: 'var(--text-3)', textAlign: 'center' },
+  row: { display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border-2)', fontSize: 14 },
 };

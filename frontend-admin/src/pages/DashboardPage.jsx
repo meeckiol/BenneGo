@@ -90,13 +90,13 @@ export default function DashboardPage() {
           <h3 style={s.chartTitle}>Revenus cette semaine</h3>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={weekly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="jour" stroke="#64748b" fontSize={12} />
-              <YAxis stroke="#64748b" fontSize={12}
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A36" />
+              <XAxis dataKey="jour" stroke="#8C8CA0" fontSize={12} />
+              <YAxis stroke="#8C8CA0" fontSize={12}
                 tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
-                contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
-                labelStyle={{ color: '#f1f5f9' }}
+                contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '8px' }}
+                labelStyle={{ color: 'var(--text-strong)' }}
                 formatter={(v) => [`${v.toLocaleString()} FCFA`, 'Revenus']}
               />
               <Area type="monotone" dataKey="revenus"
@@ -110,14 +110,14 @@ export default function DashboardPage() {
           <h3 style={s.chartTitle}>Commandes par jour</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={weekly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-              <XAxis dataKey="jour" stroke="#64748b" fontSize={12} />
-              <YAxis stroke="#64748b" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A36" />
+              <XAxis dataKey="jour" stroke="#8C8CA0" fontSize={12} />
+              <YAxis stroke="#8C8CA0" fontSize={12} />
               <Tooltip
-                contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
-                labelStyle={{ color: '#f1f5f9' }}
+                contentStyle={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '8px' }}
+                labelStyle={{ color: 'var(--text-strong)' }}
               />
-              <Bar dataKey="commandes" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="commandes" fill="#60A5FA" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
                 <td style={s.td}>
                   <StatusBadge status={order.status} />
                 </td>
-                <td style={{ ...s.td, color: '#64748b' }}>
+                <td style={{ ...s.td, color: 'var(--text-2)' }}>
                   {new Date(order.created_at).toLocaleDateString('fr-FR')}
                 </td>
               </tr>
@@ -179,20 +179,20 @@ function KPICard({ icon, label, value, sub, color }) {
 }
 
 const STATUS_STYLES = {
-  awaiting_payment:          { label: 'À payer',        bg: '#EF444420', color: '#EF4444' },
-  pending:                   { label: 'En attente',     bg: '#F59E0B20', color: '#F59E0B' },
-  accepted:                  { label: 'Acceptée',       bg: '#3B82F620', color: '#3B82F6' },
-  driver_en_route_pickup:    { label: 'En route',       bg: '#8B5CF620', color: '#8B5CF6' },
-  loading:                   { label: 'Chargement',     bg: '#EC489920', color: '#EC4899' },
-  driver_en_route_delivery:  { label: 'En livraison',   bg: '#6366F120', color: '#6366F1' },
-  delivered:                 { label: 'Livré',          bg: '#10B98120', color: '#10B981' },
-  validated:                 { label: 'Validé',         bg: '#10B98120', color: '#10B981' },
-  completed:                 { label: 'Terminé',        bg: '#47556920', color: '#475569' },
-  cancelled:                 { label: 'Annulé',         bg: '#EF444420', color: '#EF4444' },
+  awaiting_payment:          { label: 'À payer',        bg: '#EF444420', color: 'var(--danger)' },
+  pending:                   { label: 'En attente',     bg: '#F59E0B20', color: 'var(--warning)' },
+  accepted:                  { label: 'Acceptée',       bg: '#3B82F620', color: 'var(--info)' },
+  driver_en_route_pickup:    { label: 'En route',       bg: '#8B5CF620', color: 'var(--violet)' },
+  loading:                   { label: 'Chargement',     bg: '#EC489920', color: '#F472B6' },
+  driver_en_route_delivery:  { label: 'En livraison',   bg: '#6366F120', color: 'var(--violet)' },
+  delivered:                 { label: 'Livré',          bg: '#10B98120', color: 'var(--success)' },
+  validated:                 { label: 'Validé',         bg: '#10B98120', color: 'var(--success)' },
+  completed:                 { label: 'Terminé',        bg: '#47556920', color: 'var(--text-2)' },
+  cancelled:                 { label: 'Annulé',         bg: '#EF444420', color: 'var(--danger)' },
 };
 
 function StatusBadge({ status }) {
-  const st = STATUS_STYLES[status] || { label: status, bg: '#33415520', color: '#94a3b8' };
+  const st = STATUS_STYLES[status] || { label: status, bg: '#33415520', color: 'var(--text-3)' };
   return (
     <span style={{
       padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600',
@@ -205,11 +205,11 @@ function StatusBadge({ status }) {
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '24px' },
-  loading: { color: '#94a3b8', padding: '40px', textAlign: 'center' },
+  loading: { color: 'var(--text-3)', padding: '40px', textAlign: 'center' },
   kpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' },
   kpiCard: {
-    background: '#1e293b',
-    border: '1px solid #334155',
+    background: 'var(--surface)',
+    border: '1px solid var(--border-2)',
     borderRadius: '12px',
     padding: '20px',
     display: 'flex',
@@ -219,16 +219,16 @@ const s = {
   kpiIcon: { width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 },
   kpiContent: {},
   kpiValue: { fontSize: '22px', fontWeight: '800', color: 'white' },
-  kpiLabel: { fontSize: '13px', color: '#94a3b8', margin: '2px 0' },
-  kpiSub: { fontSize: '11px', color: '#475569' },
+  kpiLabel: { fontSize: '13px', color: 'var(--text-3)', margin: '2px 0' },
+  kpiSub: { fontSize: '11px', color: 'var(--text-2)' },
   chartsRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-  chartCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '20px' },
+  chartCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '20px' },
   chartTitle: { color: 'white', fontSize: '15px', fontWeight: '700', margin: '0 0 16px' },
-  tableCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '20px' },
+  tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '20px' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  thead: { borderBottom: '1px solid #334155' },
-  th: { color: '#64748b', fontSize: '12px', fontWeight: '600', padding: '10px 12px', textAlign: 'left', whiteSpace: 'nowrap' },
+  thead: { borderBottom: '1px solid var(--border-2)' },
+  th: { color: 'var(--text-2)', fontSize: '12px', fontWeight: '600', padding: '10px 12px', textAlign: 'left', whiteSpace: 'nowrap' },
   tr: { borderBottom: '1px solid #1e293b' },
-  td: { padding: '12px', color: '#e2e8f0', fontSize: '13px' },
-  emptyCell: { padding: '24px', textAlign: 'center', color: '#475569' },
+  td: { padding: '12px', color: 'var(--text)', fontSize: '13px' },
+  emptyCell: { padding: '24px', textAlign: 'center', color: 'var(--text-2)' },
 };

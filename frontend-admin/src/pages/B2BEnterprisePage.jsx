@@ -115,7 +115,7 @@ export default function B2BEnterprisePage() {
                           <td style={styles.td}><strong>{b.proforma_invoice_number}</strong></td>
                           <td style={styles.td}>
                             <div>{b.company_name || 'Client B2B'}</div>
-                            <small style={{ color: '#94A3B8' }}>{b.project_name || 'Chantier direct'}</small>
+                            <small style={{ color: 'var(--text-3)' }}>{b.project_name || 'Chantier direct'}</small>
                           </td>
                           <td style={styles.td}>{b.orders_count} camions</td>
                           <td style={styles.td}><strong>{fcfa(b.total_amount)}</strong></td>
@@ -137,7 +137,7 @@ export default function B2BEnterprisePage() {
                                 {validatingId === b.bulk_group_id ? 'Validation...' : 'Valider le Virement'}
                               </button>
                             ) : (
-                              <span style={{ color: '#64748B', fontSize: '13px' }}>Courses actives</span>
+                              <span style={{ color: 'var(--text-2)', fontSize: '13px' }}>Courses actives</span>
                             )}
                           </td>
                         </tr>
@@ -230,7 +230,7 @@ export default function B2BEnterprisePage() {
                             <td style={styles.td}>{d.client_name} ({d.client_phone})</td>
                             <td style={styles.td}>
                               <div>{d.driver_name || 'Chauffeur'} ({d.driver_phone})</div>
-                              <small style={{ color: '#94A3B8' }}>Plaque : {d.truck_plate || 'N/A'}</small>
+                              <small style={{ color: 'var(--text-3)' }}>Plaque : {d.truck_plate || 'N/A'}</small>
                             </td>
                             <td style={styles.td}>
                               <span style={styles.badgeAlert}>
@@ -238,7 +238,7 @@ export default function B2BEnterprisePage() {
                               </span>
                             </td>
                             <td style={styles.td}>
-                              <div style={{ fontSize: '13px', color: '#FCA5A5' }}>
+                              <div style={{ fontSize: '13px', color: 'var(--danger)' }}>
                                 {details.message || 'Écart important par rapport au tracé prévu.'}
                               </div>
                             </td>
@@ -259,24 +259,24 @@ export default function B2BEnterprisePage() {
 
 const styles = {
   container: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  tabs: { display: 'flex', gap: '10px', borderBottom: '1px solid #334155', paddingBottom: '10px' },
-  tab: { background: 'transparent', border: 'none', color: '#94A3B8', padding: '10px 18px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
-  tabActive: { background: '#1E293B', color: '#FF6B00', border: '1px solid #334155' },
-  card: { background: '#1E293B', borderRadius: '14px', padding: '24px', border: '1px solid #334155' },
+  tabs: { display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-2)', paddingBottom: '10px' },
+  tab: { background: 'transparent', border: 'none', color: 'var(--text-3)', padding: '10px 18px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  tabActive: { background: 'var(--surface)', color: '#FF6B00', border: '1px solid var(--border-2)' },
+  card: { background: 'var(--surface)', borderRadius: '14px', padding: '24px', border: '1px solid var(--border-2)' },
   cardHeader: { marginBottom: '20px' },
   cardTitle: { color: 'white', fontSize: '18px', fontWeight: '800', margin: '0 0 6px' },
-  cardSub: { color: '#94A3B8', fontSize: '13.5px', margin: 0 },
+  cardSub: { color: 'var(--text-3)', fontSize: '13.5px', margin: 0 },
   tableWrapper: { overflowX: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#E2E8F0', fontSize: '14px' },
-  th: { padding: '12px 14px', borderBottom: '1px solid #334155', color: '#94A3B8', fontWeight: '600', fontSize: '12.5px', textTransform: 'uppercase' },
-  td: { padding: '14px', borderBottom: '1px solid #334155' },
+  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--text)', fontSize: '14px' },
+  th: { padding: '12px 14px', borderBottom: '1px solid var(--border-2)', color: 'var(--text-3)', fontWeight: '600', fontSize: '12.5px', textTransform: 'uppercase' },
+  td: { padding: '14px', borderBottom: '1px solid var(--border-2)' },
   tr: { transition: 'background 0.15s' },
   trAlert: { background: 'rgba(239, 68, 68, 0.08)', borderBottom: '1px solid rgba(239, 68, 68, 0.2)' },
-  empty: { padding: '30px', textAlign: 'center', color: '#94A3B8', fontSize: '14px' },
-  loading: { padding: '40px', textAlign: 'center', color: '#94A3B8' },
-  badgeSuccess: { background: 'rgba(34, 197, 94, 0.15)', color: '#4ADE80', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
-  badgePending: { background: 'rgba(245, 158, 11, 0.15)', color: '#FBBF24', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
-  badgeInactive: { background: 'rgba(148, 163, 184, 0.15)', color: '#94A3B8', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' },
-  badgeAlert: { background: 'rgba(239, 68, 68, 0.2)', color: '#F87171', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' },
+  empty: { padding: '30px', textAlign: 'center', color: 'var(--text-3)', fontSize: '14px' },
+  loading: { padding: '40px', textAlign: 'center', color: 'var(--text-3)' },
+  badgeSuccess: { background: 'rgba(34, 197, 94, 0.15)', color: 'var(--success)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
+  badgePending: { background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
+  badgeInactive: { background: 'rgba(148, 163, 184, 0.15)', color: 'var(--text-3)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' },
+  badgeAlert: { background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' },
   validateBtn: { background: '#FF6B00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
 };

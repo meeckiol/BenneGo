@@ -87,14 +87,14 @@ export default function ReviewCard({ order, onDone }) {
 }
 
 const s = {
-  card: { background: 'white', borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
-  title: { margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: '#333' },
+  card: { background: 'var(--surface)', borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
+  title: { margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: 'var(--text-strong)' },
   tabs: { display: 'flex', gap: 8, marginBottom: 16 },
-  tab: { flex: 1, padding: '10px 8px', borderRadius: 8, border: '2px solid #eee', background: 'white', fontWeight: 600, cursor: 'pointer', color: '#555' },
-  tabOn: { borderColor: '#FF6B00', color: '#FF6B00', background: '#FFF3E0' },
+  tab: { flex: 1, padding: '10px 8px', borderRadius: 8, border: '2px solid var(--border)', background: 'var(--surface)', fontWeight: 600, cursor: 'pointer', color: 'var(--text-2)' },
+  tabOn: { borderColor: '#FF6B00', color: '#FF6B00', background: 'var(--warning-soft)' },
   form: { display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' },
-  hint: { margin: 0, fontSize: 14, color: '#555' },
-  textarea: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 8, border: '2px solid #eee', fontSize: 15, fontFamily: 'inherit', resize: 'vertical' },
+  hint: { margin: 0, fontSize: 14, color: 'var(--text-2)' },
+  textarea: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 8, border: '2px solid var(--border)', fontSize: 15, fontFamily: 'inherit', resize: 'vertical' },
   btn: { alignSelf: 'stretch', padding: 14, background: '#FF6B00', color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' },
-  done: { color: '#2E7D32', fontSize: 14 },
+  done: { color: 'var(--success)', fontSize: 14 },
 };

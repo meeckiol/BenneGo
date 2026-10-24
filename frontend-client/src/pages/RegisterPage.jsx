@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
 
-const inputStyle = { padding: '10px', borderRadius: '8px', border: '1px solid #ccc' };
+const inputStyle = { padding: '10px', borderRadius: '8px', border: '1px solid var(--border-2)' };
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -80,7 +80,7 @@ export default function RegisterPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #FF6B00, #E05D00)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ background: 'white', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '440px' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '440px' }}>
         <h2 style={{ color: '#FF6B00', textAlign: 'center', fontWeight: '900', margin: '0 0 16px' }}>BenneGo</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={requestCode}
                   disabled={otpLoading || cleanPhone.length < 8}
-                  style={{ flex: 1, padding: '10px', background: '#1E293B', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '10px', background: 'var(--surface)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
                 >
                   {otpLoading ? 'Envoi...' : 'Recevoir le code par SMS'}
                 </button>
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={verifyCode}
                     disabled={otpLoading || code.length !== 6}
-                    style={{ padding: '10px 14px', background: '#1E293B', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
+                    style={{ padding: '10px 14px', background: 'var(--surface)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
                   >
                     {otpLoading ? '...' : 'Valider'}
                   </button>
@@ -143,7 +143,7 @@ export default function RegisterPage() {
             </div>
           )}
           {verified && (
-            <p style={{ margin: 0, fontSize: '13px', color: '#15803D', fontWeight: '700' }}>✓ Numéro vérifié</p>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--success)', fontWeight: '700' }}>✓ Numéro vérifié</p>
           )}
 
           <input

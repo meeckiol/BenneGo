@@ -567,7 +567,7 @@ export default function NewOrderPage() {
 
                                                                                                                                                                            
                 {/* Promo & Commande récurrente */}                                                                                                                                        
-                <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>                                                                
+                <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>                                                                
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>                                                                                                      
                     <input                                                                                                                                                                 
                       type="text"                                                                                                                                                          
@@ -602,12 +602,12 @@ export default function NewOrderPage() {
                   </div>                                                                                                                                                                   
                                                                                                                                                                                            
                   {promoResult && (                                                                                                                                                        
-                    <p style={{ color: '#16A34A', fontSize: '13px', fontWeight: '700', margin: '0 0 10px' }}>                                                                              
+                    <p style={{ color: 'var(--success)', fontSize: '13px', fontWeight: '700', margin: '0 0 10px' }}>                                                                              
                       Remise déduite : -{promoResult.discount_amount.toLocaleString()} FCFA                                                                                                
                     </p>                                                                                                                                                                   
                   )}                                                                                                                                                                       
                                                                                                                                                                                            
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13.5px', color: '#334155' }}>                                           
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13.5px', color: 'var(--text)' }}>                                           
                     <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />                                                                     
                     Planifier comme commande récurrente de chantier                                                                                                                        
                   </label>                                                                                                                                                                 
@@ -647,7 +647,7 @@ export default function NewOrderPage() {
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: '22px' }}>
-      <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' }}>
+      <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-strong)', marginBottom: '12px' }}>
         {title}
       </h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -660,15 +660,15 @@ function Section({ title, children }) {
 function Field({ label, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>{label}</label>
+      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-2)' }}>{label}</label>
       {children}
     </div>
   );
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#F8F9FA' },
-  header: { background: '#1E293B', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', color: 'white' },
+  container: { minHeight: '100vh', background: 'var(--bg)' },
+  header: { background: 'var(--surface)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', color: 'white' },
   back: { background: 'none', border: 'none', color: 'white', fontSize: '15px', cursor: 'pointer', fontWeight: '600' },
   title: { color: 'white', fontSize: '18px', fontWeight: '800', margin: 0 },
   content: { padding: '24px 20px', maxWidth: '640px', margin: '0 auto' },
@@ -677,7 +677,7 @@ const styles = {
     flex: 1,
     padding: '12px',
     borderRadius: '10px',
-    border: '1px solid #E2E8F0',
+    border: '1px solid var(--border)',
     fontSize: '13px',
     fontWeight: '700',
     cursor: 'pointer',
@@ -688,12 +688,12 @@ const styles = {
   input: {
     padding: '12px 14px',
     borderRadius: '8px',
-    border: '1px solid #CBD5E1',
+    border: '1px solid var(--border-2)',
     fontSize: '14.5px',
     width: '100%',
     boxSizing: 'border-box',
-    background: 'white',
-    color: '#1E293B',
+    background: 'var(--surface)',
+    color: 'var(--text-strong)',
   },
   row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
   primaryBtn: {
@@ -710,9 +710,9 @@ const styles = {
   },
   secondaryBtn: {
     padding: '16px',
-    background: 'white',
-    color: '#475569',
-    border: '1px solid #CBD5E1',
+    background: 'var(--surface)',
+    color: 'var(--text-2)',
+    border: '1px solid var(--border-2)',
     borderRadius: '10px',
     fontSize: '15px',
     fontWeight: '700',
@@ -720,14 +720,14 @@ const styles = {
     flex: 1,
   },
   estimate: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  estimateTitle: { fontSize: '20px', fontWeight: '800', color: '#0F172A', margin: 0 },
-  estimateCard: { background: 'white', borderRadius: '14px', padding: '22px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid #E2E8F0' },
-  estimateRow: { display: 'flex', justifyContent: 'space-between', padding: '9px 0', fontSize: '14.5px', color: '#334155' },
-  divider: { height: '1px', background: '#E2E8F0', margin: '10px 0' },
-  total: { fontSize: '18px', fontWeight: '800', color: '#0F172A' },
+  estimateTitle: { fontSize: '20px', fontWeight: '800', color: 'var(--text-strong)', margin: 0 },
+  estimateCard: { background: 'var(--surface)', borderRadius: '14px', padding: '22px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid var(--border)' },
+  estimateRow: { display: 'flex', justifyContent: 'space-between', padding: '9px 0', fontSize: '14.5px', color: 'var(--text)' },
+  divider: { height: '1px', background: 'var(--surface-3)', margin: '10px 0' },
+  total: { fontSize: '18px', fontWeight: '800', color: 'var(--text-strong)' },
   totalAmount: { color: '#FF6B00', fontSize: '24px' },
-  commission: { background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '12px 14px', borderRadius: '10px', fontSize: '13px', color: '#166534', marginTop: '14px', lineHeight: '1.5' },
-  paymentInfo: { background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: '10px', padding: '14px', fontSize: '13.5px', color: '#9A3412' },
-  paymentSub: { color: '#C2410C', margin: '4px 0 0', fontSize: '12.5px' },
+  commission: { background: 'var(--success-soft)', border: '1px solid rgba(34, 197, 94, 0.35)', padding: '12px 14px', borderRadius: '10px', fontSize: '13px', color: 'var(--success)', marginTop: '14px', lineHeight: '1.5' },
+  paymentInfo: { background: 'var(--warning-soft)', border: '1px solid rgba(245, 158, 11, 0.35)', borderRadius: '10px', padding: '14px', fontSize: '13.5px', color: 'var(--warning)' },
+  paymentSub: { color: 'var(--warning)', margin: '4px 0 0', fontSize: '12.5px' },
   btnGroup: { display: 'flex', gap: '12px' },
 };

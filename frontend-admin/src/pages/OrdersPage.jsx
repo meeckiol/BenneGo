@@ -15,16 +15,16 @@ const STATUSES = [
 ];
 
 const STATUS_LABELS = {
-  awaiting_payment: { label: 'À payer', color: '#EF4444' },
-  pending: { label: 'Payée · en attente', color: '#F59E0B' },
-  accepted: { label: 'Acceptée', color: '#3B82F6' },
-  driver_en_route_pickup: { label: 'En route carrière', color: '#8B5CF6' },
-  loading: { label: 'Chargement', color: '#EC4899' },
-  driver_en_route_delivery: { label: 'En livraison', color: '#6366F1' },
-  delivered: { label: 'Livré', color: '#10B981' },
-  validated: { label: 'Validé', color: '#10B981' },
-  completed: { label: 'Terminé', color: '#475569' },
-  cancelled: { label: 'Annulé', color: '#EF4444' },
+  awaiting_payment: { label: 'À payer', color: 'var(--danger)' },
+  pending: { label: 'Payée · en attente', color: 'var(--warning)' },
+  accepted: { label: 'Acceptée', color: 'var(--info)' },
+  driver_en_route_pickup: { label: 'En route carrière', color: 'var(--violet)' },
+  loading: { label: 'Chargement', color: '#F472B6' },
+  driver_en_route_delivery: { label: 'En livraison', color: 'var(--violet)' },
+  delivered: { label: 'Livré', color: 'var(--success)' },
+  validated: { label: 'Validé', color: 'var(--success)' },
+  completed: { label: 'Terminé', color: 'var(--text-2)' },
+  cancelled: { label: 'Annulé', color: 'var(--danger)' },
 };
 
 export default function OrdersPage() {
@@ -115,7 +115,7 @@ export default function OrdersPage() {
             </thead>
             <tbody>
               {filtered.map((order) => {
-                const st = STATUS_LABELS[order.status] || { label: order.status, color: '#94a3b8' };
+                const st = STATUS_LABELS[order.status] || { label: order.status, color: 'var(--text-3)' };
                 const canRelease = order.status === 'validated' && order.payment_status === 'escrow_held';
                 return (
                   <tr key={order.id} style={s.tr}>
@@ -137,7 +137,7 @@ export default function OrdersPage() {
                     <td style={{ ...s.td, fontWeight: '700', color: 'white' }}>
                       {parseFloat(order.total_amount || 0).toLocaleString()}
                     </td>
-                    <td style={{ ...s.td, color: '#10B981' }}>
+                    <td style={{ ...s.td, color: 'var(--success)' }}>
                       {parseFloat(order.commission_amount || 0).toLocaleString()}
                     </td>
                     <td style={s.td}>
@@ -227,56 +227,56 @@ export default function OrdersPage() {
 }
 
 const PAYMENT_STYLES = {
-  unpaid:       { label: 'Non payé',   color: '#F59E0B' },
-  escrow_held:  { label: 'Escrow',     color: '#3B82F6' },
-  released:     { label: 'Libéré',     color: '#10B981' },
-  refunded:     { label: 'Remboursé',  color: '#EF4444' },
+  unpaid:       { label: 'Non payé',   color: 'var(--warning)' },
+  escrow_held:  { label: 'Escrow',     color: 'var(--info)' },
+  released:     { label: 'Libéré',     color: 'var(--success)' },
+  refunded:     { label: 'Remboursé',  color: 'var(--danger)' },
 };
 
 function PaymentBadge({ status }) {
-  const p = PAYMENT_STYLES[status] || { label: status, color: '#94a3b8' };
+  const p = PAYMENT_STYLES[status] || { label: status, color: 'var(--text-3)' };
   return <span style={{ color: p.color, fontSize: '12px', fontWeight: '600' }}>{p.label}</span>;
 }
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
   toolbar: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  searchInput: { padding: '10px 14px', background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none', width: '100%', maxWidth: '400px' },
+  searchInput: { padding: '10px 14px', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none', width: '100%', maxWidth: '400px' },
   statusFilters: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
   filterBtn: { padding: '6px 12px', border: '1px solid', borderRadius: '20px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
-  tableCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' },
-  tableHeader: { padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  tableTitle: { color: '#94a3b8', fontSize: '14px' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
+  tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
+  tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  tableTitle: { color: 'var(--text-3)', fontSize: '14px' },
+  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
   tableWrapper: { overflow: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '900px' },
-  thead: { background: '#0f172a' },
-  th: { padding: '10px 12px', color: '#64748b', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
+  thead: { background: 'var(--bg)' },
+  th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
   tr: { borderBottom: '1px solid #0f172a', transition: 'background 0.1s' },
-  td: { padding: '12px', color: '#cbd5e1', fontSize: '13px', verticalAlign: 'middle' },
+  td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px', verticalAlign: 'middle' },
   addresses: { display: 'flex', flexDirection: 'column', gap: '2px' },
-  addrFrom: { fontSize: '11px', color: '#94a3b8' },
-  addrTo: { fontSize: '11px', color: '#94a3b8' },
-  noDriver: { color: '#475569', fontStyle: 'italic' },
+  addrFrom: { fontSize: '11px', color: 'var(--text-3)' },
+  addrTo: { fontSize: '11px', color: 'var(--text-3)' },
+  noDriver: { color: 'var(--text-2)', fontStyle: 'italic' },
   badge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' },
-  detailBtn: { padding: '5px 10px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#3B82F6', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
-  releaseBtn: { padding: '5px 10px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#10B981', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
-  empty: { padding: '32px', textAlign: 'center', color: '#475569' },
+  detailBtn: { padding: '5px 10px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: 'var(--info)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
+  releaseBtn: { padding: '5px 10px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: 'var(--success)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
+  empty: { padding: '32px', textAlign: 'center', color: 'var(--text-2)' },
 
   // Modal styles
   modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' },
-  modalCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' },
-  modalHeader: { padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  modalCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' },
+  modalHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   modalTitle: { margin: 0, color: 'white', fontSize: '16px', fontWeight: '700' },
-  modalCloseBtn: { background: 'none', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer' },
+  modalCloseBtn: { background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '18px', cursor: 'pointer' },
   modalBody: { padding: '20px' },
-  detailGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', fontSize: '13px', color: '#cbd5e1' },
-  detailLabel: { color: '#94a3b8' },
-  podBox: { background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '16px' },
+  detailGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', fontSize: '13px', color: 'var(--text-2)' },
+  detailLabel: { color: 'var(--text-3)' },
+  podBox: { background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '16px' },
   podTitle: { margin: '0 0 10px', color: 'white', fontSize: '14px', fontWeight: '700' },
-  podMeta: { color: '#64748b', fontSize: '12px', margin: '0 0 8px' },
-  podNotes: { background: '#1e293b', padding: '10px', borderRadius: '8px', color: '#cbd5e1', fontSize: '13px', marginBottom: '12px' },
+  podMeta: { color: 'var(--text-2)', fontSize: '12px', margin: '0 0 8px' },
+  podNotes: { background: 'var(--surface)', padding: '10px', borderRadius: '8px', color: 'var(--text-2)', fontSize: '13px', marginBottom: '12px' },
   podGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' },
-  podImg: { width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #334155', cursor: 'pointer' },
-  noPod: { color: '#64748b', fontSize: '13px', fontStyle: 'italic', padding: '12px 0' },
+  podImg: { width: '100%', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-2)', cursor: 'pointer' },
+  noPod: { color: 'var(--text-2)', fontSize: '13px', fontStyle: 'italic', padding: '12px 0' },
 };

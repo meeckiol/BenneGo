@@ -84,13 +84,13 @@ export default function ClientsPage() {
                   <td style={{ ...s.td, fontWeight: '600', color: '#FF6B00' }}>
                     {client.nom || client.full_name?.split(' ').slice(1).join(' ') || '—'}
                   </td>
-                  <td style={{ ...s.td, color: '#94a3b8' }}>{client.phone}</td>
-                  <td style={{ ...s.td, color: '#64748b' }}>{fmtDate(client.date_naissance)}</td>
-                  <td style={{ ...s.td, color: '#64748b', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ ...s.td, color: 'var(--text-3)' }}>{client.phone}</td>
+                  <td style={{ ...s.td, color: 'var(--text-2)' }}>{fmtDate(client.date_naissance)}</td>
+                  <td style={{ ...s.td, color: 'var(--text-2)', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {client.adresse || '—'}
                   </td>
-                  <td style={{ ...s.td, color: '#64748b' }}>{client.email || '—'}</td>
-                  <td style={{ ...s.td, color: '#64748b' }}>
+                  <td style={{ ...s.td, color: 'var(--text-2)' }}>{client.email || '—'}</td>
+                  <td style={{ ...s.td, color: 'var(--text-2)' }}>
                     {fmtDate(client.created_at)}
                   </td>
                   <td style={s.td}>
@@ -157,7 +157,7 @@ export default function ClientsPage() {
 function InfoRow({ label, value }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1e293b' }}>
-      <span style={{ color: '#64748b', fontSize: '13px' }}>{label}</span>
+      <span style={{ color: 'var(--text-2)', fontSize: '13px' }}>{label}</span>
       <span style={{ color: 'white', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
     </div>
   );
@@ -165,23 +165,23 @@ function InfoRow({ label, value }) {
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  tableCard: { background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' },
-  tableHeader: { padding: '16px 20px', borderBottom: '1px solid #334155', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
+  tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
+  tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
   tableTitle: { color: 'white', fontSize: '15px', fontWeight: '700', margin: 0, flexShrink: 0 },
-  searchInput: { flex: 1, minWidth: '200px', maxWidth: '360px', padding: '9px 14px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
+  searchInput: { flex: 1, minWidth: '200px', maxWidth: '360px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
+  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '900px' },
-  thead: { background: '#0f172a' },
-  th: { padding: '10px 12px', color: '#64748b', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
+  thead: { background: 'var(--bg)' },
+  th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
   tr: { borderBottom: '1px solid #0f172a', cursor: 'pointer', transition: 'background 0.1s' },
-  td: { padding: '12px', color: '#cbd5e1', fontSize: '13px' },
+  td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px' },
   badge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
   toggleBtn: { padding: '5px 10px', border: '1px solid', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },
-  empty: { padding: '32px', textAlign: 'center', color: '#475569' },
+  empty: { padding: '32px', textAlign: 'center', color: 'var(--text-2)' },
   // Modal
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#1e293b', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '460px', maxHeight: '90vh', overflow: 'auto' },
-  modalHeader: { padding: '20px 24px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f172a', borderRadius: '16px 16px 0 0' },
+  modal: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '16px', width: '100%', maxWidth: '460px', maxHeight: '90vh', overflow: 'auto' },
+  modalHeader: { padding: '20px 24px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg)', borderRadius: '16px 16px 0 0' },
   modalBody: { padding: '20px 24px' },
-  closeBtn: { background: 'none', border: 'none', color: '#64748b', fontSize: '18px', cursor: 'pointer' },
+  closeBtn: { background: 'none', border: 'none', color: 'var(--text-2)', fontSize: '18px', cursor: 'pointer' },
 };

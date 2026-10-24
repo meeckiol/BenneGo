@@ -94,7 +94,7 @@ function PhotoRow({ title, urls }) {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {urls.map((url) => (
           <a key={url} href={url} target="_blank" rel="noopener noreferrer">
-            <img src={url} alt={title} style={{ width: 110, height: 110, objectFit: 'cover', borderRadius: 8, border: '1px solid #334155' }} />
+            <img src={url} alt={title} style={{ width: 110, height: 110, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border-2)' }} />
           </a>
         ))}
       </div>
@@ -103,19 +103,19 @@ function PhotoRow({ title, urls }) {
 }
 
 const s = {
-  page: { padding: 24, color: '#E2E8F0', maxWidth: 1100 },
+  page: { padding: 24, color: 'var(--text)', maxWidth: 1100 },
   title: { margin: '0 0 6px', fontSize: 22, fontWeight: 800 },
-  sub: { margin: '0 0 20px', color: '#94A3B8', fontSize: 14 },
-  muted: { color: '#94A3B8', fontSize: 13 },
-  empty: { background: '#1E293B', borderRadius: 12, padding: 24, color: '#94A3B8', textAlign: 'center' },
-  card: { background: '#1E293B', border: '1px solid #334155', borderRadius: 12, padding: 18, marginBottom: 16 },
+  sub: { margin: '0 0 20px', color: 'var(--text-3)', fontSize: 14 },
+  muted: { color: 'var(--text-3)', fontSize: 13 },
+  empty: { background: 'var(--surface)', borderRadius: 12, padding: 24, color: 'var(--text-3)', textAlign: 'center' },
+  card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 18, marginBottom: 16 },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   orderNumber: { fontSize: 16, color: '#FF6B00' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, fontSize: 14 },
-  label: { display: 'block', fontSize: 11, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
-  reason: { marginTop: 12, background: '#0F172A', borderRadius: 8, padding: 12, fontSize: 14, lineHeight: 1.5 },
-  input: { marginTop: 14, width: '100%', padding: 10, borderRadius: 8, border: '1px solid #334155', background: '#0F172A', color: '#E2E8F0', boxSizing: 'border-box' },
+  label: { display: 'block', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
+  reason: { marginTop: 12, background: 'var(--bg)', borderRadius: 8, padding: 12, fontSize: 14, lineHeight: 1.5 },
+  input: { marginTop: 14, width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' },
   actions: { display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' },
   primaryBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: 'none', background: '#FF6B00', color: 'white', fontWeight: 700, cursor: 'pointer' },
-  dangerBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: '1px solid #EF4444', background: 'transparent', color: '#FCA5A5', fontWeight: 700, cursor: 'pointer' },
+  dangerBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: '1px solid #EF4444', background: 'transparent', color: 'var(--danger)', fontWeight: 700, cursor: 'pointer' },
 };

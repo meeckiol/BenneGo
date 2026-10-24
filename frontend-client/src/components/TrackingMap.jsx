@@ -24,9 +24,9 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
       attribution: '© OpenStreetMap', maxZoom: 19,
     }).addTo(map.current);
 
-    L.circleMarker([pickup.lat, pickup.lng], { radius: 9, color: '#1565C0', fillColor: '#2196F3', fillOpacity: 0.9 })
+    L.circleMarker([pickup.lat, pickup.lng], { radius: 9, color: 'var(--info)', fillColor: '#2196F3', fillOpacity: 0.9 })
       .bindTooltip('Chargement').addTo(map.current);
-    L.circleMarker([delivery.lat, delivery.lng], { radius: 9, color: '#2E7D32', fillColor: '#4CAF50', fillOpacity: 0.9 })
+    L.circleMarker([delivery.lat, delivery.lng], { radius: 9, color: 'var(--success)', fillColor: '#4CAF50', fillOpacity: 0.9 })
       .bindTooltip('Livraison').addTo(map.current);
     layers.current.line = L.polyline([], { color: '#FF6B00', weight: 4, opacity: 0.8 }).addTo(map.current);
     map.current.fitBounds([[pickup.lat, pickup.lng], [delivery.lat, delivery.lng]], { padding: [40, 40] });

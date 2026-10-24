@@ -91,10 +91,10 @@ export default function AdminLayout({ children }) {
 }
 
 const s = {
-  shell: { display: 'flex', minHeight: '100vh', background: '#0f172a' },
+  shell: { display: 'flex', minHeight: '100vh', background: 'var(--bg)' },
   sidebar: {
-    background: '#1e293b',
-    borderRight: '1px solid #334155',
+    background: 'var(--surface)',
+    borderRight: '1px solid var(--border-2)',
     display: 'flex',
     flexDirection: 'column',
     flexShrink: 0,
@@ -103,7 +103,7 @@ const s = {
   },
   sidebarLogo: {
     padding: '20px 16px',
-    borderBottom: '1px solid #334155',
+    borderBottom: '1px solid var(--border-2)',
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
@@ -127,17 +127,17 @@ const s = {
   navLabel: {},
   sidebarBottom: {
     padding: '12px',
-    borderTop: '1px solid #334155',
+    borderTop: '1px solid var(--border-2)',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
   },
-  toggleBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', padding: '8px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
-  logoutBtn: { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
+  toggleBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
+  logoutBtn: { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--danger)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' },
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
   topbar: {
-    background: '#1e293b',
-    borderBottom: '1px solid #334155',
+    background: 'var(--surface)',
+    borderBottom: '1px solid var(--border-2)',
     padding: '0 24px',
     height: '64px',
     display: 'flex',
@@ -147,6 +147,6 @@ const s = {
   },
   topbarTitle: { color: 'white', fontSize: '18px', fontWeight: '700', margin: 0 },
   topbarRight: { display: 'flex', alignItems: 'center', gap: '12px' },
-  adminBadge: { color: '#94a3b8', fontSize: '13px' },
+  adminBadge: { color: 'var(--text-3)', fontSize: '13px' },
   content: { flex: 1, padding: '24px', overflow: 'auto' },
 };

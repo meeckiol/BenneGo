@@ -25,21 +25,21 @@ const getDeliverySteps = (orderType) => {
         status: 'accepted',
         next: 'driver_en_route_pickup',
         label: 'Acheminer l\'engin vers le chantier',
-        color: '#2196F3',
+        color: 'var(--info)',
         description: 'Appuyez au départ du camion porte-char',
       },
       {
         status: 'driver_en_route_pickup',
         next: 'machine_operating',
         label: 'Arrivé sur site - Démarrer les travaux',
-        color: '#FF9800',
+        color: 'var(--warning)',
         description: 'Appuyez pour lancer le décompte des heures de travail',
       },
       {
         status: 'machine_operating',
         next: 'delivered',
         label: 'Fin des heures - Confirmer l\'opération',
-        color: '#4CAF50',
+        color: 'var(--success)',
         description: 'Appuyez quand le temps de location est accompli',
       },
     ];
@@ -50,28 +50,28 @@ const getDeliverySteps = (orderType) => {
         status: 'accepted',
         next: 'driver_en_route_pickup',
         label: 'Partir vers le chantier à nettoyer',
-        color: '#2196F3',
+        color: 'var(--info)',
         description: 'Appuyez quand vous prenez la route',
       },
       {
         status: 'driver_en_route_pickup',
         next: 'loading',
         label: 'Arrivé au chantier - Chargement des gravats',
-        color: '#FF9800',
+        color: 'var(--warning)',
         description: 'Appuyez dès que le chargement débute',
       },
       {
         status: 'loading',
         next: 'driver_en_route_delivery',
         label: 'Camion chargé - Partir vers la décharge',
-        color: '#9C27B0',
+        color: 'var(--violet)',
         description: 'Appuyez au départ vers la décharge autorisée',
       },
       {
         status: 'driver_en_route_delivery',
         next: 'delivered',
         label: 'Confirmer le déversement à la décharge',
-        color: '#4CAF50',
+        color: 'var(--success)',
         description: 'Appuyez après déversement des gravats',
       },
     ];
@@ -82,28 +82,28 @@ const getDeliverySteps = (orderType) => {
       status: 'accepted',
       next: 'driver_en_route_pickup',
       label: 'Partir vers la carrière',
-      color: '#2196F3',
+      color: 'var(--info)',
       description: 'Appuyez quand vous quittez votre position',
     },
     {
       status: 'driver_en_route_pickup',
       next: 'loading',
       label: 'Confirmer l\'arrivée à la carrière',
-      color: '#FF9800',
+      color: 'var(--warning)',
       description: 'Appuyez quand vous êtes à la carrière',
     },
     {
       status: 'loading',
       next: 'driver_en_route_delivery',
       label: 'Chargement terminé - Partir livrer',
-      color: '#9C27B0',
+      color: 'var(--violet)',
       description: 'Appuyez quand le camion est chargé',
     },
     {
       status: 'driver_en_route_delivery',
       next: 'delivered',
       label: 'Confirmer la livraison',
-      color: '#4CAF50',
+      color: 'var(--success)',
       description: 'Appuyez quand vous avez déversé la marchandise',
     },
   ];
@@ -535,7 +535,7 @@ export default function ActiveDeliveryPage() {
 
         {showPoD && podSubmitted && (
           <div style={{ ...styles.podSection, textAlign: 'center' }}>
-            <div style={{ fontSize: '14px', color: '#4CAF50', fontWeight: '700' }}>
+            <div style={{ fontSize: '14px', color: 'var(--success)', fontWeight: '700' }}>
               Preuves de livraison envoyées
             </div>
           </div>
@@ -559,7 +559,7 @@ export default function ActiveDeliveryPage() {
           </div>
           <div style={styles.chatMessages}>
             {chatMessages.length === 0 && (
-              <div style={{ color: '#94A3B8', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>
+              <div style={{ color: 'var(--text-3)', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>
                 Aucun message pour l'instant
               </div>
             )}
@@ -596,10 +596,10 @@ export default function ActiveDeliveryPage() {
 }
 
 const styles = {
-  container: { height: '100vh', display: 'flex', flexDirection: 'column', background: '#0f0f1a' },
+  container: { height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' },
   loading: { height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', gap: '12px' },
   header: {
-    background: '#1a1a2e',
+    background: 'var(--surface)',
     borderBottom: '1px solid rgba(255,255,255,0.08)',
     padding: '12px 16px',
     display: 'flex',
@@ -615,7 +615,7 @@ const styles = {
   mapWrapper: { flex: 1, position: 'relative', minHeight: 0 },
   gpsIndicator: { position: 'absolute', top: '8px', right: '8px', zIndex: 1000, padding: '4px 10px', borderRadius: '20px', fontSize: '12px', color: 'white', fontWeight: '600' },
   bottomPanel: {
-    background: '#1a1a2e',
+    background: 'var(--surface)',
     borderTop: '1px solid rgba(255,255,255,0.08)',
     padding: '16px',
     flexShrink: 0,
@@ -633,39 +633,39 @@ const styles = {
   stepInfo: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' },
   stepDot: { width: '10px', height: '10px', borderRadius: '50%', flexShrink: 0 },
   stepDescription: { color: 'rgba(255,255,255,0.6)', fontSize: '13px' },
-  loadingForm: { display: 'flex', flexDirection: 'column', gap: '10px', background: 'white', borderRadius: '12px', padding: '16px', marginBottom: '14px' },
-  loadingTitle: { fontSize: '15px', fontWeight: '800', color: '#1E293B' },
-  loadingLabel: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', color: '#475569', fontWeight: '600' },
-  loadingInput: { padding: '10px', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', width: '100%' },
+  loadingForm: { display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface)', borderRadius: '12px', padding: '16px', marginBottom: '14px' },
+  loadingTitle: { fontSize: '15px', fontWeight: '800', color: 'var(--text-strong)' },
+  loadingLabel: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', color: 'var(--text-2)', fontWeight: '600' },
+  loadingInput: { padding: '10px', border: '1px solid var(--border-2)', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box', width: '100%' },
   breakdownBox: { marginTop: '14px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '12px' },
   breakdownTitle: { color: 'white', fontSize: '13px', fontWeight: '700', marginBottom: '8px' },
   breakdownRow: { display: 'flex', gap: '8px' },
   breakdownBtn: { flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.25)', background: 'transparent', color: 'white', fontWeight: '700', cursor: 'pointer' },
-  disputeBox: { marginTop: '14px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#7F1D1D', borderRadius: '12px', padding: '12px', fontSize: '14px', lineHeight: '1.5' },
+  disputeBox: { marginTop: '14px', background: 'var(--danger-soft)', border: '1px solid rgba(239, 68, 68, 0.35)', color: 'var(--danger)', borderRadius: '12px', padding: '12px', fontSize: '14px', lineHeight: '1.5' },
   actionBtn: { width: '100%', padding: '16px', border: 'none', borderRadius: '12px', color: 'white', fontSize: '16px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
   completedBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center' },
   completedText: { color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: '1.5' },
   homeBtn: { padding: '12px 24px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '4px' },
 
   // PoD styles
-  podSection: { background: 'white', borderRadius: '12px', padding: '16px', margin: '16px 0', border: '1px solid #E2E8F0' },
-  podTitle: { fontSize: '15px', fontWeight: '800', color: '#1E293B', marginBottom: '12px' },
-  podFileInput: { padding: '10px', border: '2px dashed #CBD5E1', borderRadius: '8px', width: '100%', cursor: 'pointer', boxSizing: 'border-box', fontSize: '13px' },
+  podSection: { background: 'var(--surface)', borderRadius: '12px', padding: '16px', margin: '16px 0', border: '1px solid var(--border)' },
+  podTitle: { fontSize: '15px', fontWeight: '800', color: 'var(--text-strong)', marginBottom: '12px' },
+  podFileInput: { padding: '10px', border: '2px dashed var(--border-2)', borderRadius: '8px', width: '100%', cursor: 'pointer', boxSizing: 'border-box', fontSize: '13px' },
   podPreviews: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' },
   podThumb: { width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' },
-  podNotes: { marginTop: '10px', width: '100%', padding: '10px', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', resize: 'vertical', boxSizing: 'border-box', color: '#1E293B' },
+  podNotes: { marginTop: '10px', width: '100%', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '13px', resize: 'vertical', boxSizing: 'border-box', color: 'var(--text-strong)' },
   podSubmitBtn: { marginTop: '12px', width: '100%', background: '#FF6B00', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 
   // Chat FAB
   chatFab: { position: 'fixed', bottom: '16px', right: '16px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '50%', width: '48px', height: '48px', fontSize: '20px', cursor: 'pointer', zIndex: 1000, boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
 
   // Chat panel
-  chatPanel: { position: 'fixed', bottom: '72px', right: '16px', width: '300px', height: '400px', background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 999 },
-  chatHeader: { background: '#1E293B', color: 'white', padding: '12px', fontSize: '14px', fontWeight: '700' },
+  chatPanel: { position: 'fixed', bottom: '72px', right: '16px', width: '300px', height: '400px', background: 'var(--surface)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 999 },
+  chatHeader: { background: 'var(--surface)', color: 'white', padding: '12px', fontSize: '14px', fontWeight: '700' },
   chatMessages: { flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' },
   chatMsgDriver: { alignSelf: 'flex-end', background: '#FF6B00', color: 'white', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
-  chatMsgOther: { alignSelf: 'flex-start', background: '#F1F5F9', color: '#1E293B', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
-  chatInputRow: { borderTop: '1px solid #E2E8F0', padding: '8px', display: 'flex', gap: '8px' },
-  chatInput: { flex: 1, padding: '8px 10px', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '13px', outline: 'none' },
+  chatMsgOther: { alignSelf: 'flex-start', background: 'var(--surface-2)', color: 'var(--text-strong)', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
+  chatInputRow: { borderTop: '1px solid var(--border)', padding: '8px', display: 'flex', gap: '8px' },
+  chatInput: { flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '13px', outline: 'none' },
   chatSendBtn: { background: '#FF6B00', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 };

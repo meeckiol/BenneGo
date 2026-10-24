@@ -214,9 +214,15 @@ export default function OrderDetailPage() {
 
   return (
     <div style={styles.container}>
-      <header style={styles.header}>
-        <button onClick={() => navigate('/orders')} style={styles.back}>← Retour</button>
-        <h2 style={styles.title}>{order.order_number}</h2>
+      <header className="bn-page-head bn-detail-head">
+        <button className="bn-icon-btn" onClick={() => navigate('/orders')} aria-label="Retour aux commandes">←</button>
+        <div className="bn-detail-head__text">
+          <p className="bn-kicker">Commande</p>
+          <h2 className="bn-title">{order.order_number}</h2>
+        </div>
+        {cancelled
+          ? <span className="bn-pill bn-pill--danger">Annulée</span>
+          : <span className="bn-pill bn-pill--brand">{STEPS[currentStepIdx]?.label?.split(' · ')[0] || order.status}</span>}
       </header>
 
       <div style={styles.content}>
@@ -255,22 +261,18 @@ export default function OrderDetailPage() {
 
         {/* Progression */}
         {!cancelled && (
-          <div style={styles.card}>
-            <h3 style={styles.cardTitle}>Suivi de la mission</h3>
-            <div style={styles.steps}>
+          <div className="bn-card">
+            <h3 className="bn-steps__title">Suivi de la mission</h3>
+            <ol className="bn-timeline">
               {STEPS.map((step, idx) => (
-                <div key={step.key} style={styles.step}>
-                  <div style={{ ...styles.stepDot, background: idx <= currentStepIdx ? '#FF6B00' : '#ddd' }} />
-                  <span style={{
-                    ...styles.stepLabel,
-                    color: idx <= currentStepIdx ? '#333' : '#999',
-                    fontWeight: idx === currentStepIdx ? '700' : '400',
-                  }}>
-                    {step.label}{idx === currentStepIdx && ' ←'}
-                  </span>
-                </div>
+                <li
+                  key={step.key}
+                  className={idx < currentStepIdx ? 'is-done' : idx === currentStepIdx ? 'is-current' : ''}
+                >
+                  {step.label}
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         )}
 
@@ -326,8 +328,8 @@ export default function OrderDetailPage() {
           {order.distance_km > 0 && <InfoRow label="Distance calculée" value={`${order.distance_km} km`} />}
           {order.driver_name && <InfoRow label="Prestataire assigné" value={order.driver_name} />}
           {order.driver_name && order.driver_rating_count > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ color: '#666', fontSize: 14 }}>Note du prestataire</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--text-2)', fontSize: 14 }}>Note du prestataire</span>
               <span style={{ fontSize: 13 }}>
                 <StarRating value={Math.round(order.driver_rating_avg)} size={16} label="Note du chauffeur" /> {Number(order.driver_rating_avg).toFixed(1)} ({order.driver_rating_count})
               </span>
@@ -422,7 +424,7 @@ export default function OrderDetailPage() {
         {canDispute && disputeOpen && (
           <form onSubmit={openDispute} style={{ ...styles.card, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <h3 style={styles.cardTitle}>Refuser la livraison</h3>
-            <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-2)' }}>
               Votre paiement reste bloqué. Décrivez le problème et joignez des photos de la marchandise livrée.
             </p>
             <textarea
@@ -433,7 +435,7 @@ export default function OrderDetailPage() {
               maxLength={1000}
               required
               rows={4}
-              style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '14px', fontFamily: 'inherit' }}
+              style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--border-2)', fontSize: '14px', fontFamily: 'inherit' }}
             />
             <input
               type="file"
@@ -467,11 +469,11 @@ function PhotoStrip({ photos, label }) {
   if (!photos.length) return null;
   return (
     <div style={{ marginTop: '12px' }}>
-      <div style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>{label}</div>
+      <div style={{ fontSize: '13px', color: 'var(--text-2)', marginBottom: '8px' }}>{label}</div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {photos.map((p) => (
           <a key={p.url} href={p.url} target="_blank" rel="noopener noreferrer">
-            <img src={p.url} alt={label} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+            <img src={p.url} alt={label} style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)' }} />
           </a>
         ))}
       </div>
@@ -481,43 +483,43 @@ function PhotoStrip({ photos, label }) {
 
 function InfoRow({ label, value, bold }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}>
-      <span style={{ color: '#666', fontSize: '14px' }}>{label}</span>
-      <span style={{ color: '#333', fontSize: '14px', fontWeight: bold ? '700' : '400', textAlign: 'right', maxWidth: '60%' }}>{value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+      <span style={{ color: 'var(--text-2)', fontSize: '14px' }}>{label}</span>
+      <span style={{ color: 'var(--text-strong)', fontSize: '14px', fontWeight: bold ? '700' : '400', textAlign: 'right', maxWidth: '60%' }}>{value}</span>
     </div>
   );
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: '#f5f5f5' },
+  container: { minHeight: '100vh', background: 'var(--surface-2)' },
   header: { background: '#FF6B00', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' },
   back: { background: 'none', border: 'none', color: 'white', fontSize: '16px', cursor: 'pointer' },
   title: { color: 'white', fontSize: '18px', fontWeight: '700', margin: 0 },
   content: { padding: '20px', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' },
-  card: { background: 'white', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
-  cardTitle: { fontSize: '16px', fontWeight: '700', color: '#333', marginBottom: '16px', marginTop: 0 },
+  card: { background: 'var(--surface)', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
+  cardTitle: { fontSize: '16px', fontWeight: '700', color: 'var(--text-strong)', marginBottom: '16px', marginTop: 0 },
   steps: { display: 'flex', flexDirection: 'column', gap: '12px' },
   step: { display: 'flex', alignItems: 'center', gap: '12px' },
   stepDot: { width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0 },
   stepLabel: { fontSize: '14px' },
   primaryBtn: { padding: '16px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', width: '100%' },
-  secure: { background: '#E8F5E9', border: '1px solid #A5D6A7', color: '#1B5E20', borderRadius: '12px', padding: '14px 16px', fontSize: '14px', lineHeight: '1.5' },
-  cancelled: { background: '#FFEBEE', border: '1px solid #EF9A9A', color: '#B71C1C', borderRadius: '12px', padding: '14px 16px', fontSize: '14px' },
-  mapHint: { margin: '10px 0 0', fontSize: '13px', color: '#666' },
-  linkBtn: { background: 'none', border: 'none', color: '#B71C1C', textDecoration: 'underline', cursor: 'pointer', fontSize: '14px', padding: '8px' },
+  secure: { background: 'var(--success-soft)', border: '1px solid rgba(34, 197, 94, 0.35)', color: 'var(--success)', borderRadius: '12px', padding: '14px 16px', fontSize: '14px', lineHeight: '1.5' },
+  cancelled: { background: 'var(--danger-soft)', border: '1px solid rgba(239, 68, 68, 0.35)', color: 'var(--danger)', borderRadius: '12px', padding: '14px 16px', fontSize: '14px' },
+  mapHint: { margin: '10px 0 0', fontSize: '13px', color: 'var(--text-2)' },
+  linkBtn: { background: 'none', border: 'none', color: 'var(--danger)', textDecoration: 'underline', cursor: 'pointer', fontSize: '14px', padding: '8px' },
   successBtn: { padding: '16px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', width: '100%' },
-  deviationAlert: { background: '#FEF2F2', border: '2px solid #EF4444', borderRadius: '12px', padding: '16px', color: '#991B1B' },
+  deviationAlert: { background: 'var(--danger-soft)', border: '2px solid #EF4444', borderRadius: '12px', padding: '16px', color: 'var(--danger)' },
   deviationTitle: { fontWeight: '800', fontSize: '15px', marginBottom: '6px' },
   deviationText: { fontSize: '13.5px', lineHeight: '1.5', margin: 0 },
 
   // Chat styles
-  chatBox: { maxHeight: '250px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px', background: '#F8F9FA', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '12px' },
-  chatEmpty: { textAlign: 'center', color: '#94A3B8', fontSize: '13px', padding: '16px 0' },
+  chatBox: { maxHeight: '250px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '12px' },
+  chatEmpty: { textAlign: 'center', color: 'var(--text-3)', fontSize: '13px', padding: '16px 0' },
   chatMsgMe: { alignSelf: 'flex-end', background: '#FF6B00', color: 'white', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
-  chatMsgThem: { alignSelf: 'flex-start', background: '#E2E8F0', color: '#1E293B', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
+  chatMsgThem: { alignSelf: 'flex-start', background: 'var(--surface-3)', color: 'var(--text-strong)', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
   chatSender: { fontSize: '10px', fontWeight: '700', opacity: 0.8, marginBottom: '2px' },
   chatTime: { fontSize: '9px', opacity: 0.7, textAlign: 'right', marginTop: '4px' },
   chatForm: { display: 'flex', gap: '8px' },
-  chatInput: { flex: 1, padding: '10px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', fontSize: '13px', outline: 'none' },
+  chatInput: { flex: 1, padding: '10px 12px', border: '1px solid var(--border-2)', borderRadius: '8px', fontSize: '13px', outline: 'none' },
   chatSendBtn: { background: '#FF6B00', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' },
 };
