@@ -70,6 +70,12 @@ const config: ExpoConfig = {
       }
     ],
     [
+      "expo-image-picker",
+      {
+        "cameraPermission": "BenneGo utilise l'appareil photo pour photographier le chargement et le ticket de pesée."
+      }
+    ],
+    [
       "expo-splash-screen",
       {
         image: "./assets/images/bennego-icon.png",

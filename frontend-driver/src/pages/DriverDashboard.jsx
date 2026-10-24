@@ -43,6 +43,9 @@ export default function DriverDashboard() {
     onNewOrder: handleNewOrder,
     onOrderCancelled: handleOrderCancelled,
     onOrderTaken: (d) => setPendingOrder((cur) => (cur && cur.order_id === d.order_id ? null : cur)),
+    // Course réassignée (panne) ou litige ouvert : on recharge la course en cours
+    onOrderReassigned: () => loadActiveOrder(),
+    onDisputeOpened: () => loadActiveOrder(),
   });
 
   // GPS actif seulement quand disponible ou en course

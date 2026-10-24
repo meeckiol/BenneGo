@@ -16,6 +16,7 @@ const barometerRoutes = require('./routes/barometer.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
 const { UPLOAD_DIR } = require('./services/photo.service');
 const { startPayoutRetryWorker } = require('./services/payout-retry.service');
+const { startMaintenanceWorker } = require('./services/maintenance.service');
 const driverRoutes = require('./routes/driver.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminRoutes = require('./routes/admin.routes');
@@ -186,6 +187,7 @@ if (require.main === module) {
     console.log(`BenneGo API démarrée sur le port ${PORT} (${process.env.NODE_ENV || 'development'})`);
   });
   startPayoutRetryWorker();
+  startMaintenanceWorker();
 
   const shutdown = (signal) => {
     console.log(`Signal ${signal} reçu. Arrêt gracieux en cours...`);

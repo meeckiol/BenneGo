@@ -28,6 +28,11 @@ export type JobLike = {
   paymentStatus: string;
   rating?: number | null;
   updatedAt?: string;
+  /** Volume déclaré au chargement (null tant que le chauffeur ne l'a pas saisi). */
+  loadingVolumeM3?: number | null;
+  weighbridgeNetKg?: number | null;
+  /** « open » quand le client a refusé la livraison. */
+  disputeStatus?: string | null;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,6 +58,9 @@ export function toJob(o: any): JobLike {
     paymentStatus: o.payment_status,
     rating: o.client_rating ?? null,
     updatedAt: o.updated_at,
+    loadingVolumeM3: o.loading_volume_m3 == null ? null : Number(o.loading_volume_m3),
+    weighbridgeNetKg: o.weighbridge_net_kg == null ? null : Number(o.weighbridge_net_kg),
+    disputeStatus: o.dispute_status ?? null,
   };
 }
 

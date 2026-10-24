@@ -20,6 +20,7 @@ const bcrypt = require('bcryptjs');
 const kkiapay = require('../src/providers/kkiapay');
 const whatsapp = require('../src/services/whatsapp.service');
 const sms = require('../src/services/sms.service');
+const { purgeExpiredOtps } = require('../src/services/maintenance.service');
 const { verifiedRegister } = require('./helpers/verified-register');
 const { query, pool } = require('../src/config/database');
 const { app } = require('../src/server');
@@ -383,5 +384,63 @@ describe('Retrait des Carrières (page d\'emploi)', () => {
   test('la route n\'existe plus', async () => {
     const res = await request(app).get('/api/careers');
     expect(res.status).toBe(404);
+  });
+});
+
+describe('Corrections : relève en temps réel, confirmations sous litige, purge des codes', () => {
+  test('la relève prévient le chauffeur de réserve et le chauffeur initial', async () => {
+    const client = await register('client', 'Client Événement');
+    const driver = await makeDriver('Chauffeur Événement');
+    const reserve = await makeDriver('Réserve Événement');
+    const order = await acceptedOrder(client, driver);
+    await setStatus(driver, order.id, 'driver_en_route_pickup').expect(200);
+    const breakdown = await request(app).post(`/api/orders/${order.id}/breakdown`).set(driver.auth)
+      .send({ reason: 'crevaison', lat: 6.37, lng: 2.39 });
+    expect(breakdown.status).toBe(201);
+
+    const emitted = [];
+    const previousIo = app.get('io');
+    app.set('io', { to: (room) => ({ emit: (event, payload) => emitted.push({ room, event, payload }) }) });
+    try {
+      await request(app).post(`/api/admin/reliefs/${breakdown.body.request.id}/assign`).set(adminAuth)
+        .send({ relief_driver_id: reserve.id }).expect(200);
+    } finally {
+      app.set('io', previousIo);
+    }
+    expect(emitted).toEqual(expect.arrayContaining([
+      { room: `driver_${reserve.id}`, event: 'order_reassigned', payload: { order_id: order.id } },
+      { room: `driver_${driver.id}`, event: 'order_reassigned', payload: { order_id: order.id } },
+    ]));
+  });
+
+  test('location : confirmer les heures est refusé pendant un litige, sans rien écrire', async () => {
+    const client = await register('client', 'Client Location');
+    const driver = await makeDriver('Chauffeur Location');
+    const order = await deliveredOrder(client, driver);
+    await query(`UPDATE orders SET order_type = 'RENTAL' WHERE id = $1`, [order.id]);
+    await request(app).post(`/api/orders/${order.id}/dispute`).set(client.auth)
+      .field('reason', 'Les heures facturées ne sont pas celles travaillées')
+      .attach('photos', JPEG, { filename: 'a.jpg', contentType: 'image/jpeg' })
+      .expect(201);
+    const res = await request(app).post(`/api/orders/${order.id}/confirm-rental`).set(client.auth);
+    expect(res.status).toBe(409);
+    expect((await dbOrder(order.id)).rental_hours_confirmed).toBe(false);
+  });
+
+  test('les codes SMS expirés depuis plus de 24 h sont purgés, les autres conservés', async () => {
+    const phone = nextPhone();
+    await query(
+      `INSERT INTO phone_otps (phone, code_hash, expires_at, created_at)
+       VALUES ($1, 'old', NOW() - INTERVAL '2 days', NOW() - INTERVAL '2 days')`,
+      [phone]
+    );
+    await query(
+      `INSERT INTO phone_otps (phone, code_hash, expires_at) VALUES ($1, 'fresh', NOW() + INTERVAL '5 minutes')`,
+      [phone]
+    );
+    const removed = await purgeExpiredOtps();
+    expect(removed).toBeGreaterThanOrEqual(1);
+    const left = await query('SELECT code_hash FROM phone_otps WHERE phone = $1', [phone]);
+    expect(left.rows.map((r) => r.code_hash)).toEqual(['fresh']);
   });
 });

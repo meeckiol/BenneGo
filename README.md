@@ -79,7 +79,7 @@ Le virement MoMo automatique demande un contrat avec un prestataire de transfert
 ## Limites connues
 
 - **Commandes WhatsApp en texte uniquement** : les messages vocaux ne sont pas transcrits. Le bot demande une commande écrite, et ne crée pas de commande : le client confirme et paie dans l'application.
-- **Application mobile `mobile-driver/`** (Expo) : elle n'a pas été mise à jour avec le chargement, les litiges et les pannes, et n'est pas incluse dans ce déploiement. La PWA `frontend-driver/` est la seule application chauffeur de référence.
+- **Application mobile `mobile-driver/`** (Expo) : elle suit désormais le même parcours que la PWA (formulaire de chargement avant départ, signalement de panne, bandeau de litige, mise à jour à la réassignation). Elle a été vérifiée par typage et lint, mais **pas encore testée sur appareil** : à valider avant distribution (build EAS, permissions caméra et localisation).
 - **Rétention GPS** : `order_tracking` grossit sans purge ; définir une durée de conservation et l'information des chauffeurs.
 - **Jeton des fronts web** stocké en `localStorage` (risque XSS) ; à durcir si la surface d'attaque augmente.
 - **Interfaces** : vérifiées dans un navigateur mobile pour les pages principales, pas sur appareils réels.

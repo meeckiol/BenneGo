@@ -12,7 +12,13 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || '/';
  * Hook WebSocket pour le chauffeur
  * Gère la connexion, la disponibilité et l'envoi de position GPS
  */
-const useDriverSocket = ({ onNewOrder = null, onOrderCancelled = null, onOrderTaken = null } = {}) => {
+const useDriverSocket = ({
+  onNewOrder = null,
+  onOrderCancelled = null,
+  onOrderTaken = null,
+  onOrderReassigned = null,
+  onDisputeOpened = null,
+} = {}) => {
   const token = useDriverAuthStore((s) => s.token);
   const socketRef = useRef(null);
 
@@ -57,6 +63,16 @@ const useDriverSocket = ({ onNewOrder = null, onOrderCancelled = null, onOrderTa
     // Confirmation validation livraison
     socketInstance.on('order_validated', (data) => {
       console.log(`Livraison validée - ${data.driver_amount?.toLocaleString()} FCFA en route`);
+    });
+
+    // Course réassignée à ce chauffeur, ou retirée à ce chauffeur, après une panne
+    socketInstance.on('order_reassigned', (data) => {
+      if (onOrderReassigned) onOrderReassigned(data);
+    });
+
+    // Le client a refusé la livraison d'une course de ce chauffeur
+    socketInstance.on('dispute_opened', (data) => {
+      if (onDisputeOpened) onDisputeOpened(data);
     });
 
     return () => {

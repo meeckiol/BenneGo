@@ -679,7 +679,8 @@ const confirmDelivery = async (req, res, next) => {
 const confirmRental = async (req, res, next) => {
   try {
     await query(
-      `UPDATE orders SET rental_hours_confirmed = true, updated_at = NOW() WHERE id = $1 AND client_id = $2`,
+      `UPDATE orders SET rental_hours_confirmed = true, updated_at = NOW()
+       WHERE id = $1 AND client_id = $2 AND status = 'delivered' AND dispute_status IS DISTINCT FROM 'open'`,
       [req.params.id, req.user.id]
     );
 
@@ -713,7 +714,8 @@ const confirmRental = async (req, res, next) => {
 const confirmEvacuation = async (req, res, next) => {
   try {
     await query(
-      `UPDATE orders SET site_cleaned_confirmed = true, updated_at = NOW() WHERE id = $1 AND client_id = $2`,
+      `UPDATE orders SET site_cleaned_confirmed = true, updated_at = NOW()
+       WHERE id = $1 AND client_id = $2 AND status = 'delivered' AND dispute_status IS DISTINCT FROM 'open'`,
       [req.params.id, req.user.id]
     );
 

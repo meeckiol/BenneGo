@@ -83,6 +83,12 @@ router.post('/reliefs/:id/assign', [
 ], validateRequest, async (req, res, next) => {
   try {
     const request = await relief.assignReliefDriver(req.params.id, req.body.relief_driver_id);
+    const io = req.app.get('io');
+    if (io) {
+      const payload = { order_id: request.order_id };
+      io.to(`driver_${request.relief_driver_id}`).emit('order_reassigned', payload);
+      io.to(`driver_${request.original_driver_id}`).emit('order_reassigned', payload);
+    }
     res.json({ message: 'Course réassignée à la benne de réserve', request });
   } catch (error) {
     next(error);

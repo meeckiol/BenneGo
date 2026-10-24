@@ -1,8 +1,10 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as ImagePicker from "expo-image-picker";
 import * as Linking from "expo-linking";
+import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect } from "react";
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { JobTimeline } from "@/components/mission/job-timeline";
 import { InfoBanner, LoadingState } from "@/components/ui/bennego-ui";
@@ -15,7 +17,7 @@ import {
   statusColor,
   statusLabel,
 } from "@/lib/domain/jobs";
-import { useDriverDashboard, useJob } from "@/hooks/use-driver-dashboard";
+import { useDriverDashboard, useJob, type BreakdownReason } from "@/hooks/use-driver-dashboard";
 import { errorMessage } from "@/lib/api";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { useSocket } from "@/hooks/use-socket";
@@ -47,6 +49,13 @@ export default function MissionDetailScreen() {
   const { isAuthenticated } = useAuth();
   const { trackOrder } = useSocket(isAuthenticated, false);
   const job = jobQuery.data;
+
+  // ─── Chargement avant départ : volume, photos, ticket de pesée (hors rendu conditionnel) ─
+  const [loadingOpen, setLoadingOpen] = useState(false);
+  const [volume, setVolume] = useState("");
+  const [loadingPhotos, setLoadingPhotos] = useState<string[]>([]);
+  const [weighbridgeUri, setWeighbridgeUri] = useState<string | null>(null);
+  const [netKg, setNetKg] = useState("");
 
   // ─── Rejoindre la room Socket.IO de cette commande ───────────────────────────
   // Permet de recevoir order_status en temps réel (ex. confirmation client)
@@ -93,7 +102,14 @@ export default function MissionDetailScreen() {
   // ─── Données dérivées ────────────────────────────────────────────────────────
   const status = job.status as JobStatus;
   const upcoming = nextStatus(status);
-  const action = status === "pending" ? "Accepter la mission" : nextActionLabel(status);
+  // Le départ du chargement exige le volume et les photos : sinon l'action ouvre le formulaire
+  const needsLoading = status === "loading" && job.loadingVolumeM3 == null;
+  const showLoadingForm = loadingOpen && status === "loading";
+  const action = status === "pending"
+    ? "Accepter la mission"
+    : needsLoading
+      ? "Enregistrer le chargement"
+      : nextActionLabel(status);
   const isActive = isActiveJobStatus(status);
   const sharesPosition = isTrackedJobStatus(status);
   const destination =
@@ -111,7 +127,69 @@ export default function MissionDetailScreen() {
     );
   };
 
+  const takePhoto = async (onTaken: (uri: string) => void) => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      notify("Autorisez l'appareil photo pour photographier le chargement.");
+      return;
+    }
+    // Qualité réduite : chaque photo reste sous la limite de 2 Mo côté serveur
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.5 });
+    if (!result.canceled && result.assets[0]) onTaken(result.assets[0].uri);
+  };
+
+  const submitLoading = async () => {
+    const volumeM3 = Number(volume.replace(",", "."));
+    if (!Number.isFinite(volumeM3) || volumeM3 < 0.5 || volumeM3 > 100) {
+      notify("Indiquez le volume chargé, entre 0,5 et 100 m³.");
+      return;
+    }
+    if (loadingPhotos.length === 0) {
+      notify("Ajoutez au moins une photo du camion chargé.");
+      return;
+    }
+    try {
+      await driver.recordLoading(job.id, {
+        volumeM3,
+        photoUris: loadingPhotos,
+        weighbridgeUri,
+        weighbridgeNetKg: netKg ? Number(netKg) : null,
+      });
+      setLoadingOpen(false);
+      setVolume("");
+      setLoadingPhotos([]);
+      setWeighbridgeUri(null);
+      setNetKg("");
+      await jobQuery.refetch();
+    } catch (e) {
+      notify(errorMessage(e));
+    }
+  };
+
+  const reportBreakdown = () => {
+    const send = async (reason: BreakdownReason) => {
+      try {
+        const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        await driver.reportBreakdown(job.id, reason, coords.latitude, coords.longitude);
+        await jobQuery.refetch();
+        notify("Panne signalée. BenneGo cherche une benne de réserve.");
+      } catch (e) {
+        notify(errorMessage(e, "Position GPS indisponible : activez la localisation puis réessayez."));
+      }
+    };
+    Alert.alert("Problème sur la route", "Quel est le problème ?", [
+      { text: "Crevaison", onPress: () => void send("crevaison") },
+      { text: "Panne moteur", onPress: () => void send("panne_moteur") },
+      { text: "Accident", onPress: () => void send("accident") },
+      { text: "Annuler", style: "cancel" },
+    ]);
+  };
+
   const performAction = () => {
+    if (needsLoading) {
+      setLoadingOpen(true);
+      return;
+    }
     if (status === "pending") {
       confirmAction(
         "Accepter cette mission",
@@ -182,6 +260,18 @@ export default function MissionDetailScreen() {
           <InfoBanner icon="lock" tone="neutral">{payoutMessage(job)}</InfoBanner>
         ) : null}
 
+        {job.disputeStatus === "open" ? (
+          <InfoBanner icon="gavel" tone="warning">
+            Le client a refusé la livraison. BenneGo examine le litige ; le paiement reste bloqué.
+          </InfoBanner>
+        ) : null}
+
+        {job.loadingVolumeM3 != null ? (
+          <InfoBanner icon="scale" tone="success">
+            {`Chargement enregistré : ${formatVolume(job.loadingVolumeM3)}${job.weighbridgeNetKg ? ` · pesée ${job.weighbridgeNetKg.toLocaleString("fr-FR")} kg` : ""}`}
+          </InfoBanner>
+        ) : null}
+
         {/* Progression */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Progression</Text>
@@ -217,8 +307,54 @@ export default function MissionDetailScreen() {
           <Text style={styles.navigateText}>Ouvrir la navigation</Text>
         </Pressable>
 
-        {/* Action principale */}
-        {action ? (
+        {/* Action principale : formulaire de chargement, ou statut suivant */}
+        {showLoadingForm ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Chargement avant départ</Text>
+            <Text style={styles.formHint}>
+              {"Le départ n'est possible qu'après le volume et au moins une photo du camion chargé."}
+            </Text>
+            <Text style={styles.fieldLabel}>Volume chargé (m³)</Text>
+            <TextInput
+              value={volume}
+              onChangeText={setVolume}
+              keyboardType="decimal-pad"
+              placeholder="ex. 10"
+              placeholderTextColor="#8A7F76"
+              style={styles.input}
+            />
+            <Pressable
+              onPress={() => void takePhoto((uri) => setLoadingPhotos((photos) => [...photos, uri].slice(0, 5)))}
+              style={styles.photoButton}
+            >
+              <MaterialIcons name="photo-camera" size={19} color="#A4470A" />
+              <Text style={styles.locationText}>{`Photo du camion chargé (${loadingPhotos.length}/5)`}</Text>
+            </Pressable>
+            <Pressable onPress={() => void takePhoto(setWeighbridgeUri)} style={styles.photoButton}>
+              <MaterialIcons name="receipt-long" size={19} color="#A4470A" />
+              <Text style={styles.locationText}>
+                {weighbridgeUri ? "Ticket de pesée ajouté" : "Ticket de pesée (facultatif)"}
+              </Text>
+            </Pressable>
+            <Text style={styles.fieldLabel}>Poids net du ticket (kg, facultatif)</Text>
+            <TextInput
+              value={netKg}
+              onChangeText={setNetKg}
+              keyboardType="number-pad"
+              placeholder="ex. 14200"
+              placeholderTextColor="#8A7F76"
+              style={styles.input}
+            />
+            <Pressable
+              onPress={() => void submitLoading()}
+              disabled={driver.isWorking}
+              style={[styles.primaryAction, driver.isWorking && styles.disabled]}
+            >
+              <Text style={styles.primaryText}>{driver.isWorking ? "Envoi…" : "Enregistrer le chargement"}</Text>
+              <MaterialIcons name="check" size={20} color="#FFFFFF" />
+            </Pressable>
+          </View>
+        ) : action ? (
           <Pressable
             onPress={performAction}
             disabled={driver.isWorking}
@@ -237,6 +373,14 @@ export default function MissionDetailScreen() {
             {payoutMessage(job) || "Aucune action chauffeur disponible."}
           </InfoBanner>
         )}
+
+        {/* Panne ou crevaison : signalable pendant toute la course */}
+        {sharesPosition && !showLoadingForm ? (
+          <Pressable onPress={reportBreakdown} style={styles.breakdownButton}>
+            <MaterialIcons name="warning-amber" size={19} color="#A94C07" />
+            <Text style={styles.breakdownText}>Signaler une panne ou une crevaison</Text>
+          </Pressable>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -335,4 +479,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 11, borderRadius: 12,
   },
   backText: { color: "#A4470A", fontWeight: "800" },
+  formHint: { color: "#71675F", fontSize: 13, lineHeight: 19 },
+  fieldLabel: { color: "#5D554E", fontSize: 12, fontWeight: "800" },
+  input: {
+    borderWidth: 1, borderColor: "#D8CDC3", borderRadius: 12, backgroundColor: "#FFFDFB",
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: "#2B241E",
+  },
+  photoButton: {
+    alignItems: "center", flexDirection: "row", gap: 9, paddingVertical: 12,
+    paddingHorizontal: 14, borderRadius: 12, backgroundColor: "#FFF1E8",
+  },
+  breakdownButton: {
+    minHeight: 48, borderRadius: 14, borderWidth: 1, borderColor: "#F3C9A8",
+    flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  breakdownText: { color: "#A94C07", fontWeight: "800", fontSize: 14 },
 });

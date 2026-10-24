@@ -27,4 +27,4 @@
 - Connecter une passerelle SMS (sans elle l'inscription est bloquée en production).
 - Connecter un prestataire de virement MoMo (`PAYOUT_WEBHOOK_URL`).
 - Déclarer le webhook WhatsApp chez Meta et renseigner les quatre variables `WHATSAPP_*`.
-- Mettre à jour `mobile-driver/` ou la retirer du dépôt.
+- Tester `mobile-driver/` sur appareil (chargement, photos, panne) avant distribution.

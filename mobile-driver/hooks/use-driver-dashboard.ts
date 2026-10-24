@@ -6,6 +6,19 @@ import { isActiveJobStatus, type JobStatus } from "@/shared/bennego";
 
 export type JobBucket = "offered" | "active" | "completed";
 
+export type BreakdownReason = "crevaison" | "panne_moteur" | "accident" | "autre";
+
+export type LoadingInput = {
+  volumeM3: number;
+  photoUris: string[];
+  weighbridgeUri?: string | null;
+  weighbridgeNetKg?: number | null;
+};
+
+/** Fichier image pour FormData en React Native : { uri, name, type }. */
+const photoPart = (uri: string, name: string) =>
+  ({ uri, name, type: "image/jpeg" }) as unknown as Blob;
+
 /**
  * Réponse étendue de /drivers/me/summary.
  * Inclut désormais les données de profil camion (truck_plate, truck_type, etc.)
@@ -131,6 +144,21 @@ export function useDriverDashboard() {
     mutationFn: ({ jobId, latitude, longitude }: { jobId: string; latitude: number; longitude: number }) =>
       api.patch("/drivers/location", { lat: latitude, lng: longitude, order_id: jobId }),
   });
+  const loadingMutation = useMutation({
+    mutationFn: ({ jobId, input }: { jobId: string; input: LoadingInput }) => {
+      const form = new FormData();
+      form.append("volume_m3", String(input.volumeM3));
+      input.photoUris.forEach((uri, index) => form.append("photos", photoPart(uri, `chargement-${index + 1}.jpg`)));
+      if (input.weighbridgeUri) form.append("weighbridge", photoPart(input.weighbridgeUri, "ticket-pesee.jpg"));
+      if (input.weighbridgeNetKg) form.append("weighbridge_net_kg", String(input.weighbridgeNetKg));
+      // Pas de Content-Type forcé : React Native ajoute la frontière multipart
+      return api.post(`/orders/${jobId}/loading`, form, { headers: { "Content-Type": undefined } });
+    },
+  });
+  const breakdownMutation = useMutation({
+    mutationFn: ({ jobId, reason, latitude, longitude }: { jobId: string; reason: BreakdownReason; latitude: number; longitude: number }) =>
+      api.post(`/orders/${jobId}/breakdown`, { reason, lat: latitude, lng: longitude }),
+  });
 
   return {
     dashboard,
@@ -139,7 +167,9 @@ export function useDriverDashboard() {
       setAvailabilityMutation.isPending ||
       acceptMutation.isPending ||
       advanceMutation.isPending ||
-      locationMutation.isPending,
+      locationMutation.isPending ||
+      loadingMutation.isPending ||
+      breakdownMutation.isPending,
     setAvailability: async (available: boolean) => {
       await setAvailabilityMutation.mutateAsync(available);
       await refresh();
@@ -154,5 +184,13 @@ export function useDriverDashboard() {
     },
     recordLocation: (jobId: string, latitude: number, longitude: number) =>
       locationMutation.mutateAsync({ jobId, latitude, longitude }),
+    recordLoading: async (jobId: string, input: LoadingInput) => {
+      await loadingMutation.mutateAsync({ jobId, input });
+      await refresh();
+    },
+    reportBreakdown: async (jobId: string, reason: BreakdownReason, latitude: number, longitude: number) => {
+      await breakdownMutation.mutateAsync({ jobId, reason, latitude, longitude });
+      await refresh();
+    },
   };
 }

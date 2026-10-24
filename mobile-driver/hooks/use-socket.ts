@@ -15,6 +15,10 @@ interface ServerToClientEvents {
   order_taken: (data: { order_id: string }) => void;
   /** Le statut d'une commande a changé (confirmation client, avancement chauffeur). */
   order_status: (data: { order_id: string; status: string }) => void;
+  /** Course réassignée à une benne de réserve (concerne le chauffeur initial et le chauffeur de réserve). */
+  order_reassigned: (data: { order_id: string }) => void;
+  /** Le client a refusé la livraison : litige ouvert, le paiement reste bloqué. */
+  dispute_opened: (data: { order_id: string }) => void;
   /** Mise à jour de disponibilité confirmée par le serveur. */
   availability_updated: (data: { is_available: boolean }) => void;
   /** Erreur envoyée par le serveur (ex. profil incomplet). */
@@ -108,6 +112,18 @@ export function useSocket(isAuthenticated: boolean, isAvailable: boolean) {
         void qc.invalidateQueries({ queryKey: ["job", order_id] });
         void qc.invalidateQueries({ queryKey: ["dashboard"] });
         void qc.invalidateQueries({ queryKey: ["jobs", "active"] });
+      });
+
+      // ─── Course réassignée (panne) : la mission apparaît ou disparaît de la liste ─
+      socket.on("order_reassigned", ({ order_id }) => {
+        void qc.invalidateQueries({ queryKey: ["job", order_id] });
+        void qc.invalidateQueries({ queryKey: ["dashboard"] });
+        void qc.invalidateQueries({ queryKey: ["jobs"] });
+      });
+
+      // ─── Litige ouvert par le client : la mission affiche le blocage du paiement ─
+      socket.on("dispute_opened", ({ order_id }) => {
+        void qc.invalidateQueries({ queryKey: ["job", order_id] });
       });
     };
 
