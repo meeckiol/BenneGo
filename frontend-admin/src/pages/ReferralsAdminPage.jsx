@@ -27,7 +27,7 @@ export default function ReferralsAdminPage() {
       const params = {};
       if (statusFilter) params.status = statusFilter;
       const { data } = await api.get('/admin/referrals', { params });
-      setReferrals(data.referrals || data || []);
+      setReferrals(data.referrals ?? []);
     } catch {
       toast.error('Erreur lors du chargement des parrainages');
     } finally {
@@ -95,7 +95,7 @@ export default function ReferralsAdminPage() {
                 style={{
                   ...s.filterBtn,
                   background: statusFilter === f.value ? '#FF6B00' : 'transparent',
-                  color: statusFilter === f.value ? 'white' : '#94a3b8',
+                  color: statusFilter === f.value ? '#0b0b10' : '#94a3b8',
                   borderColor: statusFilter === f.value ? '#FF6B00' : '#334155',
                 }}
               >
@@ -112,7 +112,7 @@ export default function ReferralsAdminPage() {
         </div>
 
         {/* Table */}
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>

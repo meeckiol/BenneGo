@@ -36,17 +36,8 @@ const useDriverSocket = ({
 
     socketRef.current = socketInstance;
 
-    socketInstance.on('connect', () => {
-      console.log('WebSocket connecté');
-    });
-
-    socketInstance.on('disconnect', (reason) => {
-      console.log('WebSocket déconnecté:', reason);
-    });
-
     // Nouvelle commande disponible
     socketInstance.on('new_order', (order) => {
-      console.log('Nouvelle commande:', order.order_number);
       if (onNewOrder) onNewOrder(order);
     });
 
@@ -61,10 +52,6 @@ const useDriverSocket = ({
     });
 
     // Confirmation validation livraison
-    socketInstance.on('order_validated', (data) => {
-      console.log(`Livraison validée - ${data.driver_amount?.toLocaleString()} FCFA en route`);
-    });
-
     // Course réassignée à ce chauffeur, ou retirée à ce chauffeur, après une panne
     socketInstance.on('order_reassigned', (data) => {
       if (onOrderReassigned) onOrderReassigned(data);

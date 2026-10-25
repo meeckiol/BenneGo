@@ -7,7 +7,7 @@ import { Navigation } from 'lucide-react';
 const driverIcon = L.divIcon({
   className: '',
   html: renderToStaticMarkup(
-    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: '#FF6B00', color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,.4)' }}>
+    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: '#FF6B00', color: '#0b0b10', boxShadow: '0 2px 6px rgba(0,0,0,.4)' }}>
       <Navigation size={16} fill="currentColor" aria-hidden="true" />
     </span>
   ),

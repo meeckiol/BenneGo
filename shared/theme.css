@@ -27,14 +27,16 @@
   --text-strong: #f5f5f8;
   --text: #e4e4ec;
   --text-2: #a3a3b5;
-  --text-3: #6f6f82;
+  /* Relevé pour atteindre 4,5:1 (WCAG AA) sur toutes les surfaces sombres */
+  --text-3: #8e8ea2;
 
   /* Sémantique */
   --success: #22c55e;
   --success-soft: rgba(34, 197, 94, 0.14);
   --warning: #f59e0b;
   --warning-soft: rgba(245, 158, 11, 0.14);
-  --danger: #ef4444;
+  /* Relevé pour le texte (4,5:1 sur les surfaces sombres) ; utilisé uniquement en texte ou fond teinté */
+  --danger: #f87171;
   --danger-soft: rgba(239, 68, 68, 0.14);
   --info: #60a5fa;
   --info-soft: rgba(59, 130, 246, 0.14);
@@ -168,7 +170,8 @@ option { background: var(--surface-2); color: var(--text); }
 }
 .bn-btn:active { transform: scale(0.98); }
 .bn-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.bn-btn--primary { background: var(--brand-grad); border-color: transparent; color: #fff; box-shadow: var(--shadow-brand); }
+/* Texte sombre sur l'orange de marque : 6,9:1 (le blanc n'atteint que 2,9:1) */
+.bn-btn--primary { background: var(--brand-grad); border-color: transparent; color: #0b0b10; box-shadow: var(--shadow-brand); }
 .bn-btn--ghost { background: transparent; }
 .bn-btn--danger { background: var(--danger-soft); border-color: rgba(239, 68, 68, 0.35); color: var(--danger); }
 .bn-btn--block { width: 100%; }

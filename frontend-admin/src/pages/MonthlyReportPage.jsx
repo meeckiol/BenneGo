@@ -78,8 +78,9 @@ export default function MonthlyReportPage() {
         <h3 style={s.cardTitle}>Paramètres du rapport</h3>
         <div style={s.row}>
           <div style={s.field}>
-            <label style={s.label}>Mois</label>
+            <label htmlFor="report-month" style={s.label}>Mois</label>
             <input
+              id="report-month"
               type="month"
               value={month}
               onChange={(e) => setMonth(e.target.value)}
@@ -174,7 +175,7 @@ const s = {
   },
   generateBtn: {
     padding: '11px 24px', background: '#FF6B00', border: 'none',
-    borderRadius: '8px', color: 'white', fontSize: '14px', fontWeight: '700',
+    borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700',
     cursor: 'pointer', whiteSpace: 'nowrap',
   },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' },

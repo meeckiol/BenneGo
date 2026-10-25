@@ -68,7 +68,7 @@ export default function PaymentsPage() {
         <div style={s.tableHeader}>
           <h3 style={s.tableTitle}>Reversements chauffeurs à effectuer ({payouts.length})</h3>
         </div>
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -111,7 +111,7 @@ export default function PaymentsPage() {
         <div style={s.tableHeader}>
           <h3 style={s.tableTitle}>Historique des paiements</h3>
         </div>
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>

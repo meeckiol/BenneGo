@@ -77,7 +77,7 @@ export default function DriversPage() {
           <button onClick={load} style={s.refreshBtn}>Actualiser</button>
         </div>
 
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>

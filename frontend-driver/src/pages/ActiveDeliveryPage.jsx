@@ -628,7 +628,7 @@ const styles = {
   },
   addressRow: { display: 'flex', gap: '12px' },
   addressItem: { flex: 1, display: 'flex', gap: '8px', alignItems: 'flex-start' },
-  addressLabel: { fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '2px' },
+  addressLabel: { fontSize: '10px', color: 'var(--text-3)', marginBottom: '2px' },
   addressText: { fontSize: '12px', color: 'white', lineHeight: '1.4' },
   addressDivider: { width: '1px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 },
   stepInfo: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' },
@@ -646,7 +646,7 @@ const styles = {
   actionBtn: { width: '100%', padding: '16px', border: 'none', borderRadius: '12px', color: 'white', fontSize: '16px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
   completedBox: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center' },
   completedText: { color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: '1.5' },
-  homeBtn: { padding: '12px 24px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '4px' },
+  homeBtn: { padding: '12px 24px', background: '#FF6B00', color: '#0b0b10', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '4px' },
 
   // PoD styles
   podSection: { background: 'var(--surface)', borderRadius: '12px', padding: '16px', margin: '16px 0', border: '1px solid var(--border)' },
@@ -655,18 +655,18 @@ const styles = {
   podPreviews: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' },
   podThumb: { width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' },
   podNotes: { marginTop: '10px', width: '100%', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '13px', resize: 'vertical', boxSizing: 'border-box', color: 'var(--text-strong)' },
-  podSubmitBtn: { marginTop: '12px', width: '100%', background: '#FF6B00', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
+  podSubmitBtn: { marginTop: '12px', width: '100%', background: '#FF6B00', color: '#0b0b10', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 
   // Chat FAB
-  chatFab: { position: 'fixed', bottom: '16px', right: '16px', background: '#FF6B00', color: 'white', border: 'none', borderRadius: '50%', width: '48px', height: '48px', fontSize: '20px', cursor: 'pointer', zIndex: 1000, boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
+  chatFab: { position: 'fixed', bottom: '16px', right: '16px', background: '#FF6B00', color: '#0b0b10', border: 'none', borderRadius: '50%', width: '48px', height: '48px', fontSize: '20px', cursor: 'pointer', zIndex: 1000, boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
 
   // Chat panel
   chatPanel: { position: 'fixed', bottom: '72px', right: '16px', width: '300px', height: '400px', background: 'var(--surface)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 999 },
   chatHeader: { background: 'var(--surface)', color: 'white', padding: '12px', fontSize: '14px', fontWeight: '700' },
   chatMessages: { flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' },
-  chatMsgDriver: { alignSelf: 'flex-end', background: '#FF6B00', color: 'white', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
+  chatMsgDriver: { alignSelf: 'flex-end', background: '#FF6B00', color: '#0b0b10', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
   chatMsgOther: { alignSelf: 'flex-start', background: 'var(--surface-2)', color: 'var(--text-strong)', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
   chatInputRow: { borderTop: '1px solid var(--border)', padding: '8px', display: 'flex', gap: '8px' },
   chatInput: { flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '13px', outline: 'none' },
-  chatSendBtn: { background: '#FF6B00', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
+  chatSendBtn: { background: '#FF6B00', color: '#0b0b10', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 };
