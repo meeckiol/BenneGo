@@ -16,3 +16,7 @@ coverage/
 .DS_Store
 uploads/
 !.env.prod.example
+
+# Rapports Playwright
+test-results/
+playwright-report/
