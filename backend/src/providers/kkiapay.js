@@ -20,15 +20,22 @@ const getClient = () => {
   return client;
 };
 
+const LOCAL_TRANSACTION_PREFIXES = ['TEST_', 'DEV_', 'KKIA-DEV-'];
+
+/**
+ * Contournement de vérification réservé aux tests et au développement local.
+ * Jamais en staging ni en production : une configuration oubliée ne doit pas
+ * valider un paiement sans l'avoir vérifié auprès de KKiaPay.
+ */
+const isLocalBypass = (transactionId) => {
+  const allowed = process.env.NODE_ENV === 'test'
+    || (process.env.NODE_ENV === 'development' && process.env.KKIAPAY_DEV_BYPASS === 'true');
+  return allowed && LOCAL_TRANSACTION_PREFIXES.some((prefix) => transactionId.startsWith(prefix));
+};
+
 /** @returns {Promise<{status: string, amount: number}>} */
 const verify = async (transactionId, orderId) => {
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    (!process.env.KKIAPAY_PRIVATE_KEY ||
-      transactionId.startsWith('TEST_') ||
-      transactionId.startsWith('DEV_') ||
-      transactionId.startsWith('KKIA-DEV-'))
-  ) {
+  if (isLocalBypass(transactionId)) {
     if (orderId) {
       const { query } = require('../config/database');
       const res = await query('SELECT total_amount FROM orders WHERE id = $1', [orderId]);
@@ -42,13 +49,7 @@ const verify = async (transactionId, orderId) => {
 };
 
 const refund = async (transactionId) => {
-  if (
-    process.env.NODE_ENV !== 'production' &&
-    (!process.env.KKIAPAY_PRIVATE_KEY ||
-      transactionId.startsWith('TEST_') ||
-      transactionId.startsWith('DEV_') ||
-      transactionId.startsWith('KKIA-'))
-  ) {
+  if (isLocalBypass(transactionId)) {
     return { status: 'SUCCESS' };
   }
   return getClient().refund(transactionId);

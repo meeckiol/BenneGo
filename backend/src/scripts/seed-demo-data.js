@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 const { query, pool } = require('../config/database');
 
 async function seed() {
+  // Ce script réécrit les mots de passe et les rôles de comptes aux identifiants connus : jamais en production.
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Refus : les données de démo ne doivent jamais être injectées en production.');
+  }
   console.log('Démarrage de l\'initialisation des données de démo BenneGo...');
 
   // 1. Password hashes
