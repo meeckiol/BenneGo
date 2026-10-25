@@ -18,6 +18,16 @@ const generateOrderNumber = (prefix = 'LT') => {
 };
 
 /**
+ * Coordonnées du client (nom, téléphone) : visibles du client, de l'admin et du chauffeur
+ * assigné. Un chauffeur non assigné ne les voit pas, même sur une commande en attente.
+ */
+const withClientContactFor = (order, user) => {
+  if (user.role !== 'driver' || order.driver_id === user.id) return order;
+  const { client_name: _name, client_phone: _phone, ...withoutContact } = order;
+  return withoutContact;
+};
+
+/**
  * Transitions autorisées pour les conducteurs selon le type de commande
  */
 const getDriverNextStatuses = (orderType, currentStatus) => {
@@ -460,7 +470,7 @@ const getOrders = async (req, res, next) => {
     );
 
     res.json({
-      orders: result.rows,
+      orders: result.rows.map((order) => withClientContactFor(order, req.user)),
       pagination: {
         total: parseInt(countResult.rows[0].count),
         page: parseInt(page),
@@ -516,7 +526,7 @@ const getOrder = async (req, res, next) => {
       'SELECT kind, url, created_at FROM order_photos WHERE order_id = $1 ORDER BY created_at',
       [req.params.id]
     );
-    res.json({ order: { ...order, photos: photosRes.rows } });
+    res.json({ order: { ...withClientContactFor(order, req.user), photos: photosRes.rows } });
   } catch (error) {
     next(error);
   }
