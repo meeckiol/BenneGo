@@ -26,7 +26,7 @@ export default function DriverHistoryPage() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <button onClick={() => navigate('/')} style={styles.back}><ArrowLeft size={20} aria-hidden="true" /></button>
+        <button onClick={() => navigate('/')} style={styles.back} aria-label="Retour à l'accueil"><ArrowLeft size={20} aria-hidden="true" /></button>
         <h2 style={styles.title}>Mes courses</h2>
       </header>
 
@@ -86,10 +86,10 @@ const styles = {
   summary: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', gap: '40px' },
   summaryItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' },
   summaryValue: { fontSize: '28px', fontWeight: '800', color: '#FF6B00' },
-  summaryLabel: { fontSize: '12px', color: 'rgba(255,255,255,0.4)' },
+  summaryLabel: { fontSize: '12px', color: 'var(--text-3)' },
   summaryDivider: { width: '1px', height: '40px', background: 'rgba(255,255,255,0.08)' },
   list: { padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: '10px' },
-  center: { textAlign: 'center', color: 'rgba(255,255,255,0.4)', padding: '40px 0' },
+  center: { textAlign: 'center', color: 'var(--text-3)', padding: '40px 0' },
   card: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' },
   cardNum: { fontWeight: '700', fontSize: '13px' },
@@ -97,5 +97,5 @@ const styles = {
   cardAddr: { fontSize: '13px', color: 'rgba(255,255,255,0.6)', margin: '0 0 8px' },
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   cardAmount: { color: '#FF6B00', fontWeight: '700', fontSize: '16px' },
-  cardDate: { color: 'rgba(255,255,255,0.3)', fontSize: '12px' },
+  cardDate: { color: 'var(--text-3)', fontSize: '12px' },
 };

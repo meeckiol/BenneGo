@@ -88,7 +88,8 @@ export default function AdminLayout({ children }) {
             <span style={s.adminBadge}>{user?.full_name || 'Admin'}</span>
           </div>
         </header>
-        <div style={s.content}>{children}</div>
+        {/* Zone défilante : accessible au clavier pour pouvoir la faire défiler sans souris */}
+        <div style={s.content} tabIndex={0}>{children}</div>
       </main>
     </div>
   );

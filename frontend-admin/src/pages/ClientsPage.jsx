@@ -62,7 +62,7 @@ export default function ClientsPage() {
           <button onClick={load} style={s.refreshBtn}>Actualiser</button>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto' }} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>

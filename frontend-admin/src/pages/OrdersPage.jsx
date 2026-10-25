@@ -86,7 +86,7 @@ export default function OrdersPage() {
               style={{
                 ...s.filterBtn,
                 background: filter === st.value ? '#FF6B00' : 'transparent',
-                color: filter === st.value ? 'white' : '#94a3b8',
+                color: filter === st.value ? '#0b0b10' : '#94a3b8',
                 borderColor: filter === st.value ? '#FF6B00' : '#334155',
               }}
             >
@@ -105,7 +105,7 @@ export default function OrdersPage() {
           <button onClick={loadOrders} style={s.refreshBtn}>Actualiser</button>
         </div>
 
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>

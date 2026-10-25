@@ -186,10 +186,10 @@ const styles = {
     gap: '8px',
   },
   detailRow: { display: 'flex', gap: '12px', alignItems: 'flex-start' },
-  detailLabel: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '2px' },
+  detailLabel: { fontSize: '11px', color: 'var(--text-3)', marginBottom: '2px' },
   detailValue: { fontSize: '13.5px', color: 'white', fontWeight: '500' },
   extraInfo: { fontSize: '12px', color: 'var(--info)', marginTop: '4px' },
-  arrow: { textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '16px' },
+  arrow: { textAlign: 'center', color: 'var(--text-3)', fontSize: '16px' },
   priceBox: {
     width: '100%',
     background: 'rgba(255,107,0,0.1)',

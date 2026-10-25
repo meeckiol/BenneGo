@@ -27,7 +27,7 @@ export default function PromoCodesAdminPage() {
     setLoading(true);
     try {
       const { data } = await api.get('/admin/promos');
-      setPromos(data.promos ?? data);
+      setPromos(data.promos ?? []);
     } catch {
       toast.error('Erreur lors du chargement des codes promo');
     } finally {
@@ -140,7 +140,7 @@ export default function PromoCodesAdminPage() {
           <button onClick={loadPromos} style={s.refreshBtn}>Actualiser</button>
         </div>
 
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -349,7 +349,7 @@ const s = {
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' },
   title: { color: 'white', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
   subtitle: { color: 'var(--text-2)', fontSize: '14px', margin: 0 },
-  newBtn: { padding: '10px 20px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' },
+  newBtn: { padding: '10px 20px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   tableTitle: { color: 'var(--text-3)', fontSize: '14px' },
@@ -384,5 +384,5 @@ const s = {
   checkboxRow: { display: 'flex', alignItems: 'center', gap: '10px' },
   checkboxLabel: { color: 'var(--text-2)', fontSize: '14px', cursor: 'pointer' },
   cancelBtn: { padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  saveBtn: { padding: '10px 24px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  saveBtn: { padding: '10px 24px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 };

@@ -96,6 +96,6 @@ const s = {
   form: { display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' },
   hint: { margin: 0, fontSize: 14, color: 'var(--text-2)' },
   textarea: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 8, border: '2px solid var(--border)', fontSize: 15, fontFamily: 'inherit', resize: 'vertical' },
-  btn: { alignSelf: 'stretch', padding: 14, background: '#FF6B00', color: 'white', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' },
+  btn: { alignSelf: 'stretch', padding: 14, background: '#FF6B00', color: '#0b0b10', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' },
   done: { color: 'var(--success)', fontSize: 14 },
 };

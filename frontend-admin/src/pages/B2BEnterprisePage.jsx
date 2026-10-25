@@ -97,7 +97,7 @@ export default function B2BEnterprisePage() {
               {bulkOrders.length === 0 ? (
                 <div style={styles.empty}>Aucune commande groupée en attente.</div>
               ) : (
-                <div style={styles.tableWrapper}>
+                <div style={styles.tableWrapper} tabIndex={0}>
                   <table style={styles.table}>
                     <thead>
                       <tr>
@@ -161,7 +161,7 @@ export default function B2BEnterprisePage() {
               {companies.length === 0 ? (
                 <div style={styles.empty}>Aucune entreprise enregistrée.</div>
               ) : (
-                <div style={styles.tableWrapper}>
+                <div style={styles.tableWrapper} tabIndex={0}>
                   <table style={styles.table}>
                     <thead>
                       <tr>
@@ -211,7 +211,7 @@ export default function B2BEnterprisePage() {
               {deviations.length === 0 ? (
                 <div style={styles.empty}><Check size={14} aria-hidden="true" /> Aucune déviation anormale détectée. Tous les camions suivent les tracés OSRM.</div>
               ) : (
-                <div style={styles.tableWrapper}>
+                <div style={styles.tableWrapper} tabIndex={0}>
                   <table style={styles.table}>
                     <thead>
                       <tr>
@@ -279,5 +279,5 @@ const styles = {
   badgePending: { background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
   badgeInactive: { background: 'rgba(148, 163, 184, 0.15)', color: 'var(--text-3)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' },
   badgeAlert: { background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' },
-  validateBtn: { background: '#FF6B00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
+  validateBtn: { background: '#FF6B00', color: '#0b0b10', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
 };

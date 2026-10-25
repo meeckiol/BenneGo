@@ -199,7 +199,7 @@ export default function NewOrderPage() {
               style={{
                 ...styles.tabBtn,
                 background: orderType === 'MATERIAL' ? '#FF6B00' : 'white',
-                color: orderType === 'MATERIAL' ? 'white' : '#475569',
+                color: orderType === 'MATERIAL' ? '#0b0b10' : '#475569',
               }}
             >
               Matériaux
@@ -658,12 +658,13 @@ function Section({ title, children }) {
   );
 }
 
+// Le libellé enveloppe le champ : il devient son nom accessible (lecteurs d'écran, WCAG 1.3.1 / 4.1.2)
 function Field({ label, children }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-2)' }}>{label}</label>
+    <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-2)' }}>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
 
@@ -700,7 +701,7 @@ const styles = {
   primaryBtn: {
     padding: '16px',
     background: '#FF6B00',
-    color: 'white',
+    color: '#0b0b10',
     border: 'none',
     borderRadius: '10px',
     fontSize: '16px',

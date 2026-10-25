@@ -237,6 +237,7 @@ export default function EnterprisePage() {
                   <input
                     type="number"
                     step="0.000001"
+                    aria-label="Latitude GPS"
                     value={projForm.central_lat}
                     onChange={(e) => setProjForm({ ...projForm, central_lat: e.target.value })}
                     style={styles.input}
@@ -248,6 +249,7 @@ export default function EnterprisePage() {
                   <input
                     type="number"
                     step="0.000001"
+                    aria-label="Longitude GPS"
                     value={projForm.central_lng}
                     onChange={(e) => setProjForm({ ...projForm, central_lng: e.target.value })}
                     style={styles.input}
@@ -482,7 +484,7 @@ export default function EnterprisePage() {
               </div>
 
               <div style={{ ...styles.pricingCard, borderColor: '#FF6B00' }}>
-                <span style={{ ...styles.pricingTag, background: '#FF6B00', color: 'white' }}>Pack Projet</span>
+                <span style={{ ...styles.pricingTag, background: '#FF6B00', color: '#0b0b10' }}>Pack Projet</span>
                 <h4 style={styles.pricingTitle}>Frais Fixes par Chantier</h4>
                 <div style={styles.priceAmount}>75 000 <span style={styles.pricePeriod}>FCFA / chantier</span></div>
                 <p style={styles.pricingDesc}>Idéal pour les promoteurs construisant un immeuble précis (6 mois max).</p>
@@ -597,7 +599,7 @@ const styles = {
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '13px', fontWeight: '600', color: 'var(--text-2)' },
   input: { padding: '11px 14px', borderRadius: '8px', border: '1px solid var(--border-2)', fontSize: '14px', color: 'var(--text-strong)' },
-  actionBtn: { marginTop: '16px', background: '#FF6B00', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  actionBtn: { marginTop: '16px', background: '#FF6B00', color: '#0b0b10', border: 'none', padding: '12px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
   projectsList: { display: 'flex', flexDirection: 'column', gap: '14px' },
   emptyState: { padding: '30px', textAlign: 'center', background: 'var(--surface)', borderRadius: '12px', border: '1px dashed var(--border-2)', color: 'var(--text-3)' },
   projectCard: { background: 'var(--surface)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' },
