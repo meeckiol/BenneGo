@@ -312,30 +312,6 @@ export default function NewOrderPage() {
                       required
                     />
                   </Field>
-                  <div style={styles.row}>
-                    <Field label="Latitude Chantier">
-                      <input
-                        name="delivery_lat"
-                        type="number"
-                        step="0.000001"
-                        value={form.delivery_lat}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Longitude Chantier">
-                      <input
-                        name="delivery_lng"
-                        type="number"
-                        step="0.000001"
-                        value={form.delivery_lng}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                  </div>
                   <LocationPicker
                     value={{ lat: form.delivery_lat, lng: form.delivery_lng }}
                     onChange={({ lat, lng }) => setForm((prev) => ({ ...prev, delivery_lat: lat, delivery_lng: lng }))}
@@ -391,30 +367,10 @@ export default function NewOrderPage() {
                       required
                     />
                   </Field>
-                  <div style={styles.row}>
-                    <Field label="Latitude GPS">
-                      <input
-                        name="delivery_lat"
-                        type="number"
-                        step="0.000001"
-                        value={form.delivery_lat}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Longitude GPS">
-                      <input
-                        name="delivery_lng"
-                        type="number"
-                        step="0.000001"
-                        value={form.delivery_lng}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                  </div>
+                  <LocationPicker
+                    value={{ lat: form.delivery_lat, lng: form.delivery_lng }}
+                    onChange={({ lat, lng }) => setForm((prev) => ({ ...prev, delivery_lat: lat, delivery_lng: lng }))}
+                  />
                 </Section>
               </>
             )}
