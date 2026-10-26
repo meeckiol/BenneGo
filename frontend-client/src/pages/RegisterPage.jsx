@@ -82,7 +82,7 @@ export default function RegisterPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #FF6B00, #E05D00)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ background: 'var(--surface)', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '440px' }}>
-        <h2 style={{ color: '#FF6B00', textAlign: 'center', fontWeight: '900', margin: '0 0 16px' }}>BenneGo</h2>
+        <h2 style={{ color: 'var(--brand-ink)', textAlign: 'center', fontWeight: '900', margin: '0 0 16px' }}>BenneGo</h2>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <input
@@ -117,7 +117,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={requestCode}
                   disabled={otpLoading || cleanPhone.length < 8}
-                  style={{ flex: 1, padding: '10px', background: 'var(--surface)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ flex: 1, padding: '10px', background: 'var(--surface)', color: 'var(--text-strong)', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
                 >
                   {otpLoading ? 'Envoi...' : 'Recevoir le code par SMS'}
                 </button>
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={verifyCode}
                     disabled={otpLoading || code.length !== 6}
-                    style={{ padding: '10px 14px', background: 'var(--surface)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
+                    style={{ padding: '10px 14px', background: 'var(--surface)', color: 'var(--text-strong)', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
                   >
                     {otpLoading ? '...' : 'Valider'}
                   </button>
@@ -181,13 +181,13 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading || !verified}
-            style={{ padding: '13px', background: verified ? '#FF6B00' : '#CBD5E1', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '800', cursor: verified ? 'pointer' : 'not-allowed' }}
+            style={{ padding: '13px', background: verified ? '#FF6B00' : '#CBD5E1', color: 'var(--text-strong)', border: 'none', borderRadius: '8px', fontWeight: '800', cursor: verified ? 'pointer' : 'not-allowed' }}
           >
             {loading ? 'Création...' : 'Créer mon compte'}
           </button>
         </form>
         <p style={{ textAlign: 'center', marginTop: '14px', fontSize: '13px' }}>
-          <Link to="/login" style={{ color: '#FF6B00', fontWeight: '700' }}>
+          <Link to="/login" style={{ color: 'var(--brand-ink)', fontWeight: '700' }}>
             Déjà un compte ? Se connecter
           </Link>
         </p>

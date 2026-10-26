@@ -42,7 +42,7 @@ const Empty = () => <div style={s.empty}>Aucun avis pour l'instant</div>;
 const Row = ({ who, rating, comment, date, sub }) => (
   <div style={s.row}>
     <div style={s.rowTop}>
-      <strong style={{ color: 'white' }}>{who}</strong>
+      <strong style={{ color: 'var(--text-strong)' }}>{who}</strong>
       <span style={{ color: 'var(--warning)', display: 'flex', gap: 2 }}>{stars(rating)}</span>
     </div>
     {comment && <p style={s.comment}>{comment}</p>}
@@ -54,8 +54,8 @@ const s = {
   page: { display: 'flex', flexDirection: 'column', gap: 24 },
   card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' },
   cardHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)' },
-  title: { color: 'white', fontSize: 15, fontWeight: 700, margin: 0 },
-  row: { padding: '14px 20px', borderBottom: '1px solid #0f172a' },
+  title: { color: 'var(--text-strong)', fontSize: 15, fontWeight: 700, margin: 0 },
+  row: { padding: '14px 20px', borderBottom: '1px solid var(--border)' },
   rowTop: { display: 'flex', justifyContent: 'space-between', gap: 12 },
   comment: { color: 'var(--text-2)', fontSize: 14, margin: '8px 0 4px' },
   meta: { color: 'var(--text-2)', fontSize: 12 },

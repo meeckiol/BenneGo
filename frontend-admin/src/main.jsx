@@ -13,7 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <App />
       </ErrorBoundary>
       <Toaster position="top-right" toastOptions={{
-        style: { background: 'var(--surface)', color: 'white', border: '1px solid var(--border-2)' },
+        style: { background: 'var(--surface)', color: 'var(--text-strong)', border: '1px solid var(--border-2)' },
       }} />
     </BrowserRouter>
   </React.StrictMode>

@@ -58,7 +58,7 @@ export default function MonthlyReportPage() {
     ? [
         { label: 'Commandes du mois', value: stats.total_orders ?? '—', icon: <Package size={22} aria-hidden="true" />, color: 'var(--info)' },
         { label: 'Revenus générés', value: stats.total_revenue ? `${parseFloat(stats.total_revenue).toLocaleString()} FCFA` : '—', icon: <Banknote size={22} aria-hidden="true" />, color: 'var(--success)' },
-        { label: 'Nouveaux clients', value: stats.new_clients ?? '—', icon: <Users size={22} aria-hidden="true" />, color: '#FF6B00' },
+        { label: 'Nouveaux clients', value: stats.new_clients ?? '—', icon: <Users size={22} aria-hidden="true" />, color: 'var(--brand-ink)' },
         { label: 'Commissions perçues', value: stats.total_commission ? `${parseFloat(stats.total_commission).toLocaleString()} FCFA` : '—', icon: <ChartColumn size={22} aria-hidden="true" />, color: 'var(--violet)' },
       ]
     : [];
@@ -161,16 +161,16 @@ export default function MonthlyReportPage() {
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' },
-  title: { color: 'white', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
+  title: { color: 'var(--text-strong)', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
   subtitle: { color: 'var(--text-2)', fontSize: '14px', margin: 0 },
   card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '20px' },
-  cardTitle: { color: 'white', fontSize: '16px', fontWeight: '700', margin: '0 0 16px' },
+  cardTitle: { color: 'var(--text-strong)', fontSize: '16px', fontWeight: '700', margin: '0 0 16px' },
   row: { display: 'flex', alignItems: 'flex-end', gap: '16px', flexWrap: 'wrap' },
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { color: 'var(--text-3)', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' },
   monthInput: {
     padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)',
-    borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none',
+    borderRadius: '8px', color: 'var(--text-strong)', fontSize: '14px', outline: 'none',
     colorScheme: 'dark',
   },
   generateBtn: {
@@ -184,7 +184,7 @@ const s = {
     padding: '20px', display: 'flex', alignItems: 'center', gap: '16px',
   },
   statIcon: { width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 },
-  statValue: { color: 'white', fontSize: '22px', fontWeight: '800' },
+  statValue: { color: 'var(--text-strong)', fontSize: '22px', fontWeight: '800' },
   statLabel: { color: 'var(--text-2)', fontSize: '12px', marginTop: '2px' },
   loadingText: { color: 'var(--text-2)', fontSize: '14px', textAlign: 'center', padding: '20px' },
   noStatsCard: {
@@ -196,7 +196,7 @@ const s = {
   table: { width: '100%', borderCollapse: 'collapse' },
   thead: { background: 'var(--bg)' },
   th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  tr: { borderBottom: '1px solid #0f172a' },
+  tr: { borderBottom: '1px solid var(--border)' },
   td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px' },
-  rank: { color: '#FF6B00', fontWeight: '700' },
+  rank: { color: 'var(--brand-ink)', fontWeight: '700' },
 };

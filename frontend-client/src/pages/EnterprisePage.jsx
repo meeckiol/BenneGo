@@ -304,7 +304,7 @@ export default function EnterprisePage() {
                         <span style={styles.statLabel}>Courses totales</span>
                       </div>
                       <div style={styles.statBox}>
-                        <span style={{ ...styles.statNumber, color: '#FF6B00' }}>{p.active_orders || 0}</span>
+                        <span style={{ ...styles.statNumber, color: 'var(--brand-ink)' }}>{p.active_orders || 0}</span>
                         <span style={styles.statLabel}>En transit</span>
                       </div>
                       <div style={styles.statBox}>
@@ -392,6 +392,7 @@ export default function EnterprisePage() {
                       style={styles.input}
                     >
                       <option value="simple_benne">Camion Benne 10m³</option>
+                      <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
                       <option value="double_benne">Double Benne 16m³ (Recommandé)</option>
                       <option value="semi_remorque">Semi-remorque Benne 25m³</option>
                     </select>
@@ -577,10 +578,10 @@ export default function EnterprisePage() {
 
 const styles = {
   container: { minHeight: '100vh', background: 'var(--bg)' },
-  header: { background: 'var(--bg)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' },
+  header: { background: 'var(--bg)', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-strong)' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: '16px' },
   backBtn: { background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '14px', cursor: 'pointer', fontWeight: '600' },
-  logo: { fontSize: '20px', fontWeight: '900', color: '#FF6B00' },
+  logo: { fontSize: '20px', fontWeight: '900', color: 'var(--brand-ink)' },
   badge: { background: 'rgba(255,107,0,0.2)', color: 'var(--warning)', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' },
   headerRight: {},
   activePlanBadge: { background: '#16A34A', color: 'white', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
@@ -588,7 +589,7 @@ const styles = {
   main: { padding: '24px', maxWidth: '1000px', margin: '0 auto' },
   navTabs: { display: 'flex', gap: '8px', marginBottom: '24px', borderBottom: '2px solid var(--border)', paddingBottom: '8px', overflowX: 'auto' },
   navTab: { background: 'none', border: 'none', padding: '10px 18px', fontSize: '14px', fontWeight: '700', color: 'var(--text-2)', cursor: 'pointer', borderRadius: '8px' },
-  navTabActive: { background: 'var(--surface)', color: 'white' },
+  navTabActive: { background: 'var(--surface)', color: 'var(--text-strong)' },
   sectionContainer: { display: 'flex', flexDirection: 'column', gap: '20px' },
   sectionHeader: { marginBottom: '8px' },
   sectionTitle: { fontSize: '22px', fontWeight: '800', color: 'var(--text-strong)', margin: '0 0 6px' },
@@ -617,7 +618,7 @@ const styles = {
   proformaTitle: { fontSize: '18px', fontWeight: '800', color: 'var(--success)', margin: '0 0 4px' },
   proformaStatus: { color: 'var(--text-2)', fontSize: '13px' },
   proformaSummary: { background: 'var(--bg)', padding: '16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px' },
-  proformaTotal: { fontSize: '16px', color: '#FF6B00', marginTop: '6px' },
+  proformaTotal: { fontSize: '16px', color: 'var(--brand-ink)', marginTop: '6px' },
   bankBox: { background: 'var(--warning-soft)', border: '1px solid rgba(245, 158, 11, 0.35)', padding: '16px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', lineHeight: '1.6' },
   bankTitle: { fontSize: '14px', fontWeight: '800', color: 'var(--warning)', margin: '0 0 8px' },
   pricingGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' },
@@ -628,5 +629,5 @@ const styles = {
   pricePeriod: { fontSize: '14px', color: 'var(--text-2)', fontWeight: '500' },
   pricingDesc: { color: 'var(--text-2)', fontSize: '13px', margin: '0 0 16px' },
   pricingFeatures: { listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13.5px', color: 'var(--text)' },
-  subscribeBtn: { background: 'var(--surface)', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', textAlign: 'center' },
+  subscribeBtn: { background: 'var(--surface)', color: 'var(--text-strong)', border: 'none', padding: '12px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', textAlign: 'center' },
 };

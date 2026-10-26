@@ -92,10 +92,10 @@ export default function DriversPage() {
               )}
               {filtered.map((driver) => (
                 <tr key={driver.id} style={s.tr} onClick={() => setSelected(driver)}>
-                  <td style={{ ...s.td, fontWeight: '600', color: 'white' }}>
+                  <td style={{ ...s.td, fontWeight: '600', color: 'var(--text-strong)' }}>
                     {driver.prenom || driver.full_name?.split(' ')[0] || '—'}
                   </td>
-                  <td style={{ ...s.td, fontWeight: '600', color: '#FF6B00' }}>
+                  <td style={{ ...s.td, fontWeight: '600', color: 'var(--brand-ink)' }}>
                     {driver.nom || driver.full_name?.split(' ').slice(1).join(' ') || '—'}
                   </td>
                   <td style={{ ...s.td, color: 'var(--text-3)' }}>{driver.phone}</td>
@@ -106,11 +106,12 @@ export default function DriversPage() {
                   <td style={s.td}>
                     <span style={s.truckType}>
                       {driver.truck_type === 'double_benne' ? 'Double benne' :
-                       driver.truck_type === 'simple_benne' ? 'Benne simple' : 'Plateau'}
+                       driver.truck_type === 'simple_benne' ? 'Benne simple' :
+                       driver.truck_type === 'pickup' ? 'Pick-up léger' : 'Plateau'}
                     </span>
                   </td>
                   <td style={{ ...s.td, fontWeight: '600' }}>{driver.truck_plate}</td>
-                  <td style={{ ...s.td, textAlign: 'center', fontWeight: '700', color: '#FF6B00' }}>
+                  <td style={{ ...s.td, textAlign: 'center', fontWeight: '700', color: 'var(--brand-ink)' }}>
                     {driver.total_trips || 0}
                   </td>
                   <td style={{ ...s.td, textAlign: 'center' }}>
@@ -169,7 +170,7 @@ export default function DriversPage() {
         <div style={s.overlay} onClick={() => setSelected(null)}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h3 style={{ color: 'white', margin: 0 }}>
+              <h3 style={{ color: 'var(--text-strong)', margin: 0 }}>
                 {selected.prenom || ''} {selected.nom || selected.full_name}
               </h3>
               <button onClick={() => setSelected(null)} style={s.closeBtn}><X size={18} aria-hidden="true" /></button>
@@ -186,6 +187,7 @@ export default function DriversPage() {
               <InfoRow label="Type de camion"
                 value={selected.truck_type === 'double_benne' ? 'Double benne'
                   : selected.truck_type === 'simple_benne' ? 'Benne simple'
+                  : selected.truck_type === 'pickup' ? 'Pick-up léger'
                   : 'Plateau'} />
               <InfoRow label="Plaque" value={selected.truck_plate} />
               <InfoRow label="Courses effectuées" value={selected.total_trips || 0} />
@@ -223,7 +225,7 @@ function SummaryCard({ icon, label, value, color = '#FF6B00' }) {
 function SectionTitle({ children }) {
   return (
     <div style={{ background: 'var(--bg)', borderRadius: '6px', padding: '6px 10px', marginTop: '14px', marginBottom: '4px' }}>
-      <span style={{ color: '#FF6B00', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+      <span style={{ color: 'var(--brand-ink)', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
         {children}
       </span>
     </div>
@@ -232,9 +234,9 @@ function SectionTitle({ children }) {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid #1e293b' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid var(--border)' }}>
       <span style={{ color: 'var(--text-2)', fontSize: '13px' }}>{label}</span>
-      <span style={{ color: 'white', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
+      <span style={{ color: 'var(--text-strong)', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
     </div>
   );
 }
@@ -245,13 +247,13 @@ const s = {
   summaryCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
-  searchInput: { flex: 1, minWidth: '200px', maxWidth: '420px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
+  searchInput: { flex: 1, minWidth: '200px', maxWidth: '420px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'var(--text-strong)', fontSize: '13px', outline: 'none' },
+  refreshBtn: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
   tableWrapper: { overflow: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '1100px' },
   thead: { background: 'var(--bg)' },
   th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #0f172a', cursor: 'pointer' },
+  tr: { borderBottom: '1px solid var(--border)', cursor: 'pointer' },
   td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px', verticalAlign: 'middle' },
   truckType: { fontSize: '12px' },
   rating: { fontSize: '13px', color: 'var(--warning)', fontWeight: '600' },

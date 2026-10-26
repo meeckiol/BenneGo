@@ -51,7 +51,7 @@ export default function ReferralsAdminPage() {
   const STAT_CARDS = [
     { label: 'Total parrainages', value: total, icon: <Users size={22} aria-hidden="true" />, color: 'var(--info)' },
     { label: 'Parrainages complétés', value: completed, icon: <CheckCircle2 size={22} aria-hidden="true" />, color: 'var(--success)' },
-    { label: 'Récompenses versées', value: `${totalRewards.toLocaleString()} FCFA`, icon: <Banknote size={22} aria-hidden="true" />, color: '#FF6B00' },
+    { label: 'Récompenses versées', value: `${totalRewards.toLocaleString()} FCFA`, icon: <Banknote size={22} aria-hidden="true" />, color: 'var(--brand-ink)' },
   ];
 
   return (
@@ -95,8 +95,8 @@ export default function ReferralsAdminPage() {
                 style={{
                   ...s.filterBtn,
                   background: statusFilter === f.value ? '#FF6B00' : 'transparent',
-                  color: statusFilter === f.value ? '#0b0b10' : '#94a3b8',
-                  borderColor: statusFilter === f.value ? '#FF6B00' : '#334155',
+                  color: statusFilter === f.value ? '#0b0b10' : 'var(--text-2)',
+                  borderColor: statusFilter === f.value ? '#FF6B00' : 'var(--border-2)',
                 }}
               >
                 {f.label}
@@ -165,7 +165,7 @@ export default function ReferralsAdminPage() {
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  title: { color: 'white', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
+  title: { color: 'var(--text-strong)', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
   subtitle: { color: 'var(--text-2)', fontSize: '14px', margin: 0 },
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' },
   statCard: {
@@ -173,23 +173,23 @@ const s = {
     padding: '20px', display: 'flex', alignItems: 'center', gap: '16px',
   },
   statIcon: { width: '48px', height: '48px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 },
-  statValue: { color: 'white', fontSize: '22px', fontWeight: '800' },
+  statValue: { color: 'var(--text-strong)', fontSize: '22px', fontWeight: '800' },
   statLabel: { color: 'var(--text-2)', fontSize: '12px', marginTop: '2px' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   toolbar: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' },
-  searchInput: { padding: '8px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none', flex: 1, minWidth: '200px' },
+  searchInput: { padding: '8px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'var(--text-strong)', fontSize: '14px', outline: 'none', flex: 1, minWidth: '200px' },
   filterGroup: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
   filterBtn: { padding: '6px 14px', border: '1px solid', borderRadius: '20px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', marginLeft: 'auto' },
-  tableInfo: { padding: '10px 20px', borderBottom: '1px solid #0f172a' },
+  refreshBtn: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', marginLeft: 'auto' },
+  tableInfo: { padding: '10px 20px', borderBottom: '1px solid var(--border)' },
   tableCount: { color: 'var(--text-2)', fontSize: '13px' },
   tableWrapper: { overflow: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '700px' },
   thead: { background: 'var(--bg)' },
   th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #0f172a', transition: 'background 0.1s' },
+  tr: { borderBottom: '1px solid var(--border)', transition: 'background 0.1s' },
   td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px', verticalAlign: 'middle' },
-  userName: { fontWeight: '600', color: 'white' },
+  userName: { fontWeight: '600', color: 'var(--text-strong)' },
   userSub: { color: 'var(--text-2)', fontSize: '11px', marginTop: '2px' },
   badge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' },
   empty: { padding: '32px', textAlign: 'center', color: 'var(--text-2)' },
