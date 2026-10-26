@@ -12,6 +12,7 @@ const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'));
 const EnterprisePage = lazy(() => import('./pages/EnterprisePage'));
 const ReferralPage = lazy(() => import('./pages/ReferralPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Composant de chargement avec animation sobre BenneGo
 const PageFallback = () => (
@@ -53,6 +54,17 @@ const PrivateRoute = ({ children }) => {
   );
 };
 
+// Accueil : vitrine publique pour les visiteurs, tableau de bord pour les connectés
+const HomeRoute = () => {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  if (!isAuthenticated) return <LandingPage />;
+  return (
+    <PrivateRoute>
+      <HomePage />
+    </PrivateRoute>
+  );
+};
+
 function App() {
   return (
     <Suspense fallback={<PageFallback />}>
@@ -62,7 +74,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* Routes protégées */}
-        <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
+        <Route path="/" element={<HomeRoute />} />
         <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
         <Route path="/orders/new" element={<PrivateRoute><NewOrderPage /></PrivateRoute>} />
         <Route path="/orders/:id" element={<PrivateRoute><OrderDetailPage /></PrivateRoute>} />

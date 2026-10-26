@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
+import LocationPicker from '../components/LocationPicker';
 
 const DEFAULT_COTONOU = { lat: 6.3654, lng: 2.4183, address: 'Cotonou, Bénin' };
 const DEFAULT_CARRIERE = { lat: 6.5050, lng: 2.3050, address: 'Carrière de Tori-Bossito' };
@@ -282,6 +283,7 @@ export default function NewOrderPage() {
                     <Field label="Type de camion requis">
                       <select name="truck_type" value={form.truck_type} onChange={handleChange} style={styles.input}>
                         <option value="simple_benne">Camion Benne 10m³</option>
+                        <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
                         <option value="double_benne">Camion Benne 16m³ (Double benne)</option>
                         <option value="semi_remorque">Semi-remorque Benne (25m³)</option>
                         <option value="plateau">Camion Plateau (Briques/Fer)</option>
@@ -334,6 +336,10 @@ export default function NewOrderPage() {
                       />
                     </Field>
                   </div>
+                  <LocationPicker
+                    value={{ lat: form.delivery_lat, lng: form.delivery_lng }}
+                    onChange={({ lat, lng }) => setForm((prev) => ({ ...prev, delivery_lat: lat, delivery_lng: lng }))}
+                  />
                 </Section>
               </>
             )}
@@ -670,9 +676,9 @@ function Field({ label, children }) {
 
 const styles = {
   container: { minHeight: '100vh', background: 'var(--bg)' },
-  header: { background: 'var(--surface)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', color: 'white' },
-  back: { background: 'none', border: 'none', color: 'white', fontSize: '15px', cursor: 'pointer', fontWeight: '600' },
-  title: { color: 'white', fontSize: '18px', fontWeight: '800', margin: 0 },
+  header: { background: 'var(--surface)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-strong)' },
+  back: { background: 'none', border: 'none', color: 'var(--text-strong)', fontSize: '15px', cursor: 'pointer', fontWeight: '600' },
+  title: { color: 'var(--text-strong)', fontSize: '18px', fontWeight: '800', margin: 0 },
   content: { padding: '24px 20px', maxWidth: '640px', margin: '0 auto' },
   tabs: { display: 'flex', gap: '10px', marginBottom: '24px' },
   tabBtn: {
@@ -727,7 +733,7 @@ const styles = {
   estimateRow: { display: 'flex', justifyContent: 'space-between', padding: '9px 0', fontSize: '14.5px', color: 'var(--text)' },
   divider: { height: '1px', background: 'var(--surface-3)', margin: '10px 0' },
   total: { fontSize: '18px', fontWeight: '800', color: 'var(--text-strong)' },
-  totalAmount: { color: '#FF6B00', fontSize: '24px' },
+  totalAmount: { color: 'var(--brand-ink)', fontSize: '24px' },
   commission: { background: 'var(--success-soft)', border: '1px solid rgba(34, 197, 94, 0.35)', padding: '12px 14px', borderRadius: '10px', fontSize: '13px', color: 'var(--success)', marginTop: '14px', lineHeight: '1.5' },
   paymentInfo: { background: 'var(--warning-soft)', border: '1px solid rgba(245, 158, 11, 0.35)', borderRadius: '10px', padding: '14px', fontSize: '13.5px', color: 'var(--warning)' },
   paymentSub: { color: 'var(--warning)', margin: '4px 0 0', fontSize: '12.5px' },

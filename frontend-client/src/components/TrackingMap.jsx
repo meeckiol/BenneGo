@@ -4,6 +4,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation } from 'lucide-react';
 
+const GLIDE_MS = 900;
+
 const driverIcon = L.divIcon({
   className: '',
   html: renderToStaticMarkup(
@@ -23,6 +25,25 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
   const el = useRef(null);
   const map = useRef(null);
   const layers = useRef({});
+  const frame = useRef(0);
+
+  // Déplace le marqueur de sa position actuelle vers la cible, en douceur
+  const glideTo = (marker, target) => {
+    cancelAnimationFrame(frame.current);
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      marker.setLatLng(target);
+      return;
+    }
+    const from = marker.getLatLng();
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / GLIDE_MS);
+      const eased = 1 - (1 - t) ** 3;
+      marker.setLatLng([from.lat + (target[0] - from.lat) * eased, from.lng + (target[1] - from.lng) * eased]);
+      if (t < 1) frame.current = requestAnimationFrame(step);
+    };
+    frame.current = requestAnimationFrame(step);
+  };
 
   useEffect(() => {
     map.current = L.map(el.current, { zoomControl: true }).setView([pickup.lat, pickup.lng], 12);
@@ -30,11 +51,12 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
       attribution: '© OpenStreetMap', maxZoom: 19,
     }).addTo(map.current);
 
-    L.circleMarker([pickup.lat, pickup.lng], { radius: 9, color: 'var(--info)', fillColor: '#2196F3', fillOpacity: 0.9 })
+    // Leaflet écrit ces couleurs en attributs SVG : il faut des valeurs littérales, pas des variables CSS
+    L.circleMarker([pickup.lat, pickup.lng], { radius: 9, color: '#1d4ed8', fillColor: '#2196F3', fillOpacity: 0.9 })
       .bindTooltip('Chargement').addTo(map.current);
-    L.circleMarker([delivery.lat, delivery.lng], { radius: 9, color: 'var(--success)', fillColor: '#4CAF50', fillOpacity: 0.9 })
+    L.circleMarker([delivery.lat, delivery.lng], { radius: 9, color: '#166534', fillColor: '#4CAF50', fillOpacity: 0.9 })
       .bindTooltip('Livraison').addTo(map.current);
-    layers.current.line = L.polyline([], { color: '#FF6B00', weight: 4, opacity: 0.8 }).addTo(map.current);
+    layers.current.line = L.polyline([], { color: '#b04300', weight: 4, opacity: 0.8 }).addTo(map.current);
     map.current.fitBounds([[pickup.lat, pickup.lng], [delivery.lat, delivery.lng]], { padding: [40, 40] });
 
     return () => { map.current.remove(); map.current = null; layers.current = {}; };
@@ -43,15 +65,22 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
 
   useEffect(() => {
     if (!map.current) return;
-    const pts = route.map((p) => [p.lat, p.lng]);
-    layers.current.line?.setLatLngs(pts);
-    if (driver) {
-      const pos = [driver.lat, driver.lng];
-      if (!layers.current.driver) layers.current.driver = L.marker(pos, { icon: driverIcon, zIndexOffset: 1000 }).addTo(map.current);
-      else layers.current.driver.setLatLng(pos);
-      map.current.panTo(pos, { animate: true });
+    layers.current.line?.setLatLngs(route.map((p) => [p.lat, p.lng]));
+  }, [route]);
+
+  // Le camion glisse vers sa nouvelle position GPS (courbe douce), sauf si l'utilisateur réduit les animations
+  useEffect(() => {
+    if (!map.current || !driver) return;
+    const target = [driver.lat, driver.lng];
+    if (!layers.current.driver) {
+      layers.current.driver = L.marker(target, { icon: driverIcon, zIndexOffset: 1000 }).addTo(map.current);
+    } else {
+      glideTo(layers.current.driver, target);
     }
-  }, [driver, route]);
+    map.current.panTo(target, { animate: true });
+  }, [driver]);
+
+  useEffect(() => () => cancelAnimationFrame(frame.current), []);
 
   return <div ref={el} style={{ height: 300, width: '100%', borderRadius: 12, overflow: 'hidden' }} />;
 }
