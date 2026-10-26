@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
+import { WHATSAPP_URL as WHATSAPP } from '../constants/contact';
 import { BadgeCheck, HardHat, LogOut, MapPin, Mountain, Minus, MessageCircle, ShieldCheck, Trash2, TrendingDown, TrendingUp } from 'lucide-react';
 
 const STATUS = {
@@ -18,7 +19,6 @@ const STATUS = {
 };
 const STEP_COUNT = 7;
 const FINAL = ['validated', 'completed', 'cancelled'];
-const WHATSAPP = 'https://wa.me/22990000000?text=Bonjour%20BenneGo%2C%20j%27ai%20besoin%20d%27aide';
 
 const SERVICES = [
   { type: 'MATERIAL', title: 'Transport de matériaux', hint: 'Sable, gravier, latérite', brand: true, icon: 'materials' },
