@@ -79,10 +79,10 @@ export default function ClientsPage() {
                   style={s.tr}
                   onClick={() => setSelected(client)}
                 >
-                  <td style={{ ...s.td, fontWeight: '600', color: 'white' }}>
+                  <td style={{ ...s.td, fontWeight: '600', color: 'var(--text-strong)' }}>
                     {client.prenom || client.full_name?.split(' ')[0] || '—'}
                   </td>
-                  <td style={{ ...s.td, fontWeight: '600', color: '#FF6B00' }}>
+                  <td style={{ ...s.td, fontWeight: '600', color: 'var(--brand-ink)' }}>
                     {client.nom || client.full_name?.split(' ').slice(1).join(' ') || '—'}
                   </td>
                   <td style={{ ...s.td, color: 'var(--text-3)' }}>{client.phone}</td>
@@ -132,7 +132,7 @@ export default function ClientsPage() {
         <div style={s.overlay} onClick={() => setSelected(null)}>
           <div style={s.modal} onClick={(e) => e.stopPropagation()}>
             <div style={s.modalHeader}>
-              <h3 style={{ color: 'white', margin: 0 }}>
+              <h3 style={{ color: 'var(--text-strong)', margin: 0 }}>
                 {selected.prenom || ''} {selected.nom || selected.full_name}
               </h3>
               <button onClick={() => setSelected(null)} style={s.closeBtn}><X size={18} aria-hidden="true" /></button>
@@ -157,9 +157,9 @@ export default function ClientsPage() {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1e293b' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
       <span style={{ color: 'var(--text-2)', fontSize: '13px' }}>{label}</span>
-      <span style={{ color: 'white', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
+      <span style={{ color: 'var(--text-strong)', fontSize: '13px', fontWeight: '600', maxWidth: '60%', textAlign: 'right' }}>{value}</span>
     </div>
   );
 }
@@ -168,13 +168,13 @@ const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },
-  tableTitle: { color: 'white', fontSize: '15px', fontWeight: '700', margin: 0, flexShrink: 0 },
-  searchInput: { flex: 1, minWidth: '200px', maxWidth: '360px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '13px', outline: 'none' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
+  tableTitle: { color: 'var(--text-strong)', fontSize: '15px', fontWeight: '700', margin: 0, flexShrink: 0 },
+  searchInput: { flex: 1, minWidth: '200px', maxWidth: '360px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'var(--text-strong)', fontSize: '13px', outline: 'none' },
+  refreshBtn: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '900px' },
   thead: { background: 'var(--bg)' },
   th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #0f172a', cursor: 'pointer', transition: 'background 0.1s' },
+  tr: { borderBottom: '1px solid var(--border)', cursor: 'pointer', transition: 'background 0.1s' },
   td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px' },
   badge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
   toggleBtn: { padding: '5px 10px', border: '1px solid', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', whiteSpace: 'nowrap' },

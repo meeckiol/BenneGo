@@ -110,7 +110,7 @@ const s = {
   empty: { background: 'var(--surface)', borderRadius: 12, padding: 24, color: 'var(--text-3)', textAlign: 'center' },
   card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 18, marginBottom: 16 },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  orderNumber: { fontSize: 16, color: '#FF6B00' },
+  orderNumber: { fontSize: 16, color: 'var(--brand-ink)' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, fontSize: 14 },
   label: { display: 'block', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
   reason: { marginTop: 12, background: 'var(--bg)', borderRadius: 8, padding: 12, fontSize: 14, lineHeight: 1.5 },

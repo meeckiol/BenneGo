@@ -55,5 +55,6 @@ export const PAYMENT_METHOD = {
 export const TRUCK_TYPE = {
   double_benne: 'Double benne',
   simple_benne: 'Benne simple',
+  pickup: 'Pick-up léger',
 };
 export const truckLabel = (t) => TRUCK_TYPE[t] || 'Plateau';

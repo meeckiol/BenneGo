@@ -358,7 +358,7 @@ export default function OrderDetailPage() {
               <h3 style={{ ...styles.cardTitle, margin: 0 }}>
                 Chat en direct avec le chauffeur
               </h3>
-              <span style={{ fontSize: '13px', color: '#FF6B00', fontWeight: '700' }}>
+              <span style={{ fontSize: '13px', color: 'var(--brand-ink)', fontWeight: '700' }}>
                 {chatOpen ? 'Masquer ▲' : `Ouvrir (${chatMessages.length}) ▼`}
               </span>
             </div>
@@ -497,8 +497,8 @@ function InfoRow({ label, value, bold }) {
 const styles = {
   container: { minHeight: '100vh', background: 'var(--surface-2)' },
   header: { background: '#FF6B00', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' },
-  back: { background: 'none', border: 'none', color: 'white', fontSize: '16px', cursor: 'pointer' },
-  title: { color: 'white', fontSize: '18px', fontWeight: '700', margin: 0 },
+  back: { background: 'none', border: 'none', color: 'var(--text-strong)', fontSize: '16px', cursor: 'pointer' },
+  title: { color: 'var(--text-strong)', fontSize: '18px', fontWeight: '700', margin: 0 },
   content: { padding: '20px', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' },
   card: { background: 'var(--surface)', borderRadius: '12px', padding: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
   cardTitle: { fontSize: '16px', fontWeight: '700', color: 'var(--text-strong)', marginBottom: '16px', marginTop: 0 },
