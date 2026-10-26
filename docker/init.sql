@@ -313,6 +313,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES companies(
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects_chantiers(id) ON DELETE SET NULL;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_type VARCHAR(30) DEFAULT 'MATERIAL'; -- 'MATERIAL', 'RENTAL', 'EVACUATION'
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS vehicle_type_id UUID REFERENCES vehicle_types(id) ON DELETE SET NULL;
+-- Type de camion demandé par le client (pricing et répartition : 'pickup' = camionnette). NULL pour les anciennes commandes.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS truck_type VARCHAR(50);
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS duration_hours DECIMAL(6,2); -- Pour location engins
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS rental_start_date TIMESTAMP WITH TIME ZONE;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS rental_end_date TIMESTAMP WITH TIME ZONE;

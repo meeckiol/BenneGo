@@ -32,6 +32,8 @@ const PRICING = {
   // Multiplicateurs / barème camions
   truck_multiplier: {
     simple_benne: 1.0,
+    // Camionnette : petits volumes (sacs de ciment, briques), tarif plus léger
+    pickup: 0.55,
     double_benne: 1.4,
     plateau: 1.2,
     grue: 1.6,

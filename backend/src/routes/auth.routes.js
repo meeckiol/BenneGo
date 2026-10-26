@@ -34,7 +34,7 @@ router.get('/me', authenticate, getMe);
 
 // POST /api/auth/driver/profile
 router.post('/driver/profile', authenticate, requireRole('driver'), [
-  body('truck_type').isIn(['simple_benne', 'double_benne', 'plateau']).withMessage('Type de camion invalide'),
+  body('truck_type').isIn(['simple_benne', 'double_benne', 'plateau', 'pickup']).withMessage('Type de camion invalide'),
   body('truck_plate').trim().notEmpty().withMessage('Plaque d\'immatriculation requise'),
   body('license_number').trim().notEmpty().withMessage('Numéro de permis requis'),
   body('momo_number').trim().notEmpty().withMessage('Numéro Mobile Money requis'),
