@@ -90,9 +90,17 @@ Téléversez ensuite le fichier `.ipa` avec Transporter ou Xcode.
 - Déclaration de collecte de données dans la Play Console (« Sécurité des données ») et dans l'App Store (« Confidentialité »).
 - Clés de production : KKiaPay, passerelle SMS, Mobile Money, WhatsApp, comme indiqué dans le README racine.
 
+## Suivi de position
+
+Le chauffeur envoie sa position pendant qu'il est disponible ou en mission, écran verrouillé compris.
+
+- **Android** : le suivi tourne dans un service de premier plan, avec une notification « Suivi de position ». Le service démarre pendant que l'application est ouverte, donc l'application ne demande pas `ACCESS_BACKGROUND_LOCATION`. Sous Android 13 et plus, la notification n'apparaît que si les notifications sont autorisées pour BenneGo Chauffeur.
+- **iOS** : le mode « Localisation » est activé dans `Info.plist`, et la permission demandée est « Toujours ». Si le chauffeur choisit « Pendant l'utilisation », un bandeau l'avertit à l'accueil.
+- **Batterie** : le suivi garde le processeur éveillé pour que les positions arrivent sans délai. C'est le principal coût en autonomie.
+
 ## Limites connues
 
-- **Suivi GPS** : la position n'est envoyée que lorsque l'application est ouverte. Le suivi écran verrouillé demande une configuration native (service de premier plan sous Android, mode « localisation en arrière-plan » sous iOS) à faire avant la mise en production.
+- **Suivi écran verrouillé** : implémenté, mais pas encore vérifié sur téléphone réel. Testez-le sur plusieurs téléphones Android avant la mise en production : certains constructeurs suspendent les services en arrière-plan, même avec un service de premier plan.
 - **Périmètre porté** : connexion, parcours de mission, commande et paiement, suivi, avis, parrainage pour le client, tableau de bord et opérations pour l'admin. Ne sont pas encore portés : le chat de commande, l'espace entreprise (B2B), les rapports mensuels, la gestion des abonnements.
 - **Paiement** : le widget KKiaPay s'ouvre dans une WebView. À tester avec de vraies clés en mode bac à sable avant la production.
 - **Test sur appareil** : rien n'a encore été installé sur un téléphone réel. Les compilations sont vérifiées par le workflow CI.

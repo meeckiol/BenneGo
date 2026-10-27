@@ -61,6 +61,14 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.location_off_outlined,
               ),
             ],
+            if (driver.backgroundLimited) ...[
+              const SizedBox(height: 12),
+              const BnBanner(
+                message: "Localisation limitée à l'utilisation de l'application : votre position n'est plus suivie écran verrouillé. Choisissez « Toujours » dans les réglages du téléphone.",
+                tone: BnTone.warning,
+                icon: Icons.location_on_outlined,
+              ),
+            ],
             const SizedBox(height: 16),
             if (driver.offer != null)
               _OfferCard(offer: driver.offer!, busy: driver.busy, driver: driver)

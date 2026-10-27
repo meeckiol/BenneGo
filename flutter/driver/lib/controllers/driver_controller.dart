@@ -120,6 +120,7 @@ class DriverController extends ChangeNotifier {
   bool loading = true;
   bool busy = false;
   bool locationDenied = false;
+  bool backgroundLimited = false;
   bool _available = false;
   bool _startingTracker = false;
   bool _disposed = false;
@@ -283,6 +284,7 @@ class DriverController extends ChangeNotifier {
   /// Suivi GPS actif tant que le chauffeur est disponible ou en mission.
   void _syncTracking() {
     if (!_available && activeOrder == null) {
+      backgroundLimited = false;
       _tracker.stop();
       return;
     }
@@ -295,6 +297,7 @@ class DriverController extends ChangeNotifier {
     final granted = await _tracker.ensurePermission();
     _startingTracker = false;
     locationDenied = !granted;
+    backgroundLimited = granted && await _tracker.isLimitedToUse();
     if (granted) {
       _tracker.start(onPosition: (position) {
         realtime.emit('driver_location', {

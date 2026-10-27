@@ -66,8 +66,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>BenneGo utilise votre position pour suivre la course et signaler votre arrivée.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>BenneGo partage votre position pendant que vous êtes disponible ou en mission, écran verrouillé compris, pour que le client suive la livraison.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Photographiez le chargement, la livraison ou un problème.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
