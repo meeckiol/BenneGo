@@ -63,7 +63,7 @@ export default function ReliefsPage() {
             <div><span style={s.label}>Chauffeur en panne</span>{r.original_driver_name || '—'} {r.original_truck_plate ? `· ${r.original_truck_plate}` : ''}</div>
             <div><span style={s.label}>Trajet</span>{r.pickup_address} → {r.delivery_address}</div>
             <div><span style={s.label}>Position</span>
-              <a href={`https://www.google.com/maps?q=${r.lat},${r.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: '#FF6B00' }}>
+              <a href={`https://www.google.com/maps?q=${r.lat},${r.lng}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-ink)' }}>
                 Voir sur la carte
               </a>
             </div>
@@ -109,11 +109,11 @@ const s = {
   empty: { background: 'var(--surface)', borderRadius: 12, padding: 24, color: 'var(--text-3)', textAlign: 'center' },
   card: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 18, marginBottom: 16 },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  orderNumber: { fontSize: 16, color: '#FF6B00' },
+  orderNumber: { fontSize: 16, color: 'var(--brand-ink)' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, fontSize: 14 },
   label: { display: 'block', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
   warn: { marginTop: 14, background: '#422006', color: '#FDE68A', borderRadius: 8, padding: 12, fontSize: 14 },
   actions: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' },
   select: { flex: 1, minWidth: 260, padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)' },
-  primaryBtn: { padding: '10px 16px', borderRadius: 8, border: 'none', background: '#FF6B00', color: 'white', fontWeight: 700, cursor: 'pointer' },
+  primaryBtn: { padding: '10px 16px', borderRadius: 8, border: 'none', background: '#FF6B00', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
 };

@@ -211,7 +211,8 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y = drawRow(doc, 'Type de camion',
     order.truck_type === 'double_benne' ? 'Double benne'
     : order.truck_type === 'simple_benne' ? 'Benne simple'
-    : order.truck_type === 'plateau' ? 'Plateau' : '—', y);
+    : order.truck_type === 'plateau' ? 'Plateau'
+    : order.truck_type === 'pickup' ? 'Pick-up léger' : '—', y);
   y = drawRow(doc, 'Plaque d\'immatriculation', order.truck_plate, y);
   y += 10;
 

@@ -179,7 +179,8 @@ export default function DriverDashboard() {
 
 
   const truck = user?.truck_type === 'double_benne' ? 'Double benne'
-    : user?.truck_type === 'simple_benne' ? 'Benne simple' : 'Plateau';
+    : user?.truck_type === 'simple_benne' ? 'Benne simple'
+    : user?.truck_type === 'pickup' ? 'Pick-up léger' : 'Plateau';
 
   return (
     <main className="bn-page">

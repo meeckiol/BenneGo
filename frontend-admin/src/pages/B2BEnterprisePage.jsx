@@ -97,7 +97,7 @@ export default function B2BEnterprisePage() {
               {bulkOrders.length === 0 ? (
                 <div style={styles.empty}>Aucune commande groupée en attente.</div>
               ) : (
-                <div style={styles.tableWrapper}>
+                <div style={styles.tableWrapper} tabIndex={0}>
                   <table style={styles.table}>
                     <thead>
                       <tr>
@@ -161,7 +161,7 @@ export default function B2BEnterprisePage() {
               {companies.length === 0 ? (
                 <div style={styles.empty}>Aucune entreprise enregistrée.</div>
               ) : (
-                <div style={styles.tableWrapper}>
+                <div style={styles.tableWrapper} tabIndex={0}>
                   <table style={styles.table}>
                     <thead>
                       <tr>
@@ -211,7 +211,7 @@ export default function B2BEnterprisePage() {
               {deviations.length === 0 ? (
                 <div style={styles.empty}><Check size={14} aria-hidden="true" /> Aucune déviation anormale détectée. Tous les camions suivent les tracés OSRM.</div>
               ) : (
-                <div style={styles.tableWrapper}>
+                <div style={styles.tableWrapper} tabIndex={0}>
                   <table style={styles.table}>
                     <thead>
                       <tr>
@@ -262,10 +262,10 @@ const styles = {
   container: { display: 'flex', flexDirection: 'column', gap: '20px' },
   tabs: { display: 'flex', gap: '10px', borderBottom: '1px solid var(--border-2)', paddingBottom: '10px' },
   tab: { background: 'transparent', border: 'none', color: 'var(--text-3)', padding: '10px 18px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
-  tabActive: { background: 'var(--surface)', color: '#FF6B00', border: '1px solid var(--border-2)' },
+  tabActive: { background: 'var(--surface)', color: 'var(--brand-ink)', border: '1px solid var(--border-2)' },
   card: { background: 'var(--surface)', borderRadius: '14px', padding: '24px', border: '1px solid var(--border-2)' },
   cardHeader: { marginBottom: '20px' },
-  cardTitle: { color: 'white', fontSize: '18px', fontWeight: '800', margin: '0 0 6px' },
+  cardTitle: { color: 'var(--text-strong)', fontSize: '18px', fontWeight: '800', margin: '0 0 6px' },
   cardSub: { color: 'var(--text-3)', fontSize: '13.5px', margin: 0 },
   tableWrapper: { overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--text)', fontSize: '14px' },
@@ -279,5 +279,5 @@ const styles = {
   badgePending: { background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
   badgeInactive: { background: 'rgba(148, 163, 184, 0.15)', color: 'var(--text-3)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' },
   badgeAlert: { background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' },
-  validateBtn: { background: '#FF6B00', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
+  validateBtn: { background: '#FF6B00', color: '#0b0b10', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
 };

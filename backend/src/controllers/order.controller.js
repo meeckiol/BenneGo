@@ -18,6 +18,20 @@ const generateOrderNumber = (prefix = 'LT') => {
 };
 
 /**
+ * Coordonnées du client (nom, téléphone) : visibles du client, de l'admin et du chauffeur
+ * assigné. Un chauffeur non assigné ne les voit pas, même sur une commande en attente.
+ */
+const withClientContactFor = (order, user) => {
+  if (user.role !== 'driver' || order.driver_id === user.id) return order;
+  const { client_name: _name, client_phone: _phone, ...withoutContact } = order;
+  return withoutContact;
+};
+
+// Camionnette (sacs de ciment, briques) : ses chauffeurs ne prennent que les commandes légères, et inversement
+const LIGHT_TRUCK = 'pickup';
+const canDriverTakeOrder = (orderTruckType, driverTruckType) => (orderTruckType === LIGHT_TRUCK) === (driverTruckType === LIGHT_TRUCK);
+
+/**
  * Transitions autorisées pour les conducteurs selon le type de commande
  */
 const getDriverNextStatuses = (orderType, currentStatus) => {
@@ -240,6 +254,8 @@ const createOrder = async (req, res, next) => {
         notes || null,
       ]
     );
+    // Le type de camion demandé est enregistré avec la commande (même transaction)
+    await client.query('UPDATE orders SET truck_type = $2 WHERE id = $1', [result.rows[0].id, truck_type]);
 
     await client.query('COMMIT');
     const order = result.rows[0];
@@ -351,6 +367,7 @@ const createBulkOrders = async (req, res, next) => {
             `${notes || ''} (Jour ${day + 1}/${number_of_days} - Rotation ${rot}/${rotations_per_day})`.trim(),
           ]
         );
+        await client.query('UPDATE orders SET truck_type = $2 WHERE id = $1', [resOrder.rows[0].id, truck_type]);
         createdOrders.push(resOrder.rows[0]);
       }
     }
@@ -415,6 +432,9 @@ const getOrders = async (req, res, next) => {
         categoryFilter = " AND o.order_type IN ('MATERIAL', 'EVACUATION')";
       }
 
+      // Camionnette : seulement les commandes légères ; les autres camions ne voient jamais ces commandes
+      categoryFilter += driverProfile?.truck_type === LIGHT_TRUCK ? " AND o.truck_type = 'pickup'" : " AND (o.truck_type IS NULL OR o.truck_type <> 'pickup')";
+
       whereClause = `WHERE (o.driver_id = $${paramIdx++} OR (o.status = 'pending' AND o.payment_status = 'escrow_held'${categoryFilter}))`;
       params.push(req.user.id);
     }
@@ -460,7 +480,7 @@ const getOrders = async (req, res, next) => {
     );
 
     res.json({
-      orders: result.rows,
+      orders: result.rows.map((order) => withClientContactFor(order, req.user)),
       pagination: {
         total: parseInt(countResult.rows[0].count),
         page: parseInt(page),
@@ -516,7 +536,7 @@ const getOrder = async (req, res, next) => {
       'SELECT kind, url, created_at FROM order_photos WHERE order_id = $1 ORDER BY created_at',
       [req.params.id]
     );
-    res.json({ order: { ...order, photos: photosRes.rows } });
+    res.json({ order: { ...withClientContactFor(order, req.user), photos: photosRes.rows } });
   } catch (error) {
     next(error);
   }
@@ -540,6 +560,12 @@ const acceptOrder = async (req, res, next) => {
 
     if (order.status !== 'pending' || order.payment_status !== 'escrow_held') {
       throw new AppError('Cette commande n\'est plus disponible', 409);
+    }
+
+    // Le véhicule du chauffeur doit correspondre à la commande (contrôle côté serveur, pas seulement dans la liste)
+    const profileResult = await client.query('SELECT truck_type FROM driver_profiles WHERE user_id = $1', [req.user.id]);
+    if (!canDriverTakeOrder(order.truck_type, profileResult.rows[0]?.truck_type)) {
+      throw new AppError('Cette commande ne correspond pas au véhicule de votre profil', 403);
     }
 
     const driverResult = await client.query(
@@ -1031,6 +1057,7 @@ const reportBreakdown = async (req, res, next) => {
 };
 
 module.exports = {
+  canDriverTakeOrder,
   recordLoading,
   openDispute,
   reportBreakdown,

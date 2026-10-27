@@ -27,7 +27,7 @@ export default function PromoCodesAdminPage() {
     setLoading(true);
     try {
       const { data } = await api.get('/admin/promos');
-      setPromos(data.promos ?? data);
+      setPromos(data.promos ?? []);
     } catch {
       toast.error('Erreur lors du chargement des codes promo');
     } finally {
@@ -140,7 +140,7 @@ export default function PromoCodesAdminPage() {
           <button onClick={loadPromos} style={s.refreshBtn}>Actualiser</button>
         </div>
 
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -152,7 +152,7 @@ export default function PromoCodesAdminPage() {
             <tbody>
               {promos.map((promo) => (
                 <tr key={promo.id} style={s.tr}>
-                  <td style={{ ...s.td, fontWeight: '700', color: '#FF6B00', fontFamily: 'monospace', fontSize: '14px' }}>
+                  <td style={{ ...s.td, fontWeight: '700', color: 'var(--brand-ink)', fontFamily: 'monospace', fontSize: '14px' }}>
                     {promo.code}
                   </td>
                   <td style={s.td}>
@@ -164,7 +164,7 @@ export default function PromoCodesAdminPage() {
                       {promo.discount_type === 'percentage' ? '% Pourcentage' : '₣ Fixe'}
                     </span>
                   </td>
-                  <td style={{ ...s.td, fontWeight: '700', color: 'white' }}>
+                  <td style={{ ...s.td, fontWeight: '700', color: 'var(--text-strong)' }}>
                     {promo.discount_type === 'percentage'
                       ? `${promo.discount_value}%`
                       : `${parseFloat(promo.discount_value || 0).toLocaleString()} FCFA`}
@@ -347,18 +347,18 @@ export default function PromoCodesAdminPage() {
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' },
-  title: { color: 'white', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
+  title: { color: 'var(--text-strong)', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
   subtitle: { color: 'var(--text-2)', fontSize: '14px', margin: 0 },
-  newBtn: { padding: '10px 20px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' },
+  newBtn: { padding: '10px 20px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   tableTitle: { color: 'var(--text-3)', fontSize: '14px' },
-  refreshBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
+  refreshBtn: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
   tableWrapper: { overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '800px' },
   thead: { background: 'var(--bg)' },
   th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #0f172a' },
+  tr: { borderBottom: '1px solid var(--border)' },
   td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px', verticalAlign: 'middle' },
   typeBadge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' },
   activeBadge: { padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
@@ -371,18 +371,18 @@ const s = {
   overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' },
   modal: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', width: '100%', maxWidth: '560px', display: 'flex', flexDirection: 'column', maxHeight: '90vh' },
   modalHeader: { padding: '20px 24px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  modalTitle: { color: 'white', fontSize: '18px', fontWeight: '700', margin: 0 },
-  closeBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' },
+  modalTitle: { color: 'var(--text-strong)', fontSize: '18px', fontWeight: '700', margin: 0 },
+  closeBtn: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer', fontSize: '14px' },
   modalBody: { padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' },
   modalFooter: { padding: '16px 24px', borderTop: '1px solid var(--border-2)', display: 'flex', justifyContent: 'flex-end', gap: '12px' },
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
   row: { display: 'flex', gap: '16px', flexWrap: 'wrap' },
   label: { color: 'var(--text-3)', fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' },
   optional: { color: 'var(--text-2)', fontWeight: '400', textTransform: 'none', letterSpacing: 0 },
-  input: { padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box' },
-  select: { padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'white', fontSize: '14px', outline: 'none', width: '100%', cursor: 'pointer' },
+  input: { padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'var(--text-strong)', fontSize: '14px', outline: 'none', width: '100%', boxSizing: 'border-box' },
+  select: { padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '8px', color: 'var(--text-strong)', fontSize: '14px', outline: 'none', width: '100%', cursor: 'pointer' },
   checkboxRow: { display: 'flex', alignItems: 'center', gap: '10px' },
   checkboxLabel: { color: 'var(--text-2)', fontSize: '14px', cursor: 'pointer' },
-  cancelBtn: { padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  saveBtn: { padding: '10px 24px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: 'white', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  cancelBtn: { padding: '10px 20px', background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
+  saveBtn: { padding: '10px 24px', background: '#FF6B00', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 };

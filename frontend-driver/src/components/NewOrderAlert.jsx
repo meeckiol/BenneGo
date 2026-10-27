@@ -42,7 +42,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
         {/* Countdown */}
         <div style={styles.countdownWrapper}>
           <svg width="80" height="80" style={styles.svg}>
-            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(17, 24, 39, 0.1)" strokeWidth="6" />
             <circle
               cx="40" cy="40" r="34"
               fill="none"
@@ -158,7 +158,7 @@ const styles = {
   countdownNum: {
     fontSize: '26px',
     fontWeight: '800',
-    color: 'white',
+    color: 'var(--text-strong)',
     position: 'relative',
     zIndex: 1,
   },
@@ -172,13 +172,13 @@ const styles = {
   title: {
     fontSize: '20px',
     fontWeight: '800',
-    color: 'white',
+    color: 'var(--text-strong)',
     margin: 0,
     textAlign: 'center',
   },
   details: {
     width: '100%',
-    background: 'rgba(255,255,255,0.05)',
+    background: 'rgba(17, 24, 39, 0.05)',
     borderRadius: '12px',
     padding: '16px',
     display: 'flex',
@@ -186,10 +186,10 @@ const styles = {
     gap: '8px',
   },
   detailRow: { display: 'flex', gap: '12px', alignItems: 'flex-start' },
-  detailLabel: { fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '2px' },
-  detailValue: { fontSize: '13.5px', color: 'white', fontWeight: '500' },
+  detailLabel: { fontSize: '11px', color: 'var(--text-3)', marginBottom: '2px' },
+  detailValue: { fontSize: '13.5px', color: 'var(--text-strong)', fontWeight: '500' },
   extraInfo: { fontSize: '12px', color: 'var(--info)', marginTop: '4px' },
-  arrow: { textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '16px' },
+  arrow: { textAlign: 'center', color: 'var(--text-3)', fontSize: '16px' },
   priceBox: {
     width: '100%',
     background: 'rgba(255,107,0,0.1)',
@@ -201,16 +201,16 @@ const styles = {
     gap: '8px',
   },
   priceRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  priceLabel: { color: 'rgba(255,255,255,0.6)', fontSize: '13px' },
-  priceValue: { color: '#FF6B00', fontSize: '20px', fontWeight: '800' },
-  priceDistane: { color: 'white', fontSize: '14px', fontWeight: '600' },
+  priceLabel: { color: 'var(--text-2)', fontSize: '13px' },
+  priceValue: { color: 'var(--brand-ink)', fontSize: '20px', fontWeight: '800' },
+  priceDistane: { color: 'var(--text-strong)', fontSize: '14px', fontWeight: '600' },
   buttons: { display: 'flex', gap: '12px', width: '100%' },
   refuseBtn: {
     flex: 1,
     padding: '14px',
-    background: 'rgba(255,255,255,0.08)',
-    color: 'rgba(255,255,255,0.7)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: 'rgba(17, 24, 39, 0.08)',
+    color: 'var(--text-2)',
+    border: '1px solid rgba(17, 24, 39, 0.1)',
     borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '700',

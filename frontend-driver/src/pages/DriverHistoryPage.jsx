@@ -26,7 +26,7 @@ export default function DriverHistoryPage() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <button onClick={() => navigate('/')} style={styles.back}><ArrowLeft size={20} aria-hidden="true" /></button>
+        <button onClick={() => navigate('/')} style={styles.back} aria-label="Retour à l'accueil"><ArrowLeft size={20} aria-hidden="true" /></button>
         <h2 style={styles.title}>Mes courses</h2>
       </header>
 
@@ -79,23 +79,23 @@ export default function DriverHistoryPage() {
 }
 
 const styles = {
-  container: { minHeight: '100vh', background: 'var(--bg)', color: 'white' },
-  header: { background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.08)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px' },
-  back: { background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px' },
+  container: { minHeight: '100vh', background: 'var(--bg)', color: 'var(--text-strong)' },
+  header: { background: 'rgba(17, 24, 39, 0.05)', borderBottom: '1px solid rgba(17, 24, 39, 0.08)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px' },
+  back: { background: 'rgba(17, 24, 39, 0.08)', border: 'none', color: 'var(--text-strong)', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '16px' },
   title: { fontSize: '18px', fontWeight: '700', margin: 0 },
   summary: { display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', gap: '40px' },
   summaryItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' },
-  summaryValue: { fontSize: '28px', fontWeight: '800', color: '#FF6B00' },
-  summaryLabel: { fontSize: '12px', color: 'rgba(255,255,255,0.4)' },
-  summaryDivider: { width: '1px', height: '40px', background: 'rgba(255,255,255,0.08)' },
+  summaryValue: { fontSize: '28px', fontWeight: '800', color: 'var(--brand-ink)' },
+  summaryLabel: { fontSize: '12px', color: 'var(--text-3)' },
+  summaryDivider: { width: '1px', height: '40px', background: 'rgba(17, 24, 39, 0.08)' },
   list: { padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: '10px' },
-  center: { textAlign: 'center', color: 'rgba(255,255,255,0.4)', padding: '40px 0' },
-  card: { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' },
+  center: { textAlign: 'center', color: 'var(--text-3)', padding: '40px 0' },
+  card: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid rgba(17, 24, 39, 0.08)', borderRadius: '12px', padding: '14px' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' },
   cardNum: { fontWeight: '700', fontSize: '13px' },
   badge: { fontSize: '12px', fontWeight: '600' },
-  cardAddr: { fontSize: '13px', color: 'rgba(255,255,255,0.6)', margin: '0 0 8px' },
+  cardAddr: { fontSize: '13px', color: 'var(--text-2)', margin: '0 0 8px' },
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  cardAmount: { color: '#FF6B00', fontWeight: '700', fontSize: '16px' },
-  cardDate: { color: 'rgba(255,255,255,0.3)', fontSize: '12px' },
+  cardAmount: { color: 'var(--brand-ink)', fontWeight: '700', fontSize: '16px' },
+  cardDate: { color: 'var(--text-3)', fontSize: '12px' },
 };

@@ -68,7 +68,7 @@ export default function PaymentsPage() {
         <div style={s.tableHeader}>
           <h3 style={s.tableTitle}>Reversements chauffeurs à effectuer ({payouts.length})</h3>
         </div>
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -80,7 +80,7 @@ export default function PaymentsPage() {
             <tbody>
               {payouts.map((p) => (
                 <tr key={p.order_id} style={s.tr}>
-                  <td style={{ ...s.td, color: '#FF6B00', fontWeight: '600' }}>{p.order_number}</td>
+                  <td style={{ ...s.td, color: 'var(--brand-ink)', fontWeight: '600' }}>{p.order_number}</td>
                   <td style={s.td}>{p.driver_name}</td>
                   <td style={s.td}>{p.momo_number || '—'} {p.momo_provider ? `(${p.momo_provider.toUpperCase()})` : ''}</td>
                   <td style={{ ...s.td, color: 'var(--violet)', fontWeight: '700' }}>{fcfa(p.driver_amount)}</td>
@@ -111,7 +111,7 @@ export default function PaymentsPage() {
         <div style={s.tableHeader}>
           <h3 style={s.tableTitle}>Historique des paiements</h3>
         </div>
-        <div style={s.tableWrapper}>
+        <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>
             <thead>
               <tr style={s.thead}>
@@ -124,11 +124,11 @@ export default function PaymentsPage() {
               {loading && <tr><td colSpan={9} style={s.empty}>Chargement...</td></tr>}
               {orders.filter((o) => o.payment_status !== 'unpaid').map((order) => (
                 <tr key={order.id} style={s.tr}>
-                  <td style={{ ...s.td, color: '#FF6B00', fontWeight: '600' }}>
+                  <td style={{ ...s.td, color: 'var(--brand-ink)', fontWeight: '600' }}>
                     {order.order_number}
                   </td>
                   <td style={s.td}>{order.client_name || '—'}</td>
-                  <td style={{ ...s.td, fontWeight: '700', color: 'white' }}>
+                  <td style={{ ...s.td, fontWeight: '700', color: 'var(--text-strong)' }}>
                     {parseFloat(order.total_amount || 0).toLocaleString()}
                   </td>
                   <td style={{ ...s.td, color: 'var(--success)', fontWeight: '600' }}>
@@ -202,12 +202,12 @@ const s = {
   kpiIcon: { width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)' },
-  tableTitle: { color: 'white', fontSize: '15px', fontWeight: '700', margin: 0 },
+  tableTitle: { color: 'var(--text-strong)', fontSize: '15px', fontWeight: '700', margin: 0 },
   tableWrapper: { overflow: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', minWidth: '900px' },
   thead: { background: 'var(--bg)' },
   th: { padding: '10px 12px', color: 'var(--text-2)', fontSize: '11px', fontWeight: '700', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #0f172a' },
+  tr: { borderBottom: '1px solid var(--border)' },
   td: { padding: '12px', color: 'var(--text-2)', fontSize: '13px', verticalAlign: 'middle' },
   actionBtn: { background: '#10B981', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 12px', fontWeight: '700', cursor: 'pointer', fontSize: '12px' },
   empty: { padding: '32px', textAlign: 'center', color: 'var(--text-2)' },

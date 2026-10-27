@@ -54,7 +54,7 @@ export default function AdminLayout({ children }) {
               style={({ isActive }) => ({
                 ...s.navItem,
                 background: isActive ? 'rgba(255,107,0,0.15)' : 'transparent',
-                color: isActive ? '#FF6B00' : '#94a3b8',
+                color: isActive ? 'var(--brand-ink)' : 'var(--text-2)',
                 borderLeft: isActive ? '3px solid #FF6B00' : '3px solid transparent',
               })}
             >
@@ -88,7 +88,8 @@ export default function AdminLayout({ children }) {
             <span style={s.adminBadge}>{user?.full_name || 'Admin'}</span>
           </div>
         </header>
-        <div style={s.content}>{children}</div>
+        {/* Zone défilante : accessible au clavier pour pouvoir la faire défiler sans souris */}
+        <div style={s.content} tabIndex={0}>{children}</div>
       </main>
     </div>
   );
@@ -114,7 +115,7 @@ const s = {
     minHeight: '64px',
   },
   sidebarLogoIcon: { fontSize: '24px', flexShrink: 0 },
-  sidebarLogoText: { fontSize: '18px', fontWeight: '800', color: '#FF6B00', whiteSpace: 'nowrap' },
+  sidebarLogoText: { fontSize: '18px', fontWeight: '800', color: 'var(--brand-ink)', whiteSpace: 'nowrap' },
   nav: { flex: 1, padding: '12px 0', display: 'flex', flexDirection: 'column', gap: '2px' },
   navItem: {
     display: 'flex',
@@ -136,7 +137,7 @@ const s = {
     flexDirection: 'column',
     gap: '8px',
   },
-  toggleBtn: { background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  toggleBtn: { background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   logoutBtn: { background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--danger)', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' },
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
   topbar: {
@@ -149,7 +150,7 @@ const s = {
     justifyContent: 'space-between',
     flexShrink: 0,
   },
-  topbarTitle: { color: 'white', fontSize: '18px', fontWeight: '700', margin: 0 },
+  topbarTitle: { color: 'var(--text-strong)', fontSize: '18px', fontWeight: '700', margin: 0 },
   topbarRight: { display: 'flex', alignItems: 'center', gap: '12px' },
   adminBadge: { color: 'var(--text-3)', fontSize: '13px' },
   content: { flex: 1, padding: '24px', overflow: 'auto' },

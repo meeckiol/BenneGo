@@ -146,7 +146,7 @@ export default function DashboardPage() {
                 <td style={{ ...s.td, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {order.delivery_address}
                 </td>
-                <td style={{ ...s.td, color: '#FF6B00', fontWeight: '600' }}>
+                <td style={{ ...s.td, color: 'var(--brand-ink)', fontWeight: '600' }}>
                   {parseFloat(order.total_amount || 0).toLocaleString()} FCFA
                 </td>
                 <td style={s.td}>
@@ -219,17 +219,17 @@ const s = {
   },
   kpiIcon: { width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 },
   kpiContent: {},
-  kpiValue: { fontSize: '22px', fontWeight: '800', color: 'white' },
+  kpiValue: { fontSize: '22px', fontWeight: '800', color: 'var(--text-strong)' },
   kpiLabel: { fontSize: '13px', color: 'var(--text-3)', margin: '2px 0' },
   kpiSub: { fontSize: '11px', color: 'var(--text-2)' },
   chartsRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   chartCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '20px' },
-  chartTitle: { color: 'white', fontSize: '15px', fontWeight: '700', margin: '0 0 16px' },
+  chartTitle: { color: 'var(--text-strong)', fontSize: '15px', fontWeight: '700', margin: '0 0 16px' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '20px' },
   table: { width: '100%', borderCollapse: 'collapse' },
   thead: { borderBottom: '1px solid var(--border-2)' },
   th: { color: 'var(--text-2)', fontSize: '12px', fontWeight: '600', padding: '10px 12px', textAlign: 'left', whiteSpace: 'nowrap' },
-  tr: { borderBottom: '1px solid #1e293b' },
+  tr: { borderBottom: '1px solid var(--border)' },
   td: { padding: '12px', color: 'var(--text)', fontSize: '13px' },
   emptyCell: { padding: '24px', textAlign: 'center', color: 'var(--text-2)' },
 };

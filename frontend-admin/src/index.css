@@ -1,3 +1,4 @@
+@import '@fontsource-variable/inter';
 @import '../../shared/theme.css';
 
 input, select, textarea { font-size: 14px; }
