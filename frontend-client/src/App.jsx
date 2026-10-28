@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore, { selectAccountType } from './store/authStore';
 import BottomNav from './components/BottomNav';
+import { hasSeenOnboarding } from './pages/OnboardingPage';
 
 // Code-splitting via React.lazy
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -15,6 +16,8 @@ const ReferralPage = lazy(() => import('./pages/ReferralPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const PromoPage = lazy(() => import('./pages/PromoPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+// Vitrine mise de côté : elle n'est plus dans le parcours, seulement sur /vitrine
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Composant de chargement avec animation sobre BenneGo
@@ -57,11 +60,12 @@ const PrivateRoute = ({ children }) => {
   );
 };
 
-// Accueil : vitrine publique pour les visiteurs ; pour les connectés, l'accueil du type de compte choisi à la connexion
+// Accueil : les visiteurs passent par le carrousel (premier lancement) puis la connexion ;
+// les connectés arrivent sur l'accueil du type de compte choisi à la connexion
 const HomeRoute = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accountType = useAuthStore(selectAccountType);
-  if (!isAuthenticated) return <LandingPage />;
+  if (!isAuthenticated) return <Navigate to={hasSeenOnboarding() ? '/login' : '/bienvenue'} replace />;
   return (
     <PrivateRoute>
       {accountType === 'entreprise' ? <EnterprisePage /> : <HomePage />}
@@ -77,6 +81,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/confidentialite" element={<PrivacyPage />} />
+        <Route path="/bienvenue" element={<OnboardingPage />} />
+        <Route path="/vitrine" element={<LandingPage />} />
 
         {/* Routes protégées */}
         <Route path="/" element={<HomeRoute />} />

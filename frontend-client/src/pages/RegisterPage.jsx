@@ -4,8 +4,7 @@ import toast from 'react-hot-toast';
 import { CheckCircle2 } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import api from '../services/api';
-
-const inputStyle = { padding: '10px', borderRadius: '8px', border: '1px solid var(--border-2)' };
+import AuthShell from '../components/AuthShell';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -80,118 +79,109 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #FF6B00, #E05D00)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ background: 'var(--surface)', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '440px' }}>
-        <h2 style={{ color: 'var(--brand-ink)', textAlign: 'center', fontWeight: '900', margin: '0 0 16px' }}>BenneGo</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <input
-              placeholder="Prénom"
-              value={form.prenom}
-              onChange={(e) => setForm({ ...form, prenom: e.target.value })}
-              required
-              style={inputStyle}
-            />
-            <input
-              placeholder="Nom"
-              value={form.nom}
-              onChange={(e) => setForm({ ...form, nom: e.target.value })}
-              required
-              style={inputStyle}
-            />
-          </div>
-
+    <AuthShell
+      tab="register"
+      title="Créer un compte."
+      subtitle="Quelques informations et un code par SMS, puis vous pouvez commander."
+    >
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <input
-            placeholder="Téléphone (+229...)"
-            type="tel"
-            value={form.phone}
-            onChange={(e) => changePhone(e.target.value)}
-            disabled={verified}
+            className="bn-input"
+            placeholder="Prénom"
+            value={form.prenom}
+            onChange={(e) => setForm({ ...form, prenom: e.target.value })}
             required
-            style={inputStyle}
           />
-          {!verified && (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {!otpSent ? (
-                <button
-                  type="button"
-                  onClick={requestCode}
-                  disabled={otpLoading || cleanPhone.length < 8}
-                  style={{ flex: 1, padding: '10px', background: 'var(--surface)', color: 'var(--text-strong)', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
-                >
-                  {otpLoading ? 'Envoi...' : 'Recevoir le code par SMS'}
+          <input
+            className="bn-input"
+            placeholder="Nom"
+            value={form.nom}
+            onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            required
+          />
+        </div>
+
+        <input
+          className="bn-input"
+          placeholder="Téléphone (+229...)"
+          type="tel"
+          value={form.phone}
+          onChange={(e) => changePhone(e.target.value)}
+          disabled={verified}
+          required
+        />
+        {!verified && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            {!otpSent ? (
+              <button
+                type="button"
+                className="bn-btn bn-btn--block"
+                onClick={requestCode}
+                disabled={otpLoading || cleanPhone.length < 8}
+              >
+                {otpLoading ? 'Envoi...' : 'Recevoir le code par SMS'}
+              </button>
+            ) : (
+              <>
+                <input
+                  className="bn-input"
+                  placeholder="Code à 6 chiffres"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                  style={{ flex: 1, letterSpacing: '4px', textAlign: 'center' }}
+                />
+                <button type="button" className="bn-btn" onClick={verifyCode} disabled={otpLoading || code.length !== 6}>
+                  {otpLoading ? '...' : 'Valider'}
                 </button>
-              ) : (
-                <>
-                  <input
-                    placeholder="Code à 6 chiffres"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    style={{ ...inputStyle, flex: 1, letterSpacing: '4px', textAlign: 'center' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={verifyCode}
-                    disabled={otpLoading || code.length !== 6}
-                    style={{ padding: '10px 14px', background: 'var(--surface)', color: 'var(--text-strong)', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}
-                  >
-                    {otpLoading ? '...' : 'Valider'}
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-          {verified && (
-            <p style={{ margin: 0, fontSize: '13px', color: 'var(--success)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle2 size={16} aria-hidden="true" /> Numéro vérifié</p>
-          )}
+              </>
+            )}
+          </div>
+        )}
+        {verified && (
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--success)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle2 size={16} aria-hidden="true" /> Numéro vérifié</p>
+        )}
 
-          <input
-            placeholder="Date naissance"
-            type="date"
-            value={form.date_naissance}
-            onChange={(e) => setForm({ ...form, date_naissance: e.target.value })}
-            required
-            style={inputStyle}
-          />
-          <input
-            placeholder="Adresse"
-            value={form.adresse}
-            onChange={(e) => setForm({ ...form, adresse: e.target.value })}
-            required
-            style={inputStyle}
-          />
-          <input
-            placeholder="Email (facultatif)"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            style={inputStyle}
-          />
-          <input
-            placeholder="Mot de passe (8 car. min)"
-            type="password"
-            minLength={8}
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            required
-            style={inputStyle}
-          />
-          <button
-            type="submit"
-            disabled={loading || !verified}
-            style={{ padding: '13px', background: verified ? '#FF6B00' : '#CBD5E1', color: 'var(--text-strong)', border: 'none', borderRadius: '8px', fontWeight: '800', cursor: verified ? 'pointer' : 'not-allowed' }}
-          >
-            {loading ? 'Création...' : 'Créer mon compte'}
-          </button>
-        </form>
-        <p style={{ textAlign: 'center', marginTop: '14px', fontSize: '13px' }}>
-          <Link to="/login" style={{ color: 'var(--brand-ink)', fontWeight: '700' }}>
-            Déjà un compte ? Se connecter
-          </Link>
-        </p>
-      </div>
-    </div>
+        <input
+          className="bn-input"
+          placeholder="Date naissance"
+          type="date"
+          value={form.date_naissance}
+          onChange={(e) => setForm({ ...form, date_naissance: e.target.value })}
+          required
+        />
+        <input
+          className="bn-input"
+          placeholder="Adresse"
+          value={form.adresse}
+          onChange={(e) => setForm({ ...form, adresse: e.target.value })}
+          required
+        />
+        <input
+          className="bn-input"
+          placeholder="Email (facultatif)"
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        />
+        <input
+          className="bn-input"
+          placeholder="Mot de passe (8 car. min)"
+          type="password"
+          minLength={8}
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          required
+        />
+        <button type="submit" className="bn-btn bn-btn--primary bn-btn--block bn-login__submit" disabled={loading || !verified}>
+          {loading ? 'Création...' : 'Créer mon compte'}
+        </button>
+      </form>
+      <p className="bn-login__foot">
+        Déjà un compte ? <Link to="/login" className="bn-link">Se connecter</Link>
+      </p>
+    </AuthShell>
   );
 }

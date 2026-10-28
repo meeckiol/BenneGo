@@ -1,0 +1,254 @@
+/* Parcours d'entrée : carrousel de bienvenue, connexion et inscription.
+   En-tête sombre avec le logo et un titre en italique, puis une carte blanche arrondie. */
+
+.bn-login {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background:
+    radial-gradient(120% 60% at 85% 0%, rgba(255, 107, 0, 0.28), transparent 60%),
+    #0b0b10;
+}
+
+.bn-login__hero {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 48px 24px 32px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.bn-login__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.bn-login__brand img { border-radius: 10px; }
+.bn-login__brand em { font-style: normal; color: var(--brand); }
+
+.bn-login__title {
+  margin: 8px 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.bn-login__subtitle {
+  margin: 0;
+  max-width: 320px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.bn-login__card {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.bn-login__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--surface-3);
+}
+
+.bn-login__tab {
+  display: grid;
+  place-items: center;
+  min-height: 42px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.bn-login__tab.is-active {
+  background: #0b0b10;
+  color: #ffffff;
+}
+
+.bn-login__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--text-3);
+}
+
+.bn-login__input:focus-within {
+  border-color: var(--brand);
+  background: var(--surface);
+}
+
+.bn-login__input input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-strong);
+}
+
+.bn-login__eye {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: var(--text-3);
+}
+
+.bn-login__submit {
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 16px;
+}
+
+.bn-login__foot {
+  margin: 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+/* Carrousel de bienvenue */
+.bn-onboard {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background:
+    radial-gradient(120% 60% at 50% 10%, rgba(255, 107, 0, 0.3), transparent 60%),
+    #0b0b10;
+  color: #ffffff;
+}
+
+.bn-onboard__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+}
+
+.bn-onboard__skip {
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.bn-onboard__track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.bn-onboard__track::-webkit-scrollbar { display: none; }
+
+.bn-onboard__slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 0 28px;
+  text-align: center;
+}
+
+.bn-onboard__art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 12px;
+  border-radius: 56px;
+  background: linear-gradient(145deg, rgba(255, 138, 31, 0.95), rgba(255, 107, 0, 0.75));
+  box-shadow: 0 30px 70px rgba(255, 107, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #0b0b10;
+}
+
+.bn-onboard__chip {
+  position: absolute;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text-strong);
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.bn-onboard__title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.15;
+}
+
+.bn-onboard__text {
+  margin: 0;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.bn-onboard__bottom {
+  display: grid;
+  gap: 20px;
+  padding: 12px 24px calc(28px + env(safe-area-inset-bottom));
+}
+
+.bn-onboard__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bn-onboard__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+.bn-onboard__dot.is-active {
+  width: 24px;
+  background: var(--brand);
+}

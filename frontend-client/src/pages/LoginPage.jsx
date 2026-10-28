@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Eye, EyeOff, Lock, Phone } from 'lucide-react';
 import useAuthStore from '../store/authStore';
+import AuthShell from '../components/AuthShell';
 
 const ACCOUNT_TYPES = [
   { key: 'particulier', label: 'Client', hint: 'Commandes à l\'unité, pour vous ou un proche.' },
@@ -11,6 +13,7 @@ const ACCOUNT_TYPES = [
 export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [accountType, setAccountType] = useState('particulier');
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((s) => s.login);
@@ -48,15 +51,12 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="bn-auth">
-      <section className="bn-auth__hero">
-        <img src="/logo-icon.png" alt="" width="68" height="68" className="bn-auth__logo" />
-        <p className="bn-kicker bn-auth__brand">BenneGo</p>
-        <h1 className="bn-auth__title">Gérez vos livraisons de matériaux en toute simplicité</h1>
-        <p className="bn-subtitle">Sable, gravier, latérite, engins et évacuation. Votre paiement reste bloqué jusqu'à la livraison.</p>
-      </section>
-
-      <form className="bn-card bn-auth__card" onSubmit={handleSubmit}>
+    <AuthShell
+      tab="login"
+      title="Bon retour."
+      subtitle="Reprenez là où vous en étiez : vos chantiers et vos commandes vous attendent."
+    >
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14 }}>
         <div className="bn-field">
           <span className="bn-label" id="account-type-label">Vous vous connectez en tant que</span>
           <div
@@ -81,33 +81,41 @@ export default function LoginPage() {
           <span className="bn-subtitle">{selected.hint}</span>
         </div>
 
-        <label className="bn-field">
-          <span className="bn-label">Numéro de téléphone</span>
+        <label className="bn-login__input">
+          <Phone size={18} aria-hidden="true" />
           <input
-            className="bn-input"
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+229 XX XX XX XX"
+            placeholder="Numéro de téléphone"
+            aria-label="Numéro de téléphone"
             autoComplete="username"
             required
           />
         </label>
 
-        <label className="bn-field">
-          <span className="bn-label">Mot de passe</span>
+        <label className="bn-login__input">
+          <Lock size={18} aria-hidden="true" />
           <input
-            className="bn-input"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="Mot de passe"
+            aria-label="Mot de passe"
             autoComplete="current-password"
             required
           />
+          <button
+            type="button"
+            className="bn-login__eye"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </label>
 
-        <button type="submit" disabled={loading} className="bn-btn bn-btn--primary bn-btn--block">
+        <button type="submit" disabled={loading} className="bn-btn bn-btn--primary bn-btn--block bn-login__submit">
           {loading ? 'Connexion…' : 'Se connecter'}
         </button>
 
@@ -118,11 +126,11 @@ export default function LoginPage() {
         )}
       </form>
 
-      <p className="bn-auth__foot">
-        Pas encore de compte ? <Link to="/register" className="bn-link">S'inscrire</Link>
+      <p className="bn-login__foot">
+        Nouveau sur BenneGo ? <Link to="/register" className="bn-link">Créer un compte</Link>
         {' · '}
         <Link to="/confidentialite" className="bn-link">Confidentialité</Link>
       </p>
-    </main>
+    </AuthShell>
   );
 }
