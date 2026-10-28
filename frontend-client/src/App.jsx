@@ -1,5 +1,8 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useChatAlerts } from '../../shared/messaging';
+import api from './services/api';
+import { getSocket } from './services/socket';
 import useAuthStore, { selectAccountType } from './store/authStore';
 import BottomNav from './components/BottomNav';
 import { hasSeenOnboarding } from './pages/OnboardingPage';
@@ -78,9 +81,18 @@ const HomeRoute = () => {
   );
 };
 
+// Nouveaux messages : pastilles, bandeau, son et vibration, sur toutes les pages
+const ChatAlerts = () => {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  useChatAlerts({ api, getSocket, enabled: isAuthenticated, navigate });
+  return null;
+};
+
 function App() {
   return (
     <Suspense fallback={<PageFallback />}>
+      <ChatAlerts />
       <Routes>
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />

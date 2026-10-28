@@ -1,14 +1,22 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import toast from 'react-hot-toast';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import api from '../services/api';
-import useGPS from '../hooks/useGPS';
-import useDriverSocket from '../hooks/useDriverSocket';
-import { getSocket } from '../services/socket';
-import useDriverAuthStore from '../store/authStore';
 import PaymentBreakdown from '../components/PaymentBreakdown';
+import { useDriverSession } from '../context/DriverSession';
+import { useUnread, badgeText } from '../../../shared/messaging';
+import L from 'leaflet';
+import { goldPin, startDot } from '../../../frontend-client/src/components/mapStyle';
+
+// Position du camion : pastille noire cerclée d'or (les icônes Leaflet par défaut ne se chargent pas une fois l'app compilée)
+const truckDot = L.divIcon({
+  className: '',
+  html: '<span style="display:block;width:22px;height:22px;border-radius:50%;background:#d9a55b;border:4px solid #0b0b10;box-shadow:0 0 0 4px rgba(217,165,91,.35)"></span>',
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
 
 // Composant pour centrer la carte sur la position GPS
 function MapCenter({ position }) {
@@ -114,7 +122,6 @@ const getDeliverySteps = (orderType) => {
 export default function ActiveDeliveryPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const user = useDriverAuthStore((s) => s.user);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -131,50 +138,16 @@ export default function ActiveDeliveryPage() {
   const [weighbridgeKg, setWeighbridgeKg] = useState('');
   const [submittingLoading, setSubmittingLoading] = useState(false);
 
-  // ---- Chat states ----
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const chatBottomRef = useRef(null);
+  // Messages non lus de cette course (la discussion s'ouvre en plein écran)
+  const unread = useUnread((s) => s.byOrder[orderId] || 0);
 
-  const { sendLocation } = useDriverSocket();
-
-  // GPS actif pendant la course (le client suit le camion en direct)
+  // GPS et envoi de la position : gérés par la session du camionneur, sur tous les écrans
+  const { position, gpsError, accuracy, reloadActive } = useDriverSession();
   const tracking = !!order && ['accepted', 'driver_en_route_pickup', 'loading', 'driver_en_route_delivery', 'machine_operating'].includes(order.status);
-  const { position, error: gpsError, accuracy } = useGPS({
-    enabled: tracking,
-    onPosition: useCallback((pos) => {
-      sendLocation(pos, orderId);
-    }, [sendLocation, orderId]),
-    interval: 5000,
-  });
 
   useEffect(() => {
     loadOrder();
-    loadChatHistory();
-
-    // Socket pour le chat
-    const socket = getSocket();
-
-    const handleChatMessage = (msg) => {
-      if (String(msg.order_id) === String(orderId)) {
-        setChatMessages((prev) => [...prev, msg]);
-      }
-    };
-
-    socket.on('chat_message', handleChatMessage);
-
-    return () => {
-      socket.off('chat_message', handleChatMessage);
-    };
   }, [orderId]);
-
-  // Scroll chat vers le bas quand de nouveaux messages arrivent
-  useEffect(() => {
-    if (chatOpen && chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages, chatOpen]);
 
   const loadOrder = async () => {
     try {
@@ -185,17 +158,6 @@ export default function ActiveDeliveryPage() {
       navigate('/');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadChatHistory = async () => {
-    try {
-      const { data } = await api.get(`/orders/${orderId}/chat`);
-      if (data && Array.isArray(data.messages)) {
-        setChatMessages(data.messages);
-      }
-    } catch {
-      // historique non disponible, pas bloquant
     }
   };
 
@@ -214,6 +176,7 @@ export default function ActiveDeliveryPage() {
     try {
       await api.patch(`/orders/${orderId}/status`, { status: step.next });
       await loadOrder();
+      reloadActive();
 
       if (step.next === 'delivered') {
         toast.success(
@@ -289,27 +252,6 @@ export default function ActiveDeliveryPage() {
     }
   };
 
-  // ---- Chat send ----
-  const sendChatMessage = () => {
-    const msg = chatInput.trim();
-    if (!msg) return;
-    const socket = getSocket();
-    socket.emit('chat_message', { order_id: orderId, message: msg });
-    // Optimistic local add
-    setChatMessages((prev) => [
-      ...prev,
-      { order_id: orderId, message: msg, sender: 'driver', created_at: new Date().toISOString() },
-    ]);
-    setChatInput('');
-  };
-
-  const handleChatKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendChatMessage();
-    }
-  };
-
   if (loading) {
     return (
       <div style={styles.loading}>
@@ -357,7 +299,7 @@ export default function ActiveDeliveryPage() {
 
           {/* Position du chauffeur */}
           {position && (
-            <Marker position={[position.lat, position.lng]}>
+            <Marker position={[position.lat, position.lng]} icon={truckDot}>
               <Popup>Votre position</Popup>
             </Marker>
           )}
@@ -365,6 +307,7 @@ export default function ActiveDeliveryPage() {
           {/* Point de chargement */}
           <Marker
             position={[parseFloat(order.pickup_lat), parseFloat(order.pickup_lng)]}
+            icon={startDot}
           >
             <Popup>{order.pickup_address}</Popup>
           </Marker>
@@ -372,6 +315,7 @@ export default function ActiveDeliveryPage() {
           {/* Point de livraison */}
           <Marker
             position={[parseFloat(order.delivery_lat), parseFloat(order.delivery_lng)]}
+            icon={goldPin}
           >
             <Popup>{order.delivery_address}</Popup>
           </Marker>
@@ -546,55 +490,16 @@ export default function ActiveDeliveryPage() {
         )}
       </div>
 
-      {/* Bouton flottant Chat */}
+      {/* Discussion avec le client, en plein écran */}
       <button
-        onClick={() => setChatOpen((o) => !o)}
+        type="button"
+        onClick={() => navigate(`/messages/${orderId}`)}
         style={styles.chatFab}
-        aria-label="Chat"
+        aria-label={unread ? `Messages, ${unread} non lu(s)` : 'Messages'}
       >
-        <MessageCircle size={22} color="#fff" aria-hidden="true" />
+        <MessageCircle size={22} aria-hidden="true" />
+        {unread > 0 && <span className="bn-badge bn-badge--tab" style={styles.chatBadge}>{badgeText(unread)}</span>}
       </button>
-
-      {/* Panneau Chat */}
-      {chatOpen && (
-        <div style={styles.chatPanel}>
-          <div style={styles.chatHeader}>
-            Discussion — {order.order_number}
-          </div>
-          <div style={styles.chatMessages}>
-            {chatMessages.length === 0 && (
-              <div style={{ color: 'var(--text-3)', fontSize: '13px', textAlign: 'center', marginTop: '20px' }}>
-                Aucun message pour l'instant
-              </div>
-            )}
-            {chatMessages.map((msg, i) => {
-              const isDriver = msg.sender === 'driver' || msg.sender_id === user?.id;
-              return (
-                <div
-                  key={i}
-                  style={isDriver ? styles.chatMsgDriver : styles.chatMsgOther}
-                >
-                  {msg.message}
-                </div>
-              );
-            })}
-            <div ref={chatBottomRef} />
-          </div>
-          <div style={styles.chatInputRow}>
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={handleChatKeyDown}
-              placeholder="Écrire un message..."
-              style={styles.chatInput}
-            />
-            <button onClick={sendChatMessage} style={styles.chatSendBtn}>
-              ➤
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -661,15 +566,7 @@ const styles = {
   podSubmitBtn: { marginTop: '12px', width: '100%', background: '#D9A55B', color: '#0b0b10', padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 
   // Chat FAB
-  chatFab: { position: 'fixed', bottom: '16px', right: '16px', background: '#D9A55B', color: '#0b0b10', border: 'none', borderRadius: '50%', width: '48px', height: '48px', fontSize: '20px', cursor: 'pointer', zIndex: 1000, boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
+  chatFab: { position: 'fixed', bottom: 'calc(16px + env(safe-area-inset-bottom))', right: '16px', display: 'grid', placeItems: 'center', background: 'var(--brand-grad)', color: '#0b0b10', border: 'none', borderRadius: '50%', width: '48px', height: '48px', fontSize: '20px', cursor: 'pointer', zIndex: 1000, boxShadow: '0 4px 16px rgba(0,0,0,0.3)' },
 
-  // Chat panel
-  chatPanel: { position: 'fixed', bottom: '72px', right: '16px', width: '300px', height: '400px', background: 'var(--surface)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 999 },
-  chatHeader: { background: 'var(--surface)', color: 'var(--text-strong)', padding: '12px', fontSize: '14px', fontWeight: '700' },
-  chatMessages: { flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' },
-  chatMsgDriver: { alignSelf: 'flex-end', background: '#D9A55B', color: '#0b0b10', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
-  chatMsgOther: { alignSelf: 'flex-start', background: 'var(--surface-2)', color: 'var(--text-strong)', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
-  chatInputRow: { borderTop: '1px solid var(--border)', padding: '8px', display: 'flex', gap: '8px' },
-  chatInput: { flex: 1, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '13px', outline: 'none' },
-  chatSendBtn: { background: '#D9A55B', color: '#0b0b10', border: 'none', borderRadius: '8px', padding: '8px 12px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
+  chatBadge: { top: '-4px', left: 'auto', right: '-4px' },
 };

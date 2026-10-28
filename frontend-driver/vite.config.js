@@ -27,6 +27,8 @@ export default defineConfig({
       workbox: {
         // Mise en cache pour fonctionnement offline partiel
         globPatterns: ['**/*.{js,css,html,svg}'],
+        // Notifications push des messages (public/push-sw.js)
+        importScripts: ['push-sw.js'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*/i,

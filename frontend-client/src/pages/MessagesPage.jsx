@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import { STATUS } from '../components/delivery';
+import { useUnread, badgeText } from '../../../shared/messaging';
 import '../styles/messages.css';
 
 // Une discussion disparaît de l'application quand la commande est terminée ou annulée.
@@ -22,6 +23,7 @@ const timeOf = (d) => {
 /** Onglet « Messages » : une conversation par commande en cours avec un chauffeur. */
 export default function MessagesPage() {
   const [threads, setThreads] = useState(null);
+  const unread = useUnread((s) => s.byOrder);
 
   useEffect(() => {
     let alive = true;
@@ -54,6 +56,7 @@ export default function MessagesPage() {
         <div className="bn-threads">
           {threads.map(({ order, last }) => {
             const fromDriver = last && last.sender_role !== 'client';
+            const count = unread[order.id] || 0;
             return (
               <Link key={order.id} to={`/messages/${order.id}`} className="bn-thread">
                 <span className="bn-thread__avatar" aria-hidden="true">{initialsOf(order.driver_name)}</span>
@@ -63,8 +66,11 @@ export default function MessagesPage() {
                     <small>{timeOf(last?.created_at)}</small>
                   </span>
                   <span className="bn-thread__tag">{order.order_number} · {STATUS[order.status]?.tag || order.status}</span>
-                  <span className={`bn-thread__last${fromDriver ? ' is-new' : ''}`}>
-                    {last ? `${fromDriver ? '' : 'Vous : '}${last.message}` : 'Écrivez au chauffeur'}
+                  <span className="bn-thread__row">
+                    <span className={`bn-thread__last${count ? ' is-new' : ''}`}>
+                      {last ? `${fromDriver ? '' : 'Vous : '}${last.message}` : 'Écrivez au chauffeur'}
+                    </span>
+                    {count > 0 && <span className="bn-badge" aria-label={`${count} non lu(s)`}>{badgeText(count)}</span>}
                   </span>
                 </span>
               </Link>

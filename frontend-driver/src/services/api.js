@@ -24,4 +24,8 @@ api.interceptors.response.use(
   }
 );
 
+// Fichiers servis par le backend (photo de profil…) : même origine que l'API
+const API_ORIGIN = import.meta.env.VITE_API_URL || '';
+export const mediaUrl = (path) => (path ? `${API_ORIGIN}${path}` : undefined);
+
 export default api;

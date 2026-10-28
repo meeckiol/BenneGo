@@ -5,6 +5,7 @@ import { Camera, ChevronRight, Copy, FileText, LogOut, MessageCircle, Share2, Ta
 import api, { mediaUrl } from '../services/api';
 import useAuthStore, { selectAccountType } from '../store/authStore';
 import { WHATSAPP_URL } from '../constants/contact';
+import PushToggle from '../../../shared/PushToggle';
 import '../styles/profile.css';
 
 const ACCOUNT_LABELS = { particulier: 'Compte client', entreprise: 'Compte entreprise' };
@@ -150,6 +151,13 @@ export default function ProfilePage() {
         <div><strong>{orders ? delivered : '…'}</strong><small>Livrées</small></div>
         <div><strong>{referral?.total_referrals ?? '…'}</strong><small>Filleuls</small></div>
       </div>
+
+      <section className="bn-pgroup">
+        <h2>Réglages</h2>
+        <div className="bn-plist">
+          <PushToggle api={api} />
+        </div>
+      </section>
 
       <section className="bn-pgroup">
         <h2>Avantages</h2>

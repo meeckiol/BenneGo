@@ -108,10 +108,11 @@ export function Track({ status }) {
   return <div className="bn-track" aria-label={`Statut : ${info.label}`}>{items}</div>;
 }
 
-export function DeliveryCard({ order, index }) {
+// `to` et `extra` servent à l'app camionneur : lien vers la course et ligne de gain sous la frise
+export function DeliveryCard({ order, index, to, extra }) {
   const info = STATUS[order.status] || { label: order.status, ribbon: 'waiting' };
   return (
-    <Link to={`/orders/${order.id}`} className="bn-dcard" style={{ animationDelay: `${index * 60}ms` }}>
+    <Link to={to || `/orders/${order.id}`} className="bn-dcard" style={{ animationDelay: `${index * 60}ms` }}>
       <span className={`bn-ribbon bn-ribbon--${info.ribbon}`}>{info.tag || info.label}</span>
       <div className="bn-dcard__top">
         <span className="bn-glyph"><Glyph kind={glyphFor(order)} /></span>
@@ -121,6 +122,7 @@ export function DeliveryCard({ order, index }) {
         </div>
       </div>
       <Track status={order.status} />
+      {extra}
       <div className="bn-dcard__legs">
         <div>DEPUIS<strong>{order.pickup_address || '—'}</strong>{shortDate(order.created_at)}</div>
         <div>VERS<strong>{order.delivery_address || '—'}</strong>{order.delivered_at ? shortDate(order.delivered_at) : order.status === 'awaiting_payment' ? 'Paiement à finaliser' : info.label}</div>

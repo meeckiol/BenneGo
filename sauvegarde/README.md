@@ -136,3 +136,20 @@ B=sauvegarde/messages-avant-design
 cp $B/MessagesPage.jsx $B/ChatPage.jsx frontend-client/src/pages/
 cp $B/messages.css frontend-client/src/styles/
 ```
+
+## chauffeur-avant-sections (28 octobre 2026)
+
+Avant : l'app camionneur passe à 4 onglets (Accueil, Courses, Messages, Profil) sans passation de commande,
+avec une session commune (disponibilité, GPS, nouvelles courses) et les alertes de messages.
+
+```bash
+B=sauvegarde/chauffeur-avant-sections
+cp $B/App.jsx frontend-driver/src/
+cp $B/ActiveDeliveryPage.jsx $B/DriverDashboard.jsx $B/DriverHistoryPage.jsx $B/DriverLoginPage.jsx frontend-driver/src/pages/
+cp $B/useDriverSocket.js frontend-driver/src/hooks/
+cp $B/socket.js frontend-driver/src/services/
+cp $B/vite.config.js frontend-driver/
+```
+
+Les nouveaux fichiers (pages Courses, Messages, Profil…, `context/`, `utils/`, `styles/`) ne sont plus utilisés
+une fois cette version remise. Le backend (non lus, push) peut rester : l'ancienne app l'ignore.

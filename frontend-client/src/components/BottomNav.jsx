@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Building2, ClipboardList, Home, MessageCircle, Plus, User } from 'lucide-react';
 import useAuthStore, { selectAccountType } from '../store/authStore';
+import { useUnread, badgeText } from '../../../shared/messaging';
 
 /**
  * Barre de navigation basse. Le premier onglet suit le type de compte choisi à la connexion :
@@ -11,6 +12,7 @@ export default function BottomNav() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const accountType = useAuthStore(selectAccountType);
+  const unread = useUnread((s) => s.total);
 
   const isActive = (path) => {
     if (path === '/') return pathname === '/';
@@ -20,7 +22,7 @@ export default function BottomNav() {
     return pathname === path;
   };
 
-  const tab = (path, label, Icon) => (
+  const tab = (path, label, Icon, badge = 0) => (
     <button
       key={path}
       type="button"
@@ -28,7 +30,10 @@ export default function BottomNav() {
       onClick={() => navigate(path)}
       aria-current={isActive(path) ? 'page' : undefined}
     >
-      <Icon size={22} aria-hidden="true" />
+      <span className="bn-tab__icon">
+        <Icon size={22} aria-hidden="true" />
+        {badge > 0 && <span className="bn-badge bn-badge--tab" aria-label={`${badge} message(s) non lu(s)`}>{badgeText(badge)}</span>}
+      </span>
       <span>{label}</span>
     </button>
   );
@@ -42,7 +47,7 @@ export default function BottomNav() {
       <button type="button" className="bn-tab" onClick={() => navigate('/orders/new')} aria-label="Nouvelle commande">
         <span className="bn-tab__fab"><Plus size={26} aria-hidden="true" /></span>
       </button>
-      {tab('/messages', 'Messages', MessageCircle)}
+      {tab('/messages', 'Messages', MessageCircle, unread)}
       {tab('/profil', 'Profil', User)}
     </nav>
   );

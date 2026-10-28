@@ -7,6 +7,7 @@ import { getSocket } from '../services/socket';
 import useAuthStore from '../store/authStore';
 import { STATUS, describe } from '../components/delivery';
 import { CHAT_CLOSED, initialsOf } from './MessagesPage';
+import { markChatRead } from '../../../shared/messaging';
 import '../styles/messages.css';
 
 const hour = (d) => (d ? new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '');
@@ -51,6 +52,7 @@ export default function ChatPage() {
       })
       .catch(() => navigate('/messages', { replace: true }));
     api.get(`/orders/${id}/chat`).then(({ data }) => setMessages(data.messages || [])).catch(() => {});
+    markChatRead(api, id);
   }, [id]);
 
   useEffect(() => {
@@ -60,7 +62,12 @@ export default function ChatPage() {
       socket.emit('chat_join', { order_id: id });
       socket.emit('track_order', id);
     };
-    const onMessage = (msg) => { if (msg.order_id === id) setMessages((prev) => [...prev, msg]); };
+    const onMessage = (msg) => {
+      if (msg.order_id !== id) return;
+      setMessages((prev) => [...prev, msg]);
+      // Message reçu pendant que la discussion est affichée : il est lu
+      if (msg.sender_id !== me?.id && document.visibilityState === 'visible') markChatRead(api, id);
+    };
     const onStatus = (data) => {
       if (data?.order_id && data.order_id !== id) return;
       const status = data?.status;

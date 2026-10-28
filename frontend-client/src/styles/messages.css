@@ -50,13 +50,16 @@
   color: var(--brand-ink);
 }
 .bn-thread__tag, .bn-thread__last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bn-thread__last { width: 100%; font-size: 14px; color: var(--text-3); }
+.bn-thread__row { display: flex; align-items: center; gap: 8px; width: 100%; }
+.bn-thread__last { flex: 1; min-width: 0; font-size: 14px; color: var(--text-3); }
 .bn-thread__last.is-new { font-weight: 600; color: var(--text-strong); }
 
 /* Discussion */
 .bn-chat {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  /* Colonne bornée : les réponses rapides défilent au lieu d'élargir l'écran */
+  grid-template-columns: minmax(0, 1fr);
   height: 100dvh;
   max-width: 560px;
   margin: 0 auto;
