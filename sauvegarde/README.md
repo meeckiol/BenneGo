@@ -153,3 +153,14 @@ cp $B/vite.config.js frontend-driver/
 
 Les nouveaux fichiers (pages Courses, Messages, Profil…, `context/`, `utils/`, `styles/`) ne sont plus utilisés
 une fois cette version remise. Le backend (non lus, push) peut rester : l'ancienne app l'ignore.
+
+## splash camionneur (28 octobre 2026)
+
+L'app camionneur a son propre splash (tracé du logo, `frontend-driver/src/components/DriverSplash.jsx`).
+Pour revenir au splash du camion partagé avec le client, dans `frontend-driver/src/main.jsx` :
+
+```js
+import SplashGate from '../../shared/SplashScreen';
+```
+
+L'ancien écran de lancement Android avait le fond `#0F172A` (`frontend-driver/public/manifest.json`).

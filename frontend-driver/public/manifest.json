@@ -4,7 +4,8 @@
   "description": "Application chauffeur BenneGo",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
+  "orientation": "portrait",
+  "background_color": "#0b0b10",
   "theme_color": "#D9A55B",
   "icons": [
     {
@@ -13,9 +14,16 @@
       "type": "image/png"
     },
     {
+      "src": "/icon-splash-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

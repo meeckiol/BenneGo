@@ -5,7 +5,8 @@ import { Toaster } from 'react-hot-toast';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import DevicePreview from '../../shared/DevicePreview';
-import SplashGate from '../../shared/SplashScreen';
+// Splash propre au camionneur : animation de tracé du logo (le client garde le camion)
+import SplashGate from './components/DriverSplash';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
