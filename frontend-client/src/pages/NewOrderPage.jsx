@@ -31,7 +31,8 @@ export default function NewOrderPage() {
     // 1. Matériaux
     material_type_id: '',
     quantity_m3: 16,
-    material_description: '',
+    // Prérempli depuis les tuiles de l'accueil (?matiere=Sable)
+    material_description: searchParams.get('matiere') || '',
     truck_type: 'double_benne',
     pickup_address: DEFAULT_CARRIERE.address,
     pickup_lat: DEFAULT_CARRIERE.lat,
