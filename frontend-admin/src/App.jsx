@@ -32,7 +32,7 @@ const AdminFallback = () => (
       width: '38px',
       height: '38px',
       border: '3px solid var(--border-2)',
-      borderTopColor: '#FF6B00',
+      borderTopColor: '#F6A906',
       borderRadius: '50%',
       animation: 'adminSpin 0.75s linear infinite',
     }} />

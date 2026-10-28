@@ -53,7 +53,7 @@ export default function PaymentsPage() {
     <div style={s.page}>
       {/* KPI paiements */}
       <div style={s.kpiGrid}>
-        <PayKPI label="Volume total (GMV)" value={Number(stats?.total_gmv || 0)} color="#FF6B00" icon={<ChartColumn size={22} aria-hidden="true" />}
+        <PayKPI label="Volume total (GMV)" value={Number(stats?.total_gmv || 0)} color="#F6A906" icon={<ChartColumn size={22} aria-hidden="true" />}
           sub="Commandes payées" />
         <PayKPI label="Commissions BenneGo" value={Number(stats?.total_revenue || 0)} color="#10B981" icon={<Banknote size={22} aria-hidden="true" />}
           sub="10 % prélevés après confirmation client" />

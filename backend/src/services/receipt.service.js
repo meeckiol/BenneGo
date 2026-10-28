@@ -10,7 +10,9 @@
 const PDFDocument = require('pdfkit');
 
 // ─── Couleurs et polices ────────────────────────────────────────────────────
-const ORANGE  = '#FF6B00';
+// Or du logo pour les aplats, or foncé pour le texte (lisible sur fond blanc)
+const GOLD    = '#F6A906';
+const GOLD_INK = '#805C00';
 const DARK    = '#1a1a2e';
 const GREY    = '#64748b';
 const WHITE   = '#ffffff';
@@ -48,11 +50,11 @@ const fmtBirth = (d) => {
  * Dessine l'en-tête commun à tous les reçus
  */
 const drawHeader = (doc, type) => {
-  // Fond orange en haut
-  doc.rect(0, 0, doc.page.width, 90).fill(ORANGE);
+  // Bandeau or en haut, texte sombre (le blanc est illisible sur l'or)
+  doc.rect(0, 0, doc.page.width, 90).fill(GOLD);
 
   // Titre
-  doc.fillColor(WHITE)
+  doc.fillColor(DARK)
      .fontSize(22)
      .font('Helvetica-Bold')
      .text('BenneGo', 50, 22);
@@ -63,8 +65,8 @@ const drawHeader = (doc, type) => {
 
   // Badge type de reçu
   const label = type === 'driver' ? 'REÇU CONDUCTEUR' : 'REÇU CLIENT';
-  doc.rect(doc.page.width - 180, 20, 130, 30).fill('rgba(0,0,0,0.2)');
-  doc.fillColor(WHITE)
+  doc.rect(doc.page.width - 180, 20, 130, 30).fill('#ffffff');
+  doc.fillColor(DARK)
      .fontSize(11)
      .font('Helvetica-Bold')
      .text(label, doc.page.width - 175, 28, { width: 120, align: 'center' });
@@ -77,7 +79,7 @@ const drawHeader = (doc, type) => {
  */
 const drawSection = (doc, title, y) => {
   doc.rect(50, y, doc.page.width - 100, 24).fill('#f1f5f9');
-  doc.fillColor(ORANGE)
+  doc.fillColor(GOLD_INK)
      .fontSize(10)
      .font('Helvetica-Bold')
      .text(title.toUpperCase(), 58, y + 7);
@@ -108,7 +110,7 @@ const drawRow = (doc, label, value, y, valueColor = DARK) => {
 const drawFooter = (doc) => {
   const y = doc.page.height - 60;
   doc.rect(0, y, doc.page.width, 60).fill('#f8fafc');
-  doc.rect(0, y, doc.page.width, 2).fill(ORANGE);
+  doc.rect(0, y, doc.page.width, 2).fill(GOLD);
 
   doc.fillColor(GREY)
      .fontSize(9)
@@ -178,7 +180,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
 
   // ── Section commande ─────────────────────────────────────────────────────
   y = drawSection(doc, 'Détails de la commande', y);
-  y = drawRow(doc, 'Numéro de commande', order.order_number, y, ORANGE);
+  y = drawRow(doc, 'Numéro de commande', order.order_number, y, GOLD_INK);
   y = drawRow(doc, 'Date de commande', fmtDate(order.created_at), y);
   y = drawRow(doc, 'Date de livraison', fmtDate(order.delivered_at), y);
   y = drawRow(doc, 'Matériau', order.material_name || order.material_description || '—', y);
@@ -220,9 +222,9 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y = drawSection(doc, 'Paiement', y);
 
   // Cadre montant total
-  doc.rect(50, y, doc.page.width - 100, 36).fill('#fff7ed').stroke(ORANGE);
+  doc.rect(50, y, doc.page.width - 100, 36).fill('#fffbeb').stroke(GOLD);
   doc.fillColor(GREY).fontSize(10).font('Helvetica').text('Montant total payé', 62, y + 8);
-  doc.fillColor(ORANGE).fontSize(16).font('Helvetica-Bold')
+  doc.fillColor(GOLD_INK).fontSize(16).font('Helvetica-Bold')
      .text(fcfa(order.total_amount), 250, y + 6, { width: doc.page.width - 310 });
   y += 46;
 

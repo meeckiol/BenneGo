@@ -199,7 +199,7 @@ export default function NewOrderPage() {
               onClick={() => handleTypeSelect('MATERIAL')}
               style={{
                 ...styles.tabBtn,
-                background: orderType === 'MATERIAL' ? '#FF6B00' : 'white',
+                background: orderType === 'MATERIAL' ? '#F6A906' : 'white',
                 color: orderType === 'MATERIAL' ? '#0b0b10' : '#475569',
               }}
             >
@@ -662,7 +662,7 @@ const styles = {
   row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
   primaryBtn: {
     padding: '16px',
-    background: '#FF6B00',
+    background: '#F6A906',
     color: '#0b0b10',
     border: 'none',
     borderRadius: '10px',
@@ -670,7 +670,7 @@ const styles = {
     fontWeight: '800',
     cursor: 'pointer',
     width: '100%',
-    boxShadow: '0 4px 12px rgba(255,107,0,0.25)',
+    boxShadow: '0 4px 12px rgba(246, 169, 6,0.25)',
   },
   secondaryBtn: {
     padding: '16px',

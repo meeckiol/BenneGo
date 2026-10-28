@@ -420,7 +420,7 @@ router.get('/report/monthly', async (req, res, next) => {
 
     // En-tête
     doc.rect(0, 0, doc.page.width, 90).fill('#1E293B');
-    doc.fillColor('#FF6B00').fontSize(22).font('Helvetica-Bold').text('BenneGo', 40, 25);
+    doc.fillColor('#F6A906').fontSize(22).font('Helvetica-Bold').text('BenneGo', 40, 25);
     doc.fillColor('#94A3B8').fontSize(12).font('Helvetica').text(`Rapport d'activité mensuel — ${monthStr}`, 40, 55);
 
     // Résumé

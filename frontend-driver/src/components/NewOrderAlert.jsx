@@ -46,7 +46,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
             <circle
               cx="40" cy="40" r="34"
               fill="none"
-              stroke={remaining > 10 ? '#FF6B00' : '#F44336'}
+              stroke={remaining > 10 ? '#F6A906' : '#F44336'}
               strokeWidth="6"
               strokeDasharray={`${2 * Math.PI * 34}`}
               strokeDashoffset={`${2 * Math.PI * 34 * (1 - progressPct / 100)}`}
@@ -62,7 +62,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
         <div style={{
           ...styles.typeBadge,
           background: isRental ? '#1E3A8A' : isEvacuation ? '#065F46' : '#9A3412',
-          color: isRental ? '#93C5FD' : isEvacuation ? '#6EE7B7' : '#FED7AA',
+          color: isRental ? '#93C5FD' : isEvacuation ? '#6EE7B7' : '#FDE68A',
         }}>
           {isRental ? 'Location d\'Engin Lourd' : isEvacuation ? 'Évacuation de Gravats' : 'Transport de Matériaux'}
         </div>
@@ -135,7 +135,7 @@ const styles = {
   },
   card: {
     background: 'var(--surface)',
-    border: '1px solid rgba(255,107,0,0.3)',
+    border: '1px solid rgba(246, 169, 6,0.3)',
     borderRadius: '20px',
     padding: '28px 24px',
     width: '100%',
@@ -144,7 +144,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     gap: '16px',
-    boxShadow: '0 20px 60px rgba(255,107,0,0.2)',
+    boxShadow: '0 20px 60px rgba(246, 169, 6,0.2)',
   },
   countdownWrapper: {
     position: 'relative',
@@ -192,8 +192,8 @@ const styles = {
   arrow: { textAlign: 'center', color: 'var(--text-3)', fontSize: '16px' },
   priceBox: {
     width: '100%',
-    background: 'rgba(255,107,0,0.1)',
-    border: '1px solid rgba(255,107,0,0.3)',
+    background: 'rgba(246, 169, 6,0.1)',
+    border: '1px solid rgba(246, 169, 6,0.3)',
     borderRadius: '12px',
     padding: '14px 16px',
     display: 'flex',

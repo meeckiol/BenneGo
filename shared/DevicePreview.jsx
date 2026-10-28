@@ -127,7 +127,7 @@ const styles = {
     color: '#c9c9d1',
     font: '700 13px/1 system-ui, sans-serif',
   },
-  optionOn: { background: '#FF6B00', color: '#0b0b10' },
+  optionOn: { background: '#F6A906', color: '#0b0b10' },
   stage: {
     minHeight: '100vh',
     display: 'grid',

@@ -56,7 +56,7 @@ class CheckoutConfig {
         'name': name,
         'data': orderId,
         'reason': 'BenneGo $orderNumber',
-        'theme': '#FF6B00',
+        'theme': '#F6A906',
       };
 }
 

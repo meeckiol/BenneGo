@@ -449,8 +449,8 @@ export default function EnterprisePage() {
                 </button>
               </div>
 
-              <div style={{ ...styles.pricingCard, borderColor: '#FF6B00' }}>
-                <span style={{ ...styles.pricingTag, background: '#FF6B00', color: '#0b0b10' }}>Pack Projet</span>
+              <div style={{ ...styles.pricingCard, borderColor: '#F6A906' }}>
+                <span style={{ ...styles.pricingTag, background: '#F6A906', color: '#0b0b10' }}>Pack Projet</span>
                 <h4 style={styles.pricingTitle}>Frais Fixes par Chantier</h4>
                 <div style={styles.priceAmount}>75 000 <span style={styles.pricePeriod}>FCFA / chantier</span></div>
                 <p style={styles.pricingDesc}>Idéal pour les promoteurs construisant un immeuble précis (6 mois max).</p>
@@ -463,7 +463,7 @@ export default function EnterprisePage() {
                 </ul>
                 <button
                   onClick={() => handleSubscribe('site_pack')}
-                  style={{ ...styles.subscribeBtn, background: '#FF6B00' }}
+                  style={{ ...styles.subscribeBtn, background: '#F6A906' }}
                 >
                   Choisir ce Pack (75 000 FCFA)
                 </button>
@@ -482,7 +482,7 @@ const styles = {
   headerLeft: { display: 'flex', alignItems: 'center', gap: '16px' },
   backBtn: { background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '14px', cursor: 'pointer', fontWeight: '600' },
   logo: { fontSize: '20px', fontWeight: '900', color: 'var(--brand-ink)' },
-  badge: { background: 'rgba(255,107,0,0.2)', color: 'var(--warning)', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' },
+  badge: { background: 'rgba(246, 169, 6,0.2)', color: 'var(--warning)', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '4px' },
   headerRight: {},
   activePlanBadge: { background: '#16A34A', color: 'white', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
   inactivePlanBadge: { background: 'var(--surface-3)', color: 'var(--text-2)', padding: '5px 12px', borderRadius: '20px', fontSize: '12px' },
@@ -500,7 +500,7 @@ const styles = {
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: { fontSize: '13px', fontWeight: '600', color: 'var(--text-2)' },
   input: { padding: '11px 14px', borderRadius: '8px', border: '1px solid var(--border-2)', fontSize: '14px', color: 'var(--text-strong)' },
-  actionBtn: { marginTop: '16px', background: '#FF6B00', color: '#0b0b10', border: 'none', padding: '12px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  actionBtn: { marginTop: '16px', background: '#F6A906', color: '#0b0b10', border: 'none', padding: '12px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
   projectsList: { display: 'flex', flexDirection: 'column', gap: '14px' },
   emptyState: { padding: '30px', textAlign: 'center', background: 'var(--surface)', borderRadius: '12px', border: '1px dashed var(--border-2)', color: 'var(--text-3)' },
   projectCard: { background: 'var(--surface)', borderRadius: '12px', padding: '20px', border: '1px solid var(--border)', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' },

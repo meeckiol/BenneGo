@@ -35,7 +35,7 @@ const PageFallback = () => (
       width: '40px',
       height: '40px',
       border: '3px solid var(--border)',
-      borderTopColor: '#FF6B00',
+      borderTopColor: '#F6A906',
       borderRadius: '50%',
       animation: 'spin 0.8s linear infinite',
     }} />

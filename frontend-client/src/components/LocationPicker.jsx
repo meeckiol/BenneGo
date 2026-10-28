@@ -6,7 +6,7 @@ const PICKER_ZOOM = 12;
 
 const pinIcon = L.divIcon({
   className: '',
-  html: '<span style="display:block;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#FF6B00;border:3px solid #ffffff;box-shadow:0 2px 6px rgba(17,24,39,.35)"></span>',
+  html: '<span style="display:block;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#F6A906;border:3px solid #ffffff;box-shadow:0 2px 6px rgba(17,24,39,.35)"></span>',
   iconSize: [22, 22],
   iconAnchor: [11, 22],
 });

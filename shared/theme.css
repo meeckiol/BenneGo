@@ -1,6 +1,6 @@
 /* ==========================================================================
    BenneGo — thème partagé des trois frontends (client, chauffeur, admin)
-   Style clair et lumineux, accent orange de la marque, cartes arrondies, pastilles de statut.
+   Style clair et lumineux, accent or du logo, cartes arrondies, pastilles de statut.
    Source unique : toute couleur de l'interface passe par ces variables.
    Contrastes WCAG AA vérifiés par les tests axe (e2e/).
    ========================================================================== */
@@ -9,14 +9,14 @@
   color-scheme: light;
 
   /* Marque */
-  --brand: #ff6b00;
-  --brand-2: #ff8a3d;
-  --brand-3: #ffb27a;
-  /* Orange foncé pour le texte sur fond clair (4,5:1 minimum sur toutes les surfaces) */
-  --brand-ink: #b04300;
-  --brand-soft: rgba(255, 107, 0, 0.12);
-  --brand-line: rgba(255, 107, 0, 0.30);
-  --brand-grad: linear-gradient(135deg, #ff8a1f 0%, #ff6b00 100%);
+  --brand: #f6a906;
+  --brand-2: #fcce09;
+  --brand-3: #fde28a;
+  /* Or foncé pour le texte sur fond clair (4,5:1 minimum sur toutes les surfaces) */
+  --brand-ink: #805c00;
+  --brand-soft: rgba(246, 169, 6, 0.12);
+  --brand-line: rgba(246, 169, 6, 0.30);
+  --brand-grad: linear-gradient(135deg, #fcce09 0%, #f6a906 100%);
 
   /* Surfaces */
   --bg: #fffaf6;
@@ -50,7 +50,7 @@
   --radius-lg: 20px;
   --radius-xl: 26px;
   --shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
-  --shadow-brand: 0 10px 24px rgba(255, 107, 0, 0.26);
+  --shadow-brand: 0 10px 24px rgba(246, 169, 6, 0.26);
   --font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --tabbar-h: 72px;
@@ -70,7 +70,7 @@ body {
   font-family: var(--font-sans);
   color: var(--text);
   background:
-    radial-gradient(900px 420px at 50% -12%, rgba(255, 107, 0, 0.10), transparent 62%),
+    radial-gradient(900px 420px at 50% -12%, rgba(246, 169, 6, 0.10), transparent 62%),
     var(--bg);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
@@ -108,7 +108,7 @@ option { background: var(--surface); color: var(--text); }
   box-shadow: var(--shadow);
   padding: 16px;
 }
-/* Texte sombre sur l'orange de marque (le blanc n'atteint que 2,9:1) */
+/* Texte sombre sur l'or de marque (le blanc n'atteint que 2:1) */
 .bn-card--brand {
   background: var(--brand-grad);
   border-color: transparent;
@@ -181,7 +181,7 @@ option { background: var(--surface); color: var(--text); }
 .bn-btn:hover { box-shadow: var(--shadow); }
 .bn-btn:active { transform: scale(0.98); }
 .bn-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-/* Texte sombre sur l'orange de marque : 6,2:1 (le blanc n'atteint que 2,9:1) */
+/* Texte sombre sur l'or de marque : 9,9:1 (le blanc n'atteint que 2:1) */
 .bn-btn--primary { background: var(--brand-grad); border-color: transparent; color: #0b0b10; box-shadow: var(--shadow-brand); }
 .bn-btn--ghost { background: transparent; }
 .bn-btn--danger { background: var(--danger-soft); border-color: rgba(220, 38, 38, 0.35); color: var(--danger); }
@@ -372,7 +372,7 @@ option { background: var(--surface); color: var(--text); }
   display: grid;
   gap: 10px;
   background:
-    radial-gradient(260px 180px at 100% 0%, rgba(255, 107, 0, 0.22), transparent 70%),
+    radial-gradient(260px 180px at 100% 0%, rgba(246, 169, 6, 0.22), transparent 70%),
     linear-gradient(160deg, #fff4ea 0%, #ffffff 100%);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -513,7 +513,7 @@ option { background: var(--surface); color: var(--text); }
   align-content: start;
 }
 .bn-auth__hero { display: grid; gap: 10px; justify-items: start; }
-.bn-auth__logo { border-radius: 18px; box-shadow: 0 10px 28px rgba(255, 107, 0, 0.22); }
+.bn-auth__logo { border-radius: 18px; box-shadow: 0 10px 28px rgba(246, 169, 6, 0.22); }
 .bn-auth__brand { color: var(--brand-ink); }
 .bn-auth__title { font-size: 28px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: var(--text-strong); }
 .bn-auth__card { display: grid; gap: 16px; padding: 20px; }

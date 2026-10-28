@@ -191,7 +191,7 @@ function SplashScreen({ onDone }) {
           <rect x="204" y="246" width="132" height="66" rx="10" fill="#f1e6d0" stroke="#f0a35c" strokeWidth="1.5" strokeDasharray="6 5" />
           <rect x="222" y="214" width="42" height="36" fill="#e8e2d9" />
           {[[214, 300], [326, 256], [326, 300]].map(([cx, cy]) => (
-            <path key={`${cx}-${cy}`} d={`M${cx - 4} ${cy + 4} L${cx} ${cy - 5} L${cx + 4} ${cy + 4} Z`} fill="#ff6b00" />
+            <path key={`${cx}-${cy}`} d={`M${cx - 4} ${cy + 4} L${cx} ${cy - 5} L${cx + 4} ${cy + 4} Z`} fill="#f6a906" />
           ))}
           <path d={ROAD} fill="none" stroke="#e8e2d9" strokeWidth="64" />
           <path d={ROAD} fill="none" stroke="#ffffff" strokeWidth="3" strokeDasharray="14 12" />
@@ -238,7 +238,7 @@ function SplashScreen({ onDone }) {
 
           {/* Benne : pivote sur son arête arrière */}
           <g ref={set('bed')}>
-            <rect x={BED.x} y="-11" width={BED.length} height="22" rx="2" fill="#ff6b00" stroke="#c2410c" strokeWidth="1.2" />
+            <rect x={BED.x} y="-11" width={BED.length} height="22" rx="2" fill="#f6a906" stroke="#b07a05" strokeWidth="1.2" />
             <rect ref={set('load')} x="-27" y="-8.5" width="37" height="17" rx="2" fill="#dcae64" />
             <path d="M-27 -4 H10 M-27 0 H10 M-27 4 H10" stroke="#c9893c" strokeWidth="0.6" opacity="0.5" />
             <rect ref={set('bedShade')} x={BED.x} y="-11" width={BED.length} height="22" rx="2" fill="#111827" opacity="0" />

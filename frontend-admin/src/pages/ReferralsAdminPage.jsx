@@ -94,9 +94,9 @@ export default function ReferralsAdminPage() {
                 onClick={() => setStatusFilter(f.value)}
                 style={{
                   ...s.filterBtn,
-                  background: statusFilter === f.value ? '#FF6B00' : 'transparent',
+                  background: statusFilter === f.value ? '#F6A906' : 'transparent',
                   color: statusFilter === f.value ? '#0b0b10' : 'var(--text-2)',
-                  borderColor: statusFilter === f.value ? '#FF6B00' : 'var(--border-2)',
+                  borderColor: statusFilter === f.value ? '#F6A906' : 'var(--border-2)',
                 }}
               >
                 {f.label}

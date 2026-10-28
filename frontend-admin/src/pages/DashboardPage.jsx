@@ -43,7 +43,7 @@ export default function DashboardPage() {
           label="Revenus plateforme"
           value={`${totalRevenue.toLocaleString()} FCFA`}
           sub="Commissions 10%"
-          color="#FF6B00"
+          color="#F6A906"
         />
         <KPICard
           icon={<Package size={22} aria-hidden="true" />}
@@ -101,7 +101,7 @@ export default function DashboardPage() {
                 formatter={(v) => [`${v.toLocaleString()} FCFA`, 'Revenus']}
               />
               <Area type="monotone" dataKey="revenus"
-                stroke="#FF6B00" fill="rgba(255,107,0,0.1)" strokeWidth={2} />
+                stroke="#F6A906" fill="rgba(246, 169, 6,0.1)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
