@@ -1,0 +1,123 @@
+/* Écran de démarrage de BenneGo. Toutes les durées partent de l'ouverture de l'application :
+   la route pivote (0,1 s à 0,9 s), le camion roule (1 s à 2,8 s), la benne se lève et déverse
+   le sable (2,9 s à 4,3 s), puis l'écran s'efface (4,4 s à 4,8 s). La scène est dans SplashScreen.jsx. */
+
+.bn-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  justify-items: center;
+  background: #ffffff;
+  cursor: pointer;
+  overflow: hidden;
+  animation: bn-splash-fade 0.4s ease 4.4s both;
+}
+
+.bn-splash__scene {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.bn-splash__word {
+  margin: 0;
+  padding: 0 16px 12vh;
+  font: 800 34px/1 var(--font-sans);
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+  animation: bn-splash-rise 0.5s ease-out 0.9s both;
+}
+
+.bn-splash__word span {
+  color: var(--brand);
+}
+
+.bn-splash__road {
+  transform-box: view-box;
+  transform-origin: 180px 320px;
+  animation: bn-splash-turn 0.8s ease-in-out 0.1s both;
+}
+
+.bn-splash__dash {
+  animation: bn-splash-dash 0.6s linear 1s 3 both;
+}
+
+.bn-splash__truck-in {
+  animation: bn-splash-rise 0.5s ease-out 0.45s both;
+}
+
+.bn-splash__ride {
+  animation: bn-splash-ride 1.8s cubic-bezier(0.45, 0, 0.25, 1) 1s both;
+}
+
+.bn-splash__wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bn-splash-spin 0.45s linear 1s 4 both;
+}
+
+.bn-splash__bed {
+  transform-box: fill-box;
+  transform-origin: 0% 100%;
+  animation: bn-splash-tip 1.4s ease-in-out 2.9s both;
+}
+
+.bn-splash__pile {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bn-splash-pile 0.5s ease-out 3.5s both;
+}
+
+.bn-splash__grain {
+  animation: bn-splash-grain 0.45s cubic-bezier(0.5, 0, 1, 0.6) both;
+}
+
+@keyframes bn-splash-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes bn-splash-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes bn-splash-turn {
+  from { opacity: 0; transform: rotate(0deg); }
+  30% { opacity: 1; }
+  to { opacity: 1; transform: rotate(45deg); }
+}
+
+@keyframes bn-splash-dash {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -30px; }
+}
+
+@keyframes bn-splash-ride {
+  from { transform: translate(-28px, 28px); }
+  to { transform: translate(35px, -35px); }
+}
+
+@keyframes bn-splash-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bn-splash-tip {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-42deg); }
+  70% { transform: rotate(-42deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes bn-splash-pile {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@keyframes bn-splash-grain {
+  0% { opacity: 0; transform: translate(0, 0); }
+  4% { opacity: 1; transform: translate(0, 0); }
+  100% { opacity: 1; transform: translate(var(--dx), var(--dy)); }
+}

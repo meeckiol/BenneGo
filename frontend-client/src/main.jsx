@@ -6,6 +6,7 @@ import { MotionConfig } from 'motion/react';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import DevicePreview from '../../shared/DevicePreview';
+import SplashGate from '../../shared/SplashScreen';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <MotionConfig reducedMotion="user">
         <BrowserRouter>
           <ErrorBoundary>
-            <App />
+            <SplashGate>
+              <App />
+            </SplashGate>
           </ErrorBoundary>
           <Toaster position="top-center" />
         </BrowserRouter>
