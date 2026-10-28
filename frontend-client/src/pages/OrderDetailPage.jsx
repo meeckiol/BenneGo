@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, MessageCircle } from 'lucide-react';
+import { CHAT_CLOSED } from './MessagesPage';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
 import { getSocket } from '../services/socket';
@@ -39,9 +40,6 @@ export default function OrderDetailPage() {
   const [busy, setBusy] = useState(false);
   const [driverPos, setDriverPos] = useState(null);
   const [route, setRoute] = useState([]);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [chatOpen, setChatOpen] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
   const [disputePhotos, setDisputePhotos] = useState([]);
@@ -56,36 +54,6 @@ export default function OrderDetailPage() {
   }, [id]);
 
   useEffect(() => { fetchOrder(); }, [fetchOrder]);
-
-  // Charger historique du chat si commande assignée
-  useEffect(() => {
-    if (!order?.driver_id) return;
-    api.get(`/orders/${id}/chat`)
-      .then(({ data }) => setChatMessages(data.messages || []))
-      .catch(() => {});
-
-    const socket = getSocket();
-    if (!socket) return;
-    socket.emit('chat_join', { order_id: id });
-    const onChatMsg = (msg) => {
-      if (msg.order_id === id) {
-        setChatMessages((prev) => [...prev, msg]);
-      }
-    };
-    socket.on('chat_message', onChatMsg);
-    return () => socket.off('chat_message', onChatMsg);
-  }, [order?.driver_id, id]);
-
-  const sendChatMessage = (e) => {
-    if (e) e.preventDefault();
-    const msg = chatInput.trim();
-    if (!msg) return;
-    const socket = getSocket();
-    if (socket) {
-      socket.emit('chat_message', { order_id: id, message: msg });
-    }
-    setChatInput('');
-  };
 
   // Après un paiement fermé trop vite : le webhook peut confirmer ; on revérifie régulièrement
   useEffect(() => {
@@ -142,14 +110,14 @@ export default function OrderDetailPage() {
   };
 
   const confirmReception = async () => {
-    let confirmMsg = `Confirmer la réception de vos matériaux ?\n\nLe paiement séquestré de ${fcfa(order.driver_amount)} sera libéré au chauffeur.`;
+    let confirmMsg = `Confirmer la réception de vos matériaux ?\n\nVotre paiement sera alors libéré au chauffeur.`;
     let endpoint = `/orders/${id}/confirm-delivery`;
 
     if (order.order_type === 'RENTAL') {
-      confirmMsg = `Valider que l'engin a bien travaillé sur votre chantier pour la durée convenue (${order.duration_hours || 4} heures) ?\n\nLe paiement séquestré de ${fcfa(order.driver_amount)} sera transmis au propriétaire de la machine.`;
+      confirmMsg = `Valider que l'engin a bien travaillé sur votre chantier pour la durée convenue (${order.duration_hours || 4} heures) ?\n\nVotre paiement sera alors transmis au propriétaire de la machine.`;
       endpoint = `/orders/${id}/confirm-rental`;
     } else if (order.order_type === 'EVACUATION') {
-      confirmMsg = `Valider que votre chantier est entièrement propre et que les gravats ont été évacués ?\n\nLe paiement séquestré de ${fcfa(order.driver_amount)} sera libéré au chauffeur.`;
+      confirmMsg = `Valider que votre chantier est entièrement propre et que les gravats ont été évacués ?\n\nVotre paiement sera alors libéré au chauffeur.`;
       endpoint = `/orders/${id}/confirm-evacuation`;
     }
 
@@ -342,61 +310,20 @@ export default function OrderDetailPage() {
         {/* Prix */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}>Paiement & Séquestre</h3>
-          <InfoRow label="Montant Total" value={fcfa(order.total_amount)} bold />
-          <InfoRow label="Part Prestataire" value={fcfa(order.driver_amount)} />
-          <InfoRow label="Frais de service BenneGo" value={fcfa(order.commission_amount)} />
+          <InfoRow label="Montant payé" value={fcfa(order.total_amount)} bold />
           <InfoRow label="Statut Paiement" value={PAYMENT_LABELS[order.payment_status] || order.payment_status} />
         </div>
 
-        {/* Section Chat avec le Chauffeur */}
-        {order.driver_id && (
-          <div style={styles.card}>
-            <div
-              onClick={() => setChatOpen(!chatOpen)}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-            >
-              <h3 style={{ ...styles.cardTitle, margin: 0 }}>
-                Chat en direct avec le chauffeur
-              </h3>
-              <span style={{ fontSize: '13px', color: 'var(--brand-ink)', fontWeight: '700' }}>
-                {chatOpen ? 'Masquer ▲' : `Ouvrir (${chatMessages.length}) ▼`}
-              </span>
-            </div>
-
-            {chatOpen && (
-              <div style={{ marginTop: '16px' }}>
-                <div style={styles.chatBox}>
-                  {chatMessages.length === 0 ? (
-                    <div style={styles.chatEmpty}>Aucun message échangé pour l'instant. Posez une question au chauffeur !</div>
-                  ) : (
-                    chatMessages.map((m, i) => {
-                      const isMe = m.sender_id === order.client_id || m.sender_role === 'client';
-                      return (
-                        <div key={i} style={isMe ? styles.chatMsgMe : styles.chatMsgThem}>
-                          <div style={styles.chatSender}>{m.sender_name || (isMe ? 'Vous' : 'Chauffeur')}</div>
-                          <div>{m.message}</div>
-                          <div style={styles.chatTime}>
-                            {m.created_at ? new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                <form onSubmit={sendChatMessage} style={styles.chatForm}>
-                  <input
-                    type="text"
-                    placeholder="Écrivez un message..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    style={styles.chatInput}
-                  />
-                  <button type="submit" style={styles.chatSendBtn}>Envoyer</button>
-                </form>
-              </div>
-            )}
-          </div>
+        {/* La discussion avec le chauffeur se fait dans « Messages », tant que la commande n'est pas terminée */}
+        {order.driver_id && !CHAT_CLOSED.includes(order.status) && (
+          <Link to={`/messages/${order.id}`} style={{ ...styles.card, display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'var(--text-strong)' }}>
+            <MessageCircle size={22} aria-hidden="true" color="var(--brand-ink)" />
+            <span style={{ flex: 1 }}>
+              <strong style={{ display: 'block' }}>Discussion avec le chauffeur</strong>
+              <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Écrire à {order.driver_name || 'votre chauffeur'}</span>
+            </span>
+            <ChevronRight size={20} aria-hidden="true" />
+          </Link>
         )}
 
         {/* Actions */}

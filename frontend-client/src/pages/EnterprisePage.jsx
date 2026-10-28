@@ -439,7 +439,7 @@ export default function EnterprisePage() {
                   <li><Check size={14} aria-hidden="true" />Suivi GPS en direct</li>
                   <li><Check size={14} aria-hidden="true" />Alerte d'écart d'itinéraire (&gt; 15 %)</li>
                   <li><Check size={14} aria-hidden="true" />Export illimité des reçus en CSV</li>
-                  <li><Check size={14} aria-hidden="true" />Commission réduite à 4%</li>
+                  <li><Check size={14} aria-hidden="true" />Tarifs préférentiels</li>
                 </ul>
                 <button
                   onClick={() => handleSubscribe('monthly_saas')}
@@ -459,7 +459,7 @@ export default function EnterprisePage() {
                   <li><Check size={14} aria-hidden="true" />Planification massive de 50 à 500 rotations</li>
                   <li><Check size={14} aria-hidden="true" />Facturation proforma unique & virement séquestre</li>
                   <li><Check size={14} aria-hidden="true" />Suivi GPS en direct sur le chantier</li>
-                  <li><Check size={14} aria-hidden="true" />Commission réduite à 4%</li>
+                  <li><Check size={14} aria-hidden="true" />Tarifs préférentiels</li>
                 </ul>
                 <button
                   onClick={() => handleSubscribe('site_pack')}

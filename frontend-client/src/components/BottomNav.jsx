@@ -1,11 +1,11 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Building2, ClipboardList, Gift, Home, Plus, User } from 'lucide-react';
+import { Building2, ClipboardList, Home, MessageCircle, Plus, User } from 'lucide-react';
 import useAuthStore, { selectAccountType } from '../store/authStore';
 
 /**
  * Barre de navigation basse. Le premier onglet suit le type de compte choisi à la connexion :
- * accueil pour un client, chantiers pour un compte entreprise.
+ * accueil pour un client, chantiers pour un compte entreprise. L'affiliation se trouve dans le profil.
  */
 export default function BottomNav() {
   const navigate = useNavigate();
@@ -14,6 +14,8 @@ export default function BottomNav() {
 
   const isActive = (path) => {
     if (path === '/') return pathname === '/';
+    if (path === '/messages') return pathname.startsWith('/messages');
+    if (path === '/profil') return pathname === '/profil' || pathname === '/referral' || pathname === '/code-promo';
     if (path === '/orders') return pathname === '/orders' || (pathname.startsWith('/orders/') && pathname !== '/orders/new');
     return pathname === path;
   };
@@ -40,7 +42,7 @@ export default function BottomNav() {
       <button type="button" className="bn-tab" onClick={() => navigate('/orders/new')} aria-label="Nouvelle commande">
         <span className="bn-tab__fab"><Plus size={26} aria-hidden="true" /></span>
       </button>
-      {tab('/referral', 'Affiliation', Gift)}
+      {tab('/messages', 'Messages', MessageCircle)}
       {tab('/profil', 'Profil', User)}
     </nav>
   );

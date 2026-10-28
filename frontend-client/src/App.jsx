@@ -15,6 +15,8 @@ const EnterprisePage = lazy(() => import('./pages/EnterprisePage'));
 const ReferralPage = lazy(() => import('./pages/ReferralPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const PromoPage = lazy(() => import('./pages/PromoPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
 // Vitrine mise de côté : elle n'est plus dans le parcours, seulement sur /vitrine
@@ -49,9 +51,11 @@ const PageFallback = () => (
 );
 
 // Guard pour les routes protégées
-const PrivateRoute = ({ children }) => {
+// `nav={false}` : écran plein (discussion), sans la barre de navigation du bas
+const PrivateRoute = ({ children, nav = true }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!nav) return children;
   return (
     <div className="bn-shell">
       {children}
@@ -91,6 +95,8 @@ function App() {
         <Route path="/orders/:id" element={<PrivateRoute><OrderDetailPage /></PrivateRoute>} />
         <Route path="/enterprise" element={<Navigate to="/" replace />} />
         <Route path="/referral" element={<PrivateRoute><ReferralPage /></PrivateRoute>} />
+        <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+        <Route path="/messages/:id" element={<PrivateRoute nav={false}><ChatPage /></PrivateRoute>} />
         <Route path="/profil" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
         <Route path="/code-promo" element={<PrivateRoute><PromoPage /></PrivateRoute>} />
 

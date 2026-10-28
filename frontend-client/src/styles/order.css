@@ -182,11 +182,86 @@
 .bn-order__sheet form { scroll-margin-top: 80px; }
 .bn-order__sheet input:focus, .bn-order__sheet select:focus { outline: 0; border-color: var(--brand) !important; background: var(--surface) !important; }
 
+/* Étapes de la commande : paramètres, devis, chauffeur */
+.bn-order__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bn-order__steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 3px solid var(--surface-3);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.bn-order__steps li span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  font-size: 11px;
+}
+
+.bn-order__steps li.is-current { border-top-color: var(--brand); color: var(--text-strong); }
+.bn-order__steps li.is-current span { background: #0b0b10; color: #ffffff; }
+.bn-order__steps li.is-done { border-top-color: var(--brand); color: var(--text-2); }
+.bn-order__steps li.is-done span { background: var(--brand); color: #0b0b10; }
+
+/* Étape 3 : recherche du chauffeur */
+.bn-order__waiting {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.bn-order__waiting strong { font-size: 18px; color: var(--text-strong); }
+.bn-order__waiting p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.bn-order__waiting .bn-track { align-self: stretch; }
+.bn-order__waiting .bn-order__cta { width: 100%; }
+
+.bn-order__radar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: var(--brand-grad);
+  color: #0b0b10;
+}
+
+.bn-order__radar::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--brand);
+  border-radius: 999px;
+  animation: bn-radar 1.6s ease-out infinite;
+}
+
+@keyframes bn-radar {
+  from { opacity: 0.8; transform: scale(0.8); }
+  to { opacity: 0; transform: scale(1.5); }
+}
+
 @keyframes bn-sheet-up {
   from { opacity: 0; transform: translateY(40px); }
   to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bn-order__sheet { animation: none; }
+  .bn-order__sheet, .bn-order__radar::after { animation: none; }
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, Phone, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Phone, Search, Truck } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
+import { getSocket } from '../services/socket';
 import OrderMap from '../components/OrderMap';
 import { STATUS, Track, describe } from '../components/delivery';
 import '../styles/order.css';
@@ -17,6 +18,37 @@ const SERVICES = [
   { type: 'RENTAL', label: 'Engins' },
   { type: 'EVACUATION', label: 'Gravats' },
 ];
+
+// Statuts où la commande attend encore un chauffeur
+const WAITING = ['pending', 'awaiting_payment'];
+const STEPS = ['Paramètres', 'Devis', 'Chauffeur'];
+
+/** Les trois étapes de la commande, en haut du volet. */
+function OrderSteps({ step }) {
+  return (
+    <ol className="bn-order__steps" aria-label="Étapes de la commande">
+      {STEPS.map((label, i) => (
+        <li key={label} className={i + 1 < step ? 'is-done' : i + 1 === step ? 'is-current' : ''} aria-current={i + 1 === step ? 'step' : undefined}>
+          <span>{i + 1 < step ? <Check size={12} strokeWidth={3.5} aria-hidden="true" /> : i + 1}</span>
+          {label}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** Étape 3 : commande payée, recherche d'un chauffeur, la carte reste affichée. */
+function DriverSearch({ order }) {
+  return (
+    <div className="bn-order__waiting" role="status">
+      <span className="bn-order__radar" aria-hidden="true"><Truck size={26} /></span>
+      <strong>Recherche d'un chauffeur…</strong>
+      <p>Commande {order.order_number} payée : {Number(order.total_amount || 0).toLocaleString('fr-FR')} FCFA. Le suivi s'ouvre dès qu'un chauffeur accepte.</p>
+      <Track status="pending" />
+      <Link to={`/orders/${order.id}`} className="bn-order__cta bn-order__cta--ghost">Voir la commande</Link>
+    </div>
+  );
+}
 
 /** Livraison en cours en haut du volet : chauffeur, appel, frise de progression. */
 function CurrentDelivery({ order }) {
@@ -94,6 +126,33 @@ export default function NewOrderPage() {
       .then(({ data }) => setCurrent((data.orders || []).find((o) => (STATUS[o.status]?.group || 'done') === 'active') || null))
       .catch(() => {});
   }, []);
+  const [placed, setPlaced] = useState(null);
+  const goBack = () => {
+    if (step === 2) setStep(1);
+    else if (step === 3) navigate('/orders');
+    else navigate(-1);
+  };
+
+  // Étape 3 : dès qu'un chauffeur accepte (temps réel ou relevé toutes les 5 s), on ouvre le suivi
+  useEffect(() => {
+    if (step !== 3 || !placed) return undefined;
+    let done = false;
+    const open = (event) => {
+      if (done || (event?.order_id && event.order_id !== placed.id)) return;
+      done = true;
+      toast.success('Un chauffeur a accepté votre commande');
+      navigate(`/orders/${placed.id}`, { replace: true });
+    };
+    const check = () => api.get(`/orders/${placed.id}`)
+      .then(({ data }) => { if (!WAITING.includes((data.order || data).status)) open(); })
+      .catch(() => {});
+    const timer = setInterval(check, 5000);
+    const socket = getSocket();
+    socket?.emit('track_order', placed.id);
+    socket?.on('order_accepted', open);
+    return () => { clearInterval(timer); socket?.off('order_accepted', open); };
+  }, [step, placed]);
+
   const showParams = () => {
     paramsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     paramsRef.current?.querySelector('input, select')?.focus({ preventScroll: true });
@@ -212,7 +271,10 @@ export default function NewOrderPage() {
       // Déclenchement du paiement KKiaPay (MTN / Moov) bloqué en séquestre
       const res = await payOrder(orderId);
       if (res.ok) {
-        toast.success('Paiement sécurisé en séquestre ! Un prestataire va accepter sous peu.');
+        // Étape 3 : on reste sur la carte jusqu'à ce qu'un chauffeur accepte
+        setPlaced({ id: orderId, order_number: data.order.order_number, total_amount: data.order.total_amount });
+        setStep(3);
+        orderId = undefined;
       } else {
         toast('Paiement non finalisé : vous pouvez régler depuis votre espace de suivi.');
       }
@@ -224,9 +286,9 @@ export default function NewOrderPage() {
     }
   };
 
-  // Étape 1 (design C) : la carte en plein écran, puis un volet avec la livraison en cours,
-  // les boutons « Mes commandes » / « Nouvelle commande » et, en dessous, les paramètres de la commande
-  if (step === 1) {
+  // Les trois étapes se font sur la carte (design C), jusqu'à ce qu'un chauffeur accepte :
+  // 1. paramètres (sous « Mes commandes » / « Nouvelle commande »), 2. devis, 3. recherche du chauffeur
+  {
     const editable = orderType === 'EVACUATION' ? 'pickup' : 'delivery';
     const searchField = editable === 'pickup' ? 'pickup_address' : 'delivery_address';
     return (
@@ -242,7 +304,7 @@ export default function NewOrderPage() {
         </div>
 
         <div className="bn-order__top">
-          <button type="button" className="bn-order__round" onClick={() => navigate(-1)} aria-label="Retour">
+          <button type="button" className="bn-order__round" onClick={goBack} aria-label="Retour">
             <ArrowLeft size={20} aria-hidden="true" />
           </button>
           <label className="bn-order__search">
@@ -260,407 +322,399 @@ export default function NewOrderPage() {
         <section className="bn-order__sheet">
           <span className="bn-order__grab" aria-hidden="true" />
 
-          {current && <CurrentDelivery order={current} />}
+          <OrderSteps step={step} />
 
-          <div className="bn-order__ctas">
-            <Link to="/orders" className="bn-order__cta bn-order__cta--ghost">Mes commandes</Link>
-            <button type="button" className="bn-order__cta bn-order__cta--gold" onClick={showParams}>Nouvelle commande</button>
-          </div>
+          {step === 1 && (
+            <>
+            {current && <CurrentDelivery order={current} />}
 
-            <form ref={paramsRef} onSubmit={getEstimate} style={styles.form} aria-label="Paramètres de la commande">
-              <div className="bn-order__services" role="radiogroup" aria-label="Service">
-                {SERVICES.map((sv) => (
-                  <button
-                    key={sv.type}
-                    type="button"
-                    role="radio"
-                    aria-checked={orderType === sv.type}
-                    className={`bn-order__service${orderType === sv.type ? ' is-active' : ''}`}
-                    onClick={() => handleTypeSelect(sv.type)}
-                  >
-                    {sv.label}
-                  </button>
-                ))}
-              </div>
-              {/* Rattachement à un chantier B2B optionnel */}
-              {projects.length > 0 && (
-                <Section title="Chantier Entreprise (Optionnel)">
-                  <Field label="Associer à un projet de chantier">
-                    <select
-                      name="project_id"
-                      value={form.project_id}
-                      onChange={handleProjectSelect}
-                      style={styles.input}
+            <div className="bn-order__ctas">
+              <Link to="/orders" className="bn-order__cta bn-order__cta--ghost">Mes commandes</Link>
+              <button type="button" className="bn-order__cta bn-order__cta--gold" onClick={showParams}>Nouvelle commande</button>
+            </div>
+
+              <form ref={paramsRef} onSubmit={getEstimate} style={styles.form} aria-label="Paramètres de la commande">
+                <div className="bn-order__services" role="radiogroup" aria-label="Service">
+                  {SERVICES.map((sv) => (
+                    <button
+                      key={sv.type}
+                      type="button"
+                      role="radio"
+                      aria-checked={orderType === sv.type}
+                      className={`bn-order__service${orderType === sv.type ? ' is-active' : ''}`}
+                      onClick={() => handleTypeSelect(sv.type)}
                     >
-                      <option value="">-- Commande ponctuelle (hors projet) --</option>
-                      {projects.map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                  </Field>
-                </Section>
-              )}
-
-              {/* CAS 1 : TRANSPORT DE MATÉRIAUX */}
-              {orderType === 'MATERIAL' && (
-                <>
-                  <Section title="1. Matériaux & Camion">
-                    <Field label="Matériau commandé">
-                      <input
-                        name="material_description"
-                        value={form.material_description}
-                        onChange={handleChange}
-                        placeholder="Ex: Sable de mer, Gravier concassé 15/25, Latérite, Briques..."
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <div style={styles.row}>
-                      <Field label="Volume estimé (m³ ou tonnes)">
-                        <input
-                          name="quantity_m3"
-                          type="number"
-                          min="1"
-                          max="200"
-                          step="0.5"
-                          value={form.quantity_m3}
-                          onChange={handleChange}
-                          style={styles.input}
-                          required
-                        />
-                      </Field>
-                      <Field label="Type de camion requis">
-                        <select name="truck_type" value={form.truck_type} onChange={handleChange} style={styles.input}>
-                          <option value="simple_benne">Camion Benne 10m³</option>
-                          <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
-                          <option value="double_benne">Camion Benne 16m³ (Double benne)</option>
-                          <option value="semi_remorque">Semi-remorque Benne (25m³)</option>
-                          <option value="plateau">Camion Plateau (Briques/Fer)</option>
-                          <option value="grue">Camion avec Grue embarquée</option>
-                        </select>
-                      </Field>
-                    </div>
-                  </Section>
-
-                  <Section title="2. Itinéraire de Livraison">
-                    <Field label="Carrière de chargement (Départ)">
-                      <input
-                        name="pickup_address"
-                        value={form.pickup_address}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Adresse du Chantier de livraison (Arrivée)">
-                      <input
-                        name="delivery_address"
-                        value={form.delivery_address}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                  </Section>
-                </>
-              )}
-
-              {/* CAS 2 : LOCATION D'ENGINS LOURDS */}
-              {orderType === 'RENTAL' && (
-                <>
-                  <Section title="1. Sélection de l'Engin Lourd">
-                    <Field label="Type d'engin de chantier requis">
-                      <select name="machinery_type" value={form.machinery_type} onChange={handleChange} style={styles.input}>
-                        <option value="excavatrice">Pelle Mécanique (Excavatrice 20T) - 35 000 FCFA/h</option>
-                        <option value="chargeuse">Chargeuse sur Pneus (15T) - 30 000 FCFA/h</option>
-                        <option value="bulldozer">Bulldozer de terrassement (25T) - 40 000 FCFA/h</option>
-                        <option value="compacteur">Compacteur / Rouleau compresseur - 25 000 FCFA/h</option>
-                        <option value="niveleuse">Niveleuse de voiries (18T) - 35 000 FCFA/h</option>
-                      </select>
-                    </Field>
-                    <div style={styles.row}>
-                      <Field label="Date de début d'opération">
-                        <input
-                          name="rental_start_date"
-                          type="date"
-                          value={form.rental_start_date}
-                          onChange={handleChange}
-                          style={styles.input}
-                          required
-                        />
-                      </Field>
-                      <Field label="Durée de travail (Heures)">
-                        <select name="duration_hours" value={form.duration_hours} onChange={handleChange} style={styles.input}>
-                          <option value="4">Demi-journée (4 heures)</option>
-                          <option value="8">Journée complète (8 heures)</option>
-                          <option value="16">2 Journées (16 heures)</option>
-                          <option value="24">3 Journées (24 heures)</option>
-                          <option value="40">Semaine ouvrée (40 heures)</option>
-                        </select>
-                      </Field>
-                    </div>
-                  </Section>
-
-                  <Section title="2. Chantier de déploiement de l'engin">
-                    <Field label="Adresse du chantier">
-                      <input
-                        name="delivery_address"
-                        value={form.delivery_address}
-                        onChange={handleChange}
-                        placeholder="Ex: Chantier Cocotomey, Calavi ou Akpakpa"
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                  </Section>
-                </>
-              )}
-
-              {/* CAS 3 : ÉVACUATION DE GRAVATS */}
-              {orderType === 'EVACUATION' && (
-                <>
-                  <Section title="1. Débris & Volume à Évacuer">
-                    <Field label="Nature des débris">
+                      {sv.label}
+                    </button>
+                  ))}
+                </div>
+                {/* Rattachement à un chantier B2B optionnel */}
+                {projects.length > 0 && (
+                  <Section title="Chantier Entreprise (Optionnel)">
+                    <Field label="Associer à un projet de chantier">
                       <select
-                        name="evacuation_debris_type"
-                        value={form.evacuation_debris_type}
-                        onChange={handleChange}
+                        name="project_id"
+                        value={form.project_id}
+                        onChange={handleProjectSelect}
                         style={styles.input}
                       >
-                        <option value="Gravats de démolition et béton">Gravats de démolition et morceaux de béton</option>
-                        <option value="Terre de déblai excédentaire">Terre excédentaire de fouille / terrassement</option>
-                        <option value="Débris mixtes et chutes de chantier">Débris mixtes, plâtre et chutes de chantier</option>
+                        <option value="">-- Commande ponctuelle (hors projet) --</option>
+                        {projects.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
                       </select>
                     </Field>
-                    <div style={styles.row}>
-                      <Field label="Nombre estimé de camions (rotations)">
+                  </Section>
+                )}
+
+                {/* CAS 1 : TRANSPORT DE MATÉRIAUX */}
+                {orderType === 'MATERIAL' && (
+                  <>
+                    <Section title="1. Matériaux & Camion">
+                      <Field label="Matériau commandé">
                         <input
-                          name="rotations"
-                          type="number"
-                          min="1"
-                          max="20"
-                          value={form.rotations}
+                          name="material_description"
+                          value={form.material_description}
+                          onChange={handleChange}
+                          placeholder="Ex: Sable de mer, Gravier concassé 15/25, Latérite, Briques..."
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                      <div style={styles.row}>
+                        <Field label="Volume estimé (m³ ou tonnes)">
+                          <input
+                            name="quantity_m3"
+                            type="number"
+                            min="1"
+                            max="200"
+                            step="0.5"
+                            value={form.quantity_m3}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                          />
+                        </Field>
+                        <Field label="Type de camion requis">
+                          <select name="truck_type" value={form.truck_type} onChange={handleChange} style={styles.input}>
+                            <option value="simple_benne">Camion Benne 10m³</option>
+                            <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
+                            <option value="double_benne">Camion Benne 16m³ (Double benne)</option>
+                            <option value="semi_remorque">Semi-remorque Benne (25m³)</option>
+                            <option value="plateau">Camion Plateau (Briques/Fer)</option>
+                            <option value="grue">Camion avec Grue embarquée</option>
+                          </select>
+                        </Field>
+                      </div>
+                    </Section>
+
+                    <Section title="2. Itinéraire de Livraison">
+                      <Field label="Carrière de chargement (Départ)">
+                        <input
+                          name="pickup_address"
+                          value={form.pickup_address}
                           onChange={handleChange}
                           style={styles.input}
                           required
                         />
                       </Field>
-                      <Field label="Photo du tas de gravats (Optionnel)">
+                      <Field label="Adresse du Chantier de livraison (Arrivée)">
                         <input
-                          name="evacuation_photo_url"
-                          value={form.evacuation_photo_url}
+                          name="delivery_address"
+                          value={form.delivery_address}
                           onChange={handleChange}
-                          placeholder="Lien ou référence photo"
                           style={styles.input}
+                          required
                         />
                       </Field>
+                    </Section>
+                  </>
+                )}
+
+                {/* CAS 2 : LOCATION D'ENGINS LOURDS */}
+                {orderType === 'RENTAL' && (
+                  <>
+                    <Section title="1. Sélection de l'Engin Lourd">
+                      <Field label="Type d'engin de chantier requis">
+                        <select name="machinery_type" value={form.machinery_type} onChange={handleChange} style={styles.input}>
+                          <option value="excavatrice">Pelle Mécanique (Excavatrice 20T) - 35 000 FCFA/h</option>
+                          <option value="chargeuse">Chargeuse sur Pneus (15T) - 30 000 FCFA/h</option>
+                          <option value="bulldozer">Bulldozer de terrassement (25T) - 40 000 FCFA/h</option>
+                          <option value="compacteur">Compacteur / Rouleau compresseur - 25 000 FCFA/h</option>
+                          <option value="niveleuse">Niveleuse de voiries (18T) - 35 000 FCFA/h</option>
+                        </select>
+                      </Field>
+                      <div style={styles.row}>
+                        <Field label="Date de début d'opération">
+                          <input
+                            name="rental_start_date"
+                            type="date"
+                            value={form.rental_start_date}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                          />
+                        </Field>
+                        <Field label="Durée de travail (Heures)">
+                          <select name="duration_hours" value={form.duration_hours} onChange={handleChange} style={styles.input}>
+                            <option value="4">Demi-journée (4 heures)</option>
+                            <option value="8">Journée complète (8 heures)</option>
+                            <option value="16">2 Journées (16 heures)</option>
+                            <option value="24">3 Journées (24 heures)</option>
+                            <option value="40">Semaine ouvrée (40 heures)</option>
+                          </select>
+                        </Field>
+                      </div>
+                    </Section>
+
+                    <Section title="2. Chantier de déploiement de l'engin">
+                      <Field label="Adresse du chantier">
+                        <input
+                          name="delivery_address"
+                          value={form.delivery_address}
+                          onChange={handleChange}
+                          placeholder="Ex: Chantier Cocotomey, Calavi ou Akpakpa"
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                    </Section>
+                  </>
+                )}
+
+                {/* CAS 3 : ÉVACUATION DE GRAVATS */}
+                {orderType === 'EVACUATION' && (
+                  <>
+                    <Section title="1. Débris & Volume à Évacuer">
+                      <Field label="Nature des débris">
+                        <select
+                          name="evacuation_debris_type"
+                          value={form.evacuation_debris_type}
+                          onChange={handleChange}
+                          style={styles.input}
+                        >
+                          <option value="Gravats de démolition et béton">Gravats de démolition et morceaux de béton</option>
+                          <option value="Terre de déblai excédentaire">Terre excédentaire de fouille / terrassement</option>
+                          <option value="Débris mixtes et chutes de chantier">Débris mixtes, plâtre et chutes de chantier</option>
+                        </select>
+                      </Field>
+                      <div style={styles.row}>
+                        <Field label="Nombre estimé de camions (rotations)">
+                          <input
+                            name="rotations"
+                            type="number"
+                            min="1"
+                            max="20"
+                            value={form.rotations}
+                            onChange={handleChange}
+                            style={styles.input}
+                            required
+                          />
+                        </Field>
+                        <Field label="Photo du tas de gravats (Optionnel)">
+                          <input
+                            name="evacuation_photo_url"
+                            value={form.evacuation_photo_url}
+                            onChange={handleChange}
+                            placeholder="Lien ou référence photo"
+                            style={styles.input}
+                          />
+                        </Field>
+                      </div>
+                    </Section>
+
+                    <Section title="2. Points de Ramassage et de Décharge">
+                      <Field label="Adresse du Chantier à nettoyer (Ramassage)">
+                        <input
+                          name="pickup_address"
+                          value={form.pickup_address}
+                          onChange={handleChange}
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                      <Field label="Décharge autorisée de destination">
+                        <input
+                          name="delivery_address"
+                          value={form.delivery_address}
+                          onChange={handleChange}
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                    </Section>
+                  </>
+                )}
+
+                <button type="submit" disabled={loading} style={styles.primaryBtn}>
+                  {loading ? 'Calcul du devis…' : <>Voir le devis <ArrowRight size={16} aria-hidden="true" /></>}
+                </button>
+              </form>
+            </>
+          )}
+
+          {step === 2 && estimate && (
+            <div style={styles.estimate}>
+              <h3 style={styles.estimateTitle}>Détail de votre Devis Séquestre</h3>
+
+              <div style={styles.estimateCard}>
+                <div style={styles.estimateRow}>
+                  <span>Type de prestation</span>
+                  <strong>
+                    {orderType === 'MATERIAL' && 'Transport de Matériaux'}
+                    {orderType === 'RENTAL' && 'Location d\'Engin Lourd'}
+                    {orderType === 'EVACUATION' && 'Logistique d\'Évacuation de Gravats'}
+                  </strong>
+                </div>
+
+                {orderType === 'RENTAL' ? (
+                  <>
+                    <div style={styles.estimateRow}>
+                      <span>Durée de réservation</span>
+                      <strong>{estimate.breakdown?.duration_hours} heures</strong>
                     </div>
-                  </Section>
+                    <div style={styles.estimateRow}>
+                      <span>Tarif horaire engin</span>
+                      <span>{estimate.breakdown?.hourly_rate?.toLocaleString()} FCFA/h</span>
+                    </div>
+                    <div style={styles.estimateRow}>
+                      <span>Sous-total opération</span>
+                      <span>{estimate.breakdown?.rental_subtotal?.toLocaleString()} FCFA</span>
+                    </div>
+                    <div style={styles.estimateRow}>
+                      <span>Mobilisation & transport engin</span>
+                      <span>{estimate.breakdown?.mobilization_fee?.toLocaleString()} FCFA</span>
+                    </div>
+                  </>
+                ) : orderType === 'EVACUATION' ? (
+                  <>
+                    <div style={styles.estimateRow}>
+                      <span>Nombre de rotations / camions</span>
+                      <strong>{estimate.breakdown?.rotations} rotation(s)</strong>
+                    </div>
+                    <div style={styles.estimateRow}>
+                      <span>Forfait prise en charge</span>
+                      <span>{estimate.breakdown?.base_pickup_fee?.toLocaleString()} FCFA</span>
+                    </div>
+                    <div style={styles.estimateRow}>
+                      <span>Distance vers décharge</span>
+                      <span>{estimate.distance_km} km ({estimate.breakdown?.distance_cost?.toLocaleString()} FCFA)</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={styles.estimateRow}>
+                      <span>Distance itinéraire OSRM</span>
+                      <strong>{estimate.distance_km} km (~{estimate.duration_min} min)</strong>
+                    </div>
+                    <div style={styles.estimateRow}>
+                      <span>Prise en charge camion benne</span>
+                      <span>{estimate.breakdown?.base_fee?.toLocaleString()} FCFA</span>
+                    </div>
+                    <div style={styles.estimateRow}>
+                      <span>Transport au kilomètre</span>
+                      <span>{estimate.breakdown?.distance_cost?.toLocaleString()} FCFA</span>
+                    </div>
+                  </>
+                )}
 
-                  <Section title="2. Points de Ramassage et de Décharge">
-                    <Field label="Adresse du Chantier à nettoyer (Ramassage)">
-                      <input
-                        name="pickup_address"
-                        value={form.pickup_address}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Décharge autorisée de destination">
-                      <input
-                        name="delivery_address"
-                        value={form.delivery_address}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                  </Section>
-                </>
-              )}
+                <div style={styles.divider} />
 
-              <button type="submit" disabled={loading} style={styles.primaryBtn}>
-                {loading ? 'Calcul du devis…' : <>Voir le devis <ArrowRight size={16} aria-hidden="true" /></>}
-              </button>
-            </form>
+                <div style={{ ...styles.estimateRow, ...styles.total }}>
+                  <span>TOTAL EN SÉQUESTRE</span>
+                  <strong style={styles.totalAmount}>
+                    {estimate.total_amount?.toLocaleString()} FCFA
+                  </strong>
+                </div>
+
+                <div style={styles.commission}>
+                  <strong>Règle d'or du Séquestre BenneGo :</strong>
+                  {orderType === 'RENTAL' && ' L\'argent reste bloqué tant que l\'engin n\'a pas accompli les heures sur le chantier. Une fois validé par vous, le propriétaire est payé.'}
+                  {orderType === 'EVACUATION' && ' L\'argent est libéré uniquement après dépôt vérifié à la décharge et confirmation que votre chantier est débarrassé.'}
+                  {orderType === 'MATERIAL' && ' L\'argent est débloqué au chauffeur uniquement après déchargement et vérification des matériaux sur votre chantier.'}
+                </div>
+              </div>
+
+                                                                                                                                                                           
+                  {/* Promo & Commande récurrente */}                                                                                                                                        
+                  <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>                                                                
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>                                                                                                      
+                      <input                                                                                                                                                                 
+                        type="text"                                                                                                                                                          
+                        placeholder="Code Promo (ex: BIENVENUE10)"                                                                                                                           
+                        value={promoCode}                                                                                                                                                    
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}                                                                                                         
+                        style={{ ...styles.input, textTransform: 'uppercase', flex: 1 }}                                                                                                     
+                      />                                                                                                                                                                     
+                      <button                                                                                                                                                                
+                        type="button"                                                                                                                                                        
+                        onClick={async () => {                                                                                                                                               
+                          if (!promoCode.trim()) return;                                                                                                                                     
+                          setPromoLoading(true);                                                                                                                                             
+                          try {                                                                                                                                                              
+                            const { data } = await api.post('/promo/validate', {                                                                                                             
+                              code: promoCode,                                                                                                                                               
+                              order_amount: estimate?.total_amount || 0,                                                                                                                     
+                            });                                                                                                                                                              
+                            setPromoResult(data);                                                                                                                                            
+                            toast.success(data.message);                                                                                                                                     
+                          } catch {                                                                                                                                                          
+                            setPromoResult(null);                                                                                                                                            
+                          } finally {                                                                                                                                                        
+                            setPromoLoading(false);                                                                                                                                          
+                          }                                                                                                                                                                  
+                        }}                                                                                                                                                                   
+                        disabled={promoLoading}                                                                                                                                              
+                        style={{ ...styles.primaryBtn, width: 'auto', padding: '0 16px', fontSize: '13.5px' }}                                                                               
+                      >                                                                                                                                                                      
+                        Appliquer                                                                                                                                                            
+                      </button>                                                                                                                                                              
+                    </div>                                                                                                                                                                   
+                                                                                                                                                                                           
+                    {promoResult && (                                                                                                                                                        
+                      <p style={{ color: 'var(--success)', fontSize: '13px', fontWeight: '700', margin: '0 0 10px' }}>                                                                              
+                        Remise déduite : -{promoResult.discount_amount.toLocaleString()} FCFA                                                                                                
+                      </p>                                                                                                                                                                   
+                    )}                                                                                                                                                                       
+                                                                                                                                                                                           
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13.5px', color: 'var(--text)' }}>                                           
+                      <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />                                                                     
+                      Planifier comme commande récurrente de chantier                                                                                                                        
+                    </label>                                                                                                                                                                 
+                                                                                                                                                                                           
+                    {isRecurring && (                                                                                                                                                        
+                      <select value={recurringFrequency} onChange={(e) => setRecurringFrequency(e.target.value)} style={{ ...styles.input, marginTop: '8px' }}>                              
+                        <option value="daily">Quotidien (chaque jour)</option>                                                                                                               
+                        <option value="weekly">Hebdomadaire (chaque semaine)</option>                                                                                                        
+                        <option value="biweekly">Bihebdomadaire (toutes les 2 semaines)</option>                                                                                             
+                        <option value="monthly">Mensuel (chaque mois)</option>                                                                                                               
+                      </select>                                                                                                                                                              
+                    )}                                                                                                                                                                       
+                  </div>
+
+              <div style={styles.paymentInfo}>
+                <p><strong>Paiement instantané par Mobile Money (MTN MoMo / Moov Money)</strong></p>
+                <p style={styles.paymentSub}>
+                  Paiement sécurisé via KKiaPay. Les chauffeurs reçoivent la mission dès confirmation du séquestre.
+                </p>
+              </div>
+
+              <div style={styles.btnGroup}>
+                <button onClick={() => setStep(1)} style={styles.secondaryBtn}>
+                  <ArrowLeft size={16} aria-hidden="true" /> Modifier
+                </button>
+                <button onClick={confirmOrder} disabled={loading} style={styles.primaryBtn}>
+                  {loading ? 'Commande en cours…' : 'Commander'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && placed && <DriverSearch order={placed} />}
         </section>
       </div>
     );
   }
-
-  return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <button onClick={() => navigate(-1)} style={styles.back}><ArrowLeft size={16} aria-hidden="true" /> Retour</button>
-        <h2 style={styles.title}>
-          {orderType === 'MATERIAL' && 'Transport de Matériaux'}
-          {orderType === 'RENTAL' && 'Location d\'Engin Lourd'}
-          {orderType === 'EVACUATION' && 'Évacuation de Gravats'}
-        </h2>
-      </header>
-
-      <div style={styles.content}>
-        {/* Étape 2 : Récapitulatif du prix et engagement séquestre */}
-        {step === 2 && estimate && (
-          <div style={styles.estimate}>
-            <h3 style={styles.estimateTitle}>Détail de votre Devis Séquestre</h3>
-
-            <div style={styles.estimateCard}>
-              <div style={styles.estimateRow}>
-                <span>Type de prestation</span>
-                <strong>
-                  {orderType === 'MATERIAL' && 'Transport de Matériaux'}
-                  {orderType === 'RENTAL' && 'Location d\'Engin Lourd'}
-                  {orderType === 'EVACUATION' && 'Logistique d\'Évacuation de Gravats'}
-                </strong>
-              </div>
-
-              {orderType === 'RENTAL' ? (
-                <>
-                  <div style={styles.estimateRow}>
-                    <span>Durée de réservation</span>
-                    <strong>{estimate.breakdown?.duration_hours} heures</strong>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Tarif horaire engin</span>
-                    <span>{estimate.breakdown?.hourly_rate?.toLocaleString()} FCFA/h</span>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Sous-total opération</span>
-                    <span>{estimate.breakdown?.rental_subtotal?.toLocaleString()} FCFA</span>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Mobilisation & transport engin</span>
-                    <span>{estimate.breakdown?.mobilization_fee?.toLocaleString()} FCFA</span>
-                  </div>
-                </>
-              ) : orderType === 'EVACUATION' ? (
-                <>
-                  <div style={styles.estimateRow}>
-                    <span>Nombre de rotations / camions</span>
-                    <strong>{estimate.breakdown?.rotations} rotation(s)</strong>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Forfait prise en charge</span>
-                    <span>{estimate.breakdown?.base_pickup_fee?.toLocaleString()} FCFA</span>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Distance vers décharge</span>
-                    <span>{estimate.distance_km} km ({estimate.breakdown?.distance_cost?.toLocaleString()} FCFA)</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={styles.estimateRow}>
-                    <span>Distance itinéraire OSRM</span>
-                    <strong>{estimate.distance_km} km (~{estimate.duration_min} min)</strong>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Prise en charge camion benne</span>
-                    <span>{estimate.breakdown?.base_fee?.toLocaleString()} FCFA</span>
-                  </div>
-                  <div style={styles.estimateRow}>
-                    <span>Transport au kilomètre</span>
-                    <span>{estimate.breakdown?.distance_cost?.toLocaleString()} FCFA</span>
-                  </div>
-                </>
-              )}
-
-              <div style={styles.divider} />
-
-              <div style={{ ...styles.estimateRow, ...styles.total }}>
-                <span>TOTAL EN SÉQUESTRE</span>
-                <strong style={styles.totalAmount}>
-                  {estimate.total_amount?.toLocaleString()} FCFA
-                </strong>
-              </div>
-
-              <div style={styles.commission}>
-                <strong>Règle d'or du Séquestre BenneGo :</strong>
-                {orderType === 'RENTAL' && ' L\'argent reste bloqué tant que l\'engin n\'a pas accompli les heures sur le chantier. Une fois validé par vous, 90% sont reversés au propriétaire.'}
-                {orderType === 'EVACUATION' && ' L\'argent est libéré uniquement après dépôt vérifié à la décharge et confirmation que votre chantier est débarrassé.'}
-                {orderType === 'MATERIAL' && ' L\'argent est débloqué au chauffeur uniquement après déchargement et vérification des matériaux sur votre chantier.'}
-              </div>
-            </div>
-
-                                                                                                                                                                           
-                {/* Promo & Commande récurrente */}                                                                                                                                        
-                <div style={{ background: 'var(--bg)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>                                                                
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>                                                                                                      
-                    <input                                                                                                                                                                 
-                      type="text"                                                                                                                                                          
-                      placeholder="Code Promo (ex: BIENVENUE10)"                                                                                                                           
-                      value={promoCode}                                                                                                                                                    
-                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}                                                                                                         
-                      style={{ ...styles.input, textTransform: 'uppercase', flex: 1 }}                                                                                                     
-                    />                                                                                                                                                                     
-                    <button                                                                                                                                                                
-                      type="button"                                                                                                                                                        
-                      onClick={async () => {                                                                                                                                               
-                        if (!promoCode.trim()) return;                                                                                                                                     
-                        setPromoLoading(true);                                                                                                                                             
-                        try {                                                                                                                                                              
-                          const { data } = await api.post('/promo/validate', {                                                                                                             
-                            code: promoCode,                                                                                                                                               
-                            order_amount: estimate?.total_amount || 0,                                                                                                                     
-                          });                                                                                                                                                              
-                          setPromoResult(data);                                                                                                                                            
-                          toast.success(data.message);                                                                                                                                     
-                        } catch {                                                                                                                                                          
-                          setPromoResult(null);                                                                                                                                            
-                        } finally {                                                                                                                                                        
-                          setPromoLoading(false);                                                                                                                                          
-                        }                                                                                                                                                                  
-                      }}                                                                                                                                                                   
-                      disabled={promoLoading}                                                                                                                                              
-                      style={{ ...styles.primaryBtn, width: 'auto', padding: '0 16px', fontSize: '13.5px' }}                                                                               
-                    >                                                                                                                                                                      
-                      Appliquer                                                                                                                                                            
-                    </button>                                                                                                                                                              
-                  </div>                                                                                                                                                                   
-                                                                                                                                                                                           
-                  {promoResult && (                                                                                                                                                        
-                    <p style={{ color: 'var(--success)', fontSize: '13px', fontWeight: '700', margin: '0 0 10px' }}>                                                                              
-                      Remise déduite : -{promoResult.discount_amount.toLocaleString()} FCFA                                                                                                
-                    </p>                                                                                                                                                                   
-                  )}                                                                                                                                                                       
-                                                                                                                                                                                           
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13.5px', color: 'var(--text)' }}>                                           
-                    <input type="checkbox" checked={isRecurring} onChange={(e) => setIsRecurring(e.target.checked)} />                                                                     
-                    Planifier comme commande récurrente de chantier                                                                                                                        
-                  </label>                                                                                                                                                                 
-                                                                                                                                                                                           
-                  {isRecurring && (                                                                                                                                                        
-                    <select value={recurringFrequency} onChange={(e) => setRecurringFrequency(e.target.value)} style={{ ...styles.input, marginTop: '8px' }}>                              
-                      <option value="daily">Quotidien (chaque jour)</option>                                                                                                               
-                      <option value="weekly">Hebdomadaire (chaque semaine)</option>                                                                                                        
-                      <option value="biweekly">Bihebdomadaire (toutes les 2 semaines)</option>                                                                                             
-                      <option value="monthly">Mensuel (chaque mois)</option>                                                                                                               
-                    </select>                                                                                                                                                              
-                  )}                                                                                                                                                                       
-                </div>
-
-            <div style={styles.paymentInfo}>
-              <p><strong>Paiement instantané par Mobile Money (MTN MoMo / Moov Money)</strong></p>
-              <p style={styles.paymentSub}>
-                Paiement sécurisé via KKiaPay. Les chauffeurs reçoivent la mission dès confirmation du séquestre.
-              </p>
-            </div>
-
-            <div style={styles.btnGroup}>
-              <button onClick={() => setStep(1)} style={styles.secondaryBtn}>
-                <ArrowLeft size={16} aria-hidden="true" /> Modifier
-              </button>
-              <button onClick={confirmOrder} disabled={loading} style={styles.primaryBtn}>
-                {loading ? 'Initialisation...' : `Bloquer en séquestre (${estimate.total_amount?.toLocaleString()} FCFA)`}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function Section({ title, children }) {

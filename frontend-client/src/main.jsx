@@ -32,3 +32,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
+
+// Application, pas page web : pas de zoom au pincement sur iOS (Safari ignore user-scalable=no).
+// Les cartes Leaflet gèrent leur zoom avec leurs propres événements tactiles.
+document.addEventListener('gesturestart', (e) => e.preventDefault());
