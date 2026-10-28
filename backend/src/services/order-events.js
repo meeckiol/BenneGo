@@ -12,6 +12,8 @@ const notifyNewOrder = (io, order) => {
     pickup_address: order.pickup_address,
     delivery_address: order.delivery_address,
     driver_amount: order.driver_amount,
+    total_amount: order.total_amount,
+    commission_amount: order.commission_amount,
     distance_km: order.distance_km,
   });
 };

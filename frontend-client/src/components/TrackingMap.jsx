@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import L from 'leaflet';
+import { addTiles, goldPin, startDot } from './mapStyle';
 import 'leaflet/dist/leaflet.css';
 import { Navigation } from 'lucide-react';
 
@@ -47,14 +48,11 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
 
   useEffect(() => {
     map.current = L.map(el.current, { zoomControl: true }).setView([pickup.lat, pickup.lng], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom: 19,
-    }).addTo(map.current);
+    addTiles(map.current);
 
-    // Leaflet écrit ces couleurs en attributs SVG : il faut des valeurs littérales, pas des variables CSS
-    L.circleMarker([pickup.lat, pickup.lng], { radius: 9, color: '#1d4ed8', fillColor: '#2196F3', fillOpacity: 0.9 })
+    L.marker([pickup.lat, pickup.lng], { icon: startDot, title: 'Chargement', alt: 'Chargement' })
       .bindTooltip('Chargement').addTo(map.current);
-    L.circleMarker([delivery.lat, delivery.lng], { radius: 9, color: '#166534', fillColor: '#4CAF50', fillOpacity: 0.9 })
+    L.marker([delivery.lat, delivery.lng], { icon: goldPin, title: 'Livraison', alt: 'Livraison' })
       .bindTooltip('Livraison').addTo(map.current);
     layers.current.line = L.polyline([], { color: '#805c00', weight: 4, opacity: 0.8 }).addTo(map.current);
     map.current.fitBounds([[pickup.lat, pickup.lng], [delivery.lat, delivery.lng]], { padding: [40, 40] });

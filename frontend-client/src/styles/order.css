@@ -39,10 +39,45 @@
   width: 48px;
   height: 48px;
   border: 0;
-  border-radius: 16px;
-  background: #0b0b10;
-  color: var(--brand-2);
-  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.18);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.16);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Ancrée en en-tête : bande blanche pleine largeur, plus rien ne passe dessous */
+.bn-order__top {
+  transition: top 0.2s ease, padding 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bn-order__top.is-docked {
+  top: 0;
+  width: 100%;
+  max-width: 560px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.08);
+}
+
+.bn-order__top.is-docked .bn-order__round,
+.bn-order__top.is-docked .bn-order__search { box-shadow: none; background: var(--surface-2); }
+
+/* Bouton « ma position », en bas à droite de la partie visible de la carte */
+.bn-order__locate {
+  position: absolute;
+  right: 16px;
+  bottom: calc(8dvh + 16px);
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--brand-ink);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.16);
 }
 
 .bn-order__search {

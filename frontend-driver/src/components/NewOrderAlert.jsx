@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PaymentBreakdown from './PaymentBreakdown';
 
 /**
  * Alerte plein écran quand une nouvelle commande arrive
@@ -95,12 +96,7 @@ export default function NewOrderAlert({ order, onAccept, onRefuse, timeoutSecond
 
         {/* Prix */}
         <div style={styles.priceBox}>
-          <div style={styles.priceRow}>
-            <span style={styles.priceLabel}>Votre part séquestre (90%)</span>
-            <span style={styles.priceValue}>
-              {parseFloat(order.driver_amount || 0).toLocaleString()} FCFA
-            </span>
-          </div>
+          <PaymentBreakdown order={order} compact />
           <div style={styles.priceRow}>
             <span style={styles.priceLabel}>Distance</span>
             <span style={styles.priceDistane}>{order.distance_km || 0} km</span>

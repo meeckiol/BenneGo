@@ -69,3 +69,21 @@ cp $B/App.jsx frontend-client/src/App.jsx
 cp $B/index.html frontend-client/index.html
 cp $B/theme.css shared/theme.css
 ```
+
+## carte-avant-style (28 octobre 2026)
+
+Avant : le style de carte façon plan de ville, la barre de recherche ancrée en en-tête au défilement,
+l'appel à droite dans la discussion et le détail des montants côté chauffeur.
+
+Les copies gardent l'arborescence : `client/` → `frontend-client/src/` (`components/` ou `pages/` ou `styles/`
+selon le fichier), `driver/` → `frontend-driver/src/`, `backend/` → `backend/src/services/`.
+
+```bash
+B=sauvegarde/carte-avant-style
+cp $B/client/OrderMap.jsx $B/client/TrackingMap.jsx $B/client/LocationPicker.jsx frontend-client/src/components/
+cp $B/client/NewOrderPage.jsx $B/client/ChatPage.jsx frontend-client/src/pages/
+cp $B/client/order.css $B/client/messages.css frontend-client/src/styles/
+cp $B/driver/NewOrderAlert.jsx frontend-driver/src/components/
+cp $B/driver/ActiveDeliveryPage.jsx frontend-driver/src/pages/
+cp $B/backend/order-events.js backend/src/services/
+```

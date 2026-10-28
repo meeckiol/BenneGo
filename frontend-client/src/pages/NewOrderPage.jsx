@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, Check, Phone, Search, Truck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, LocateFixed, Phone, Search, Truck } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
 import { getSocket } from '../services/socket';
@@ -127,6 +127,30 @@ export default function NewOrderPage() {
       .catch(() => {});
   }, []);
   const [placed, setPlaced] = useState(null);
+
+  // La barre de recherche flotte sur la carte, puis s'ancre en en-tête quand le volet arrive en haut
+  const sheetRef = useRef(null);
+  const [docked, setDocked] = useState(false);
+  useEffect(() => {
+    const update = () => setDocked((sheetRef.current?.getBoundingClientRect().top ?? 999) <= 76);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [step]);
+
+  // Bouton « ma position » : place le point modifiable (chantier ou ramassage) sur la position du téléphone
+  const locate = (which) => {
+    if (!navigator.geolocation) return toast.error('Position indisponible sur cet appareil');
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => setForm((prev) => ({ ...prev, [`${which}_lat`]: coords.latitude, [`${which}_lng`]: coords.longitude })),
+      () => toast.error('Activez la localisation pour utiliser votre position'),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
   const goBack = () => {
     if (step === 2) setStep(1);
     else if (step === 3) navigate('/orders');
@@ -301,9 +325,12 @@ export default function NewOrderPage() {
             editable={editable}
             onChange={(which, { lat, lng }) => setForm((prev) => ({ ...prev, [`${which}_lat`]: lat, [`${which}_lng`]: lng }))}
           />
+          <button type="button" className="bn-order__locate" onClick={() => locate(editable)} aria-label="Utiliser ma position">
+            <LocateFixed size={22} aria-hidden="true" />
+          </button>
         </div>
 
-        <div className="bn-order__top">
+        <div className={`bn-order__top${docked ? ' is-docked' : ''}`}>
           <button type="button" className="bn-order__round" onClick={goBack} aria-label="Retour">
             <ArrowLeft size={20} aria-hidden="true" />
           </button>
@@ -319,7 +346,7 @@ export default function NewOrderPage() {
           </label>
         </div>
 
-        <section className="bn-order__sheet">
+        <section className="bn-order__sheet" ref={sheetRef}>
           <span className="bn-order__grab" aria-hidden="true" />
 
           <OrderSteps step={step} />

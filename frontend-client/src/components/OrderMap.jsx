@@ -1,20 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
-const goldPin = L.divIcon({
-  className: '',
-  html: '<span style="display:block;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#0b0b10;border:3px solid #fcce09;box-shadow:0 4px 10px rgba(17,24,39,.35)"></span>',
-  iconSize: [26, 26],
-  iconAnchor: [13, 26],
-});
-
-const startDot = L.divIcon({
-  className: '',
-  html: '<span style="display:block;width:18px;height:18px;border-radius:50%;background:#0b0b10;border:4px solid #ffffff;box-shadow:0 2px 6px rgba(17,24,39,.35)"></span>',
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-});
+import { addTiles, goldPin, startDot } from './mapStyle';
 
 const asLatLng = (p) => [Number(p.lat), Number(p.lng)];
 
@@ -33,7 +20,7 @@ export default function OrderMap({ pickup, delivery, showPickup = true, editable
 
   useEffect(() => {
     map.current = L.map(el.current, { zoomControl: false, attributionControl: true }).setView(asLatLng(delivery), 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map.current);
+    addTiles(map.current);
 
     const l = layers.current;
     l.route = L.polyline([asLatLng(pickup), asLatLng(delivery)], { color: '#f6a906', weight: 5, dashArray: '2 10', lineCap: 'round' }).addTo(map.current);

@@ -82,6 +82,11 @@ export default function ChatPage() {
         <button type="button" className="bn-chat__back" onClick={() => navigate('/messages')} aria-label="Retour aux messages">
           <ArrowLeft size={20} aria-hidden="true" />
         </button>
+        <span className="bn-thread__avatar" aria-hidden="true">{initialsOf(order?.driver_name)}</span>
+        <span className="bn-chat__who">
+          <strong>{order?.driver_name || 'Chauffeur'}</strong>
+          <small>{order ? `${order.order_number} · ${STATUS[order.status]?.label || order.status}` : 'Chargement…'}</small>
+        </span>
         {order?.driver_phone ? (
           <a className="bn-chat__call" href={`tel:${order.driver_phone}`} aria-label={`Appeler ${order.driver_name || 'le chauffeur'}`}>
             <Phone size={18} aria-hidden="true" />
@@ -89,11 +94,6 @@ export default function ChatPage() {
         ) : (
           <span className="bn-chat__call is-off" aria-hidden="true"><Phone size={18} /></span>
         )}
-        <span className="bn-thread__avatar" aria-hidden="true">{initialsOf(order?.driver_name)}</span>
-        <span className="bn-chat__who">
-          <strong>{order?.driver_name || 'Chauffeur'}</strong>
-          <small>{order ? `${order.order_number} · ${STATUS[order.status]?.label || order.status}` : 'Chargement…'}</small>
-        </span>
       </header>
 
       <div className="bn-chat__list" aria-live="polite">

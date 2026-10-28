@@ -8,6 +8,7 @@ import useGPS from '../hooks/useGPS';
 import useDriverSocket from '../hooks/useDriverSocket';
 import { getSocket } from '../services/socket';
 import useDriverAuthStore from '../store/authStore';
+import PaymentBreakdown from '../components/PaymentBreakdown';
 
 // Composant pour centrer la carte sur la position GPS
 function MapCenter({ position }) {
@@ -350,8 +351,8 @@ export default function ActiveDeliveryPage() {
           zoomControl={false}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='© OpenStreetMap'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution='© OpenStreetMap © CARTO'
           />
 
           {/* Position du chauffeur */}
@@ -389,6 +390,8 @@ export default function ActiveDeliveryPage() {
 
       {/* Panel inférieur */}
       <div style={styles.bottomPanel}>
+        <PaymentBreakdown order={order} />
+
         {/* Adresses */}
         <div style={styles.addressRow}>
           <div style={styles.addressItem}>
