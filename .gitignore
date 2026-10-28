@@ -1,6 +1,7 @@
 # Dépendances et builds
 node_modules/
 dist/
+dev-dist/
 build/
 coverage/
 .expo/
