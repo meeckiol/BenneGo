@@ -46,6 +46,8 @@ const extractOrderId = (event) => {
   }
 };
 
+const localPhone = (phone = '') => phone.replace(/\D/g, '').replace(/^229/, '') || undefined;
+
 /** Paramètres du widget de paiement KKiaPay pour une commande du client connecté */
 const getCheckoutConfig = async (orderId, user) => {
   const { rows } = await query('SELECT * FROM orders WHERE id = $1 AND client_id = $2', [orderId, user.id]);
@@ -54,13 +56,16 @@ const getCheckoutConfig = async (orderId, user) => {
   if (order.payment_status !== 'unpaid' || order.status !== 'awaiting_payment') {
     throw new AppError('Cette commande ne peut plus être payée', 409);
   }
+  const widget = kkiapay.widgetConfig();
   return {
     order_id: order.id,
     order_number: order.order_number,
     amount: Number(order.total_amount),
-    phone: user.phone,
+    // En sandbox, champ vide : le testeur saisit un numéro de test KKiaPay (le numéro du compte échouerait).
+    // En réel : numéro local sans indicatif, comme l'attend le widget (+22997000000 → 97000000)
+    phone: widget.sandbox ? undefined : localPhone(user.phone),
     name: user.full_name,
-    ...kkiapay.widgetConfig(),
+    ...widget,
   };
 };
 
@@ -78,11 +83,13 @@ const confirmEscrow = async (orderId, transactionId, { clientId } = {}) => {
   try {
     result = await kkiapay.verify(transactionId, orderId);
   } catch (error) {
-    console.error('KKiaPay verify:', error.message);
+    console.error(`KKiaPay verify ${transactionId} (commande ${orderId}) :`, error.response?.data || error.message);
     throw new AppError('Paiement introuvable chez KKiaPay', 402);
   }
   if (!result || result.status !== 'SUCCESS') {
-    throw new AppError('Paiement non confirmé par KKiaPay', 402);
+    // Statut renvoyé par KKiaPay (FAILED, PENDING…) : visible dans le terminal pour comprendre un échec
+    console.warn(`KKiaPay ${transactionId} (commande ${orderId}) : statut ${result?.status}, montant ${result?.amount}`);
+    throw new AppError(`Paiement non confirmé par KKiaPay (${result?.status || 'statut inconnu'})`, 402);
   }
 
   const db = await getClient();
