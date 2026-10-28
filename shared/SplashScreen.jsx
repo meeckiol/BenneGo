@@ -9,20 +9,23 @@ const SEEN_KEY = 'bennego-splash-vu';
  * (vers la droite, vers le haut, puis vers la droite), ralentit dans les virages, freine,
  * lève sa benne et vide le sable derrière lui. Chaque image est calculée à partir du temps écoulé.
  */
-const ROUTE = 'M -50 430 H 110 Q 150 430 150 390 V 230 Q 150 190 190 190 H 262';
+const ROUTE = 'M -50 430 H 110 Q 150 430 150 390 V 230 Q 150 190 190 190 H 316';
+// Marche arrière : le camion dépasse le chantier puis recule dedans, l'arrière vers le point de déchargement
+const BACK_ROUTE = 'M 316 190 Q 243 190 243 210';
 const ROAD = 'M -80 430 H 110 Q 150 430 150 390 V 230 Q 150 190 190 190 H 440';
 
 // Chronologie en secondes depuis l'ouverture
 const T = {
   roads: [0, 0.5],
-  drive: [0.3, 3.1],
+  drive: [0.3, 2.9],
   word: [0.9, 1.4],
-  tipUp: [3.25, 3.75],
-  sand: [3.45, 4.35],
-  tipDown: [4.35, 4.75],
-  fade: [4.8, 5.2],
+  reverse: [3.05, 4.05],
+  tipUp: [4.15, 4.6],
+  sand: [4.35, 5.25],
+  tipDown: [5.25, 5.65],
+  fade: [5.75, 6.15],
 };
-const DUREE_MS = 5200;
+const DUREE_MS = 6150;
 const TIP_MAX = (48 * Math.PI) / 180;
 // Taille du camion dans la scène
 const TRUCK_SCALE = 1.45;
@@ -34,7 +37,7 @@ const TIRE_Y = 12.5;
 
 const BLOCKS = [
   [16, 482, 88, 60], [16, 250, 86, 130], [16, 60, 120, 80], [204, 60, 132, 78],
-  [204, 246, 132, 66], [204, 334, 132, 80], [204, 482, 132, 60],
+  [204, 334, 132, 80], [204, 482, 132, 60],
 ];
 const TREES = [[120, 486], [60, 222], [312, 232], [176, 470], [326, 160]];
 
@@ -56,7 +59,7 @@ const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
  * Prépare le trajet : points, cap, et un profil de vitesse réaliste (plus lent dans les virages,
  * freinage progressif à l'arrivée). `time[i]` est la part du trajet écoulée au point i, de 0 à 1.
  */
-function buildProfile(path) {
+function buildProfile(path, fromRest = false) {
   const length = path.getTotalLength();
   const n = Math.ceil(length);
   const pts = Array.from({ length: n + 1 }, (_, i) => path.getPointAtLength(Math.min(length, i)));
@@ -71,7 +74,8 @@ function buildProfile(path) {
     let bend = 0;
     for (let k = Math.max(0, i - 16); k <= Math.min(n, i + 16); k += 1) bend = Math.max(bend, curve[k]);
     const braking = Math.sqrt(Math.max(0, length - i) / 80);
-    const speed = Math.max(0.04, Math.min(1, braking) / (1 + 16 * bend));
+    const launch = fromRest ? Math.sqrt(Math.min(1, (i + 4) / 40)) : 1;
+    const speed = Math.max(0.04, (launch * Math.min(1, braking)) / (1 + 16 * bend));
     time.push(time[i - 1] + 1 / speed);
   }
   const total = time[n];
@@ -103,6 +107,7 @@ function SplashScreen({ onDone }) {
   useEffect(() => {
     const r = refs.current;
     const profile = buildProfile(r.route);
+    const back = buildProfile(r.backRoute, true);
     const puffs = Array.from(r.dust.children).map((el, k) => ({ el, s: 30 + k * 16 }))
       .filter((p) => p.s < profile.length - 30)
       .map((p) => ({ ...p, t: T.drive[0] + profile.time[Math.round(p.s)] * (T.drive[1] - T.drive[0]) }));
@@ -111,9 +116,16 @@ function SplashScreen({ onDone }) {
 
     const render = (now) => {
       const t = (now - start) / 1000;
-      const s = distanceAt(profile, progress(T.drive, t));
-      const { x, y, h } = pointAt(profile, s);
-      const steer = clamp(wrap(pointAt(profile, s + 14).h - h) * 1.4, -0.55, 0.55);
+      // En avant sur la route, puis en marche arrière dans le chantier (le cap est l'inverse du sens de déplacement)
+      const reversing = t >= T.reverse[0];
+      const path = reversing ? back : profile;
+      const s = distanceAt(path, progress(reversing ? T.reverse : T.drive, t));
+      const at = pointAt(path, s);
+      const { x, y } = at;
+      const h = reversing ? at.h + Math.PI : at.h;
+      const turn = clamp(wrap(pointAt(path, s + 14).h - at.h) * 1.4, -0.55, 0.55);
+      const steer = reversing ? -turn : turn;
+      const rolled = reversing ? profile.length - s : s;
 
       r.overlay.style.opacity = String(1 - progress(T.fade, t));
       r.roads.setAttribute('opacity', String(progress(T.roads, t)));
@@ -122,7 +134,7 @@ function SplashScreen({ onDone }) {
       r.truck.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${deg(h).toFixed(2)}) scale(${TRUCK_SCALE})`);
       r.steerL.setAttribute('transform', `rotate(${deg(steer).toFixed(2)} ${FRONT_AXLE} ${-TIRE_Y})`);
       r.steerR.setAttribute('transform', `rotate(${deg(steer).toFixed(2)} ${FRONT_AXLE} ${TIRE_Y})`);
-      r.treads.querySelectorAll('line').forEach((el) => el.setAttribute('stroke-dashoffset', (-(s % 3.2)).toFixed(2)));
+      r.treads.querySelectorAll('line').forEach((el) => el.setAttribute('stroke-dashoffset', (-(rolled % 3.2)).toFixed(2)));
 
       // Benne : se lève (raccourcie vue de dessus), découvre le vérin, puis redescend
       const tilt = TIP_MAX * (easeInOut(progress(T.tipUp, t)) - easeInOut(progress(T.tipDown, t)));
@@ -175,10 +187,17 @@ function SplashScreen({ onDone }) {
           {TREES.map(([cx, cy]) => (
             <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="7" fill="#e3ecdc" />
           ))}
+          {/* Chantier où le sable est déchargé, avec son entrée depuis la route */}
+          <rect x="204" y="246" width="132" height="66" rx="10" fill="#f1e6d0" stroke="#f0a35c" strokeWidth="1.5" strokeDasharray="6 5" />
+          <rect x="222" y="214" width="42" height="36" fill="#e8e2d9" />
+          {[[214, 300], [326, 256], [326, 300]].map(([cx, cy]) => (
+            <path key={`${cx}-${cy}`} d={`M${cx - 4} ${cy + 4} L${cx} ${cy - 5} L${cx + 4} ${cy + 4} Z`} fill="#ff6b00" />
+          ))}
           <path d={ROAD} fill="none" stroke="#e8e2d9" strokeWidth="64" />
           <path d={ROAD} fill="none" stroke="#ffffff" strokeWidth="3" strokeDasharray="14 12" />
         </g>
         <path ref={set('route')} d={ROUTE} fill="none" stroke="none" />
+        <path ref={set('backRoute')} d={BACK_ROUTE} fill="none" stroke="none" />
         <g ref={set('dust')}>
           {Array.from({ length: 32 }, (_, k) => (
             <circle key={k} r="0" fill="#c8bfb2" opacity="0" />
