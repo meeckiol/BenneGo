@@ -718,3 +718,23 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispute_opened_at TIMESTAMP WITH TIM
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS dispute_resolved_at TIMESTAMP WITH TIME ZONE;
 ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_dispute_status_check;
 ALTER TABLE orders ADD CONSTRAINT orders_dispute_status_check CHECK (dispute_status IN ('open', 'refunded', 'released'));
+
+-- =============================================
+-- MESSAGERIE : lecture des discussions (pastilles non lus) et abonnements aux notifications push
+-- =============================================
+CREATE TABLE IF NOT EXISTS order_chat_reads (
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  last_read_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (order_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL UNIQUE,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);

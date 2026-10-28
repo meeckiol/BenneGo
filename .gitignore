@@ -21,3 +21,4 @@ uploads/
 # Rapports Playwright
 test-results/
 playwright-report/
+backend/.vapid-keys.json

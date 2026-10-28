@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { query } = require('../config/database');
 const { recordPosition, broadcastPosition } = require('./tracking.service');
+const { notifyRecipient } = require('./chat.service');
 
 /**
  * Socket.IO : suivi temps réel des camions.
@@ -117,7 +118,7 @@ const setupSocketIO = (io) => {
       const trimmed = message.trim().slice(0, 1000);
       if (!trimmed) return;
       try {
-        const { rows: orderRows } = await query('SELECT client_id, driver_id FROM orders WHERE id = $1', [order_id]);
+        const { rows: orderRows } = await query('SELECT client_id, driver_id, order_number FROM orders WHERE id = $1', [order_id]);
         const order = orderRows[0];
         const allowed = order && (
           socket.userRole === 'admin'
@@ -135,6 +136,8 @@ const setupSocketIO = (io) => {
 
         const savedMsg = msgRows[0];
         io.to(`chat_${order_id}`).emit('chat_message', savedMsg);
+        // L'autre personne est prévenue où qu'elle soit dans l'application, ou par notification push
+        notifyRecipient(io, order, savedMsg).catch((err) => console.error('Erreur alerte message:', err.message));
       } catch (err) {
         socket.emit('error_message', { error: 'Erreur envoi message chat' });
       }
@@ -170,6 +173,9 @@ const setupSocketIO = (io) => {
     socket.on('disconnect', async () => {
       if (socket.userRole === 'driver') {
         try {
+          // Un autre onglet ou appareil du chauffeur reste connecté : il garde sa disponibilité
+          const others = await io.in(`driver_${socket.userId}`).fetchSockets();
+          if (others.length) return;
           await query('UPDATE driver_profiles SET is_available = false, updated_at = NOW() WHERE user_id = $1', [socket.userId]);
         } catch (err) {
           console.error('Erreur déconnexion chauffeur:', err);

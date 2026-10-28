@@ -9,6 +9,7 @@ const {
 } = require('../controllers/order.controller');
 const { uploadPhotos, saveImage } = require('../services/photo.service');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
+const { unreadFor, markRead } = require('../services/chat.service');
 const { validateRequest } = require('../middlewares/validate.middleware');
 
 const router = express.Router();
@@ -60,6 +61,16 @@ router.post('/bulk', requireRole('client'), [
 router.get('/', getOrders);
 
 // GET /api/orders/:id - Détail d'une commande
+// GET /api/orders/chat/unread : messages non lus par discussion en cours
+router.get('/chat/unread', async (req, res, next) => {
+  try {
+    const rows = await unreadFor(req.user.id);
+    res.json({ unread: rows, total: rows.reduce((sum, r) => sum + r.unread, 0) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/:id', [
   param('id').isUUID(),
 ], validateRequest, getOrder);
@@ -233,6 +244,24 @@ router.get('/:id/chat', [
     );
 
     res.json({ messages: rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/orders/:id/chat/read : la discussion a été lue jusqu'à maintenant
+router.post('/:id/chat/read', [
+  param('id').isUUID(),
+], validateRequest, async (req, res, next) => {
+  try {
+    const { rows } = await query('SELECT client_id, driver_id FROM orders WHERE id = $1', [req.params.id]);
+    const order = rows[0];
+    if (!order) return res.status(404).json({ error: 'Commande non trouvée' });
+    if (order.client_id !== req.user.id && order.driver_id !== req.user.id) {
+      return res.status(403).json({ error: 'Accès non autorisé à cette discussion' });
+    }
+    await markRead(req.params.id, req.user.id);
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }

@@ -82,7 +82,11 @@ router.get('/me/summary', requireRole('driver'), async (req, res, next) => {
         `SELECT
            COALESCE(SUM(driver_amount) FILTER (WHERE payment_status = 'released'), 0) AS paid,
            COALESCE(SUM(driver_amount) FILTER (WHERE payment_status = 'payout_pending'), 0) AS pending_payout,
-           COALESCE(SUM(driver_amount) FILTER (WHERE payment_status = 'escrow_held'), 0) AS awaiting_confirmation
+           COALESCE(SUM(driver_amount) FILTER (WHERE payment_status = 'escrow_held'), 0) AS awaiting_confirmation,
+           COALESCE(SUM(driver_amount) FILTER (WHERE status IN ('validated', 'completed')
+             AND COALESCE(validated_at, created_at) >= date_trunc('month', NOW())), 0) AS this_month,
+           COUNT(*) FILTER (WHERE status IN ('validated', 'completed')
+             AND COALESCE(validated_at, created_at) >= date_trunc('month', NOW()))::int AS trips_this_month
          FROM orders WHERE driver_id = $1`,
         [req.user.id]
       ),
@@ -99,7 +103,9 @@ router.get('/me/summary', requireRole('driver'), async (req, res, next) => {
         paid: Number(e.paid),
         pending_payout: Number(e.pending_payout),
         awaiting_confirmation: Number(e.awaiting_confirmation),
+        this_month: Number(e.this_month),
       },
+      trips_this_month: e.trips_this_month || 0,
       // Profil camion (évite un second appel à /auth/me côté mobile)
       truck_plate: p.truck_plate || null,
       truck_type: p.truck_type || null,
