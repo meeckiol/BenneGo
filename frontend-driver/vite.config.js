@@ -7,6 +7,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Service worker aussi en développement : sans lui, Chrome Android n'installe pas l'app depuis le tunnel HTTPS
+      devOptions: { enabled: true },
       includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'BenneGo Driver',

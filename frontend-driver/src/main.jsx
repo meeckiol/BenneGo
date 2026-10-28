@@ -4,25 +4,28 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
+import DevicePreview from '../../shared/DevicePreview';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: 'var(--surface)',
-            color: 'var(--text-strong)',
-            border: '1px solid rgba(17, 24, 39, 0.1)',
-          },
-        }}
-      />
-    </BrowserRouter>
+    <DevicePreview>
+      <BrowserRouter>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+        <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: 'var(--surface)',
+              color: 'var(--text-strong)',
+              border: '1px solid rgba(17, 24, 39, 0.1)',
+            },
+          }}
+        />
+      </BrowserRouter>
+    </DevicePreview>
   </React.StrictMode>
 );
 
