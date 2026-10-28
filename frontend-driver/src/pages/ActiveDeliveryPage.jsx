@@ -1,31 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import toast from 'react-hot-toast';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import api from '../services/api';
 import PaymentBreakdown from '../components/PaymentBreakdown';
 import { useDriverSession } from '../context/DriverSession';
 import { useUnread, badgeText } from '../../../shared/messaging';
-import L from 'leaflet';
-import { goldPin, startDot } from '../../../frontend-client/src/components/mapStyle';
-
-// Position du camion : pastille noire cerclée d'or (les icônes Leaflet par défaut ne se chargent pas une fois l'app compilée)
-const truckDot = L.divIcon({
-  className: '',
-  html: '<span style="display:block;width:22px;height:22px;border-radius:50%;background:#d9a55b;border:4px solid #0b0b10;box-shadow:0 0 0 4px rgba(217,165,91,.35)"></span>',
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-});
-
-// Composant pour centrer la carte sur la position GPS
-function MapCenter({ position }) {
-  const map = useMap();
-  useEffect(() => {
-    if (position) map.setView([position.lat, position.lng], map.getZoom());
-  }, [position, map]);
-  return null;
-}
+import RouteMap from '../components/RouteMap';
 
 // Étapes de livraison dynamiques selon le type de service
 const getDeliverySteps = (orderType) => {
@@ -266,10 +247,6 @@ export default function ActiveDeliveryPage() {
   const isDelivered = order.status === 'delivered' || order.status === 'validated' || order.status === 'completed';
   const showPoD = order.status === 'delivered' || order.status === 'validated' || order.status === 'completed';
 
-  const mapCenter = position
-    ? [position.lat, position.lng]
-    : [parseFloat(order.pickup_lat), parseFloat(order.pickup_lng)];
-
   return (
     <div style={styles.container}>
       {/* Header */}
@@ -284,44 +261,9 @@ export default function ActiveDeliveryPage() {
         <a href={`tel:${order.client_phone}`} style={styles.callBtn}>Appeler</a>
       </header>
 
-      {/* Carte OpenStreetMap */}
+      {/* Carte de la course (Google Maps avec une clé, sinon OpenStreetMap) */}
       <div style={styles.mapWrapper}>
-        <MapContainer
-          center={mapCenter}
-          zoom={13}
-          style={{ height: '100%', width: '100%' }}
-          zoomControl={false}
-        >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            attribution='© OpenStreetMap © CARTO'
-          />
-
-          {/* Position du chauffeur */}
-          {position && (
-            <Marker position={[position.lat, position.lng]} icon={truckDot}>
-              <Popup>Votre position</Popup>
-            </Marker>
-          )}
-
-          {/* Point de chargement */}
-          <Marker
-            position={[parseFloat(order.pickup_lat), parseFloat(order.pickup_lng)]}
-            icon={startDot}
-          >
-            <Popup>{order.pickup_address}</Popup>
-          </Marker>
-
-          {/* Point de livraison */}
-          <Marker
-            position={[parseFloat(order.delivery_lat), parseFloat(order.delivery_lng)]}
-            icon={goldPin}
-          >
-            <Popup>{order.delivery_address}</Popup>
-          </Marker>
-
-          {position && <MapCenter position={position} />}
-        </MapContainer>
+        <RouteMap order={order} position={position} />
 
         {/* GPS indicator */}
         <div style={{

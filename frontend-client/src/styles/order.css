@@ -88,6 +88,7 @@
 }
 
 .bn-order__search {
+  position: relative;
   display: flex;
   flex: 1;
   align-items: center;

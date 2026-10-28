@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, Check, LocateFixed, Phone, Search, Truck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, LocateFixed, Phone, Truck } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
 import { getSocket } from '../services/socket';
 import OrderMap from '../components/OrderMap';
+import AddressSearch from '../components/AddressSearch';
 import { STATUS, Track, describe } from '../components/delivery';
 import '../styles/order.css';
 
@@ -219,8 +220,22 @@ export default function NewOrderPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name in autoNamed.current) autoNamed.current[name] = false;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
+
+  // Adresses remplies par la carte (nom du lieu touché) : remplacées au prochain toucher,
+  // jamais quand le client a tapé lui-même son adresse
+  const autoNamed = useRef({ pickup_address: true, delivery_address: true });
+  const placePoint = (which, { lat, lng, name }) => setForm((prev) => {
+    const field = `${which}_address`;
+    const next = { ...prev, [`${which}_lat`]: lat, [`${which}_lng`]: lng };
+    if (name && (autoNamed.current[field] || !prev[field])) {
+      next[field] = name;
+      autoNamed.current[field] = true;
+    }
+    return next;
+  });
 
   // Sélection d'un chantier enregistré (remplit automatiquement l'adresse et le GPS)
   const handleProjectSelect = (e) => {
@@ -321,7 +336,7 @@ export default function NewOrderPage() {
             delivery={{ lat: form.delivery_lat, lng: form.delivery_lng }}
             showPickup={orderType !== 'RENTAL'}
             editable={editable}
-            onChange={(which, { lat, lng }) => setForm((prev) => ({ ...prev, [`${which}_lat`]: lat, [`${which}_lng`]: lng }))}
+            onChange={placePoint}
           />
           <button type="button" className="bn-order__locate" onClick={() => locate(editable)} aria-label="Utiliser ma position">
             <LocateFixed size={22} aria-hidden="true" />
@@ -332,16 +347,18 @@ export default function NewOrderPage() {
           <button type="button" className="bn-order__round" onClick={goBack} aria-label="Retour">
             <ArrowLeft size={20} aria-hidden="true" />
           </button>
-          <label className="bn-order__search">
-            <Search size={18} aria-hidden="true" />
-            <input
-              name={searchField}
-              value={form[searchField]}
-              onChange={handleChange}
-              placeholder={editable === 'pickup' ? 'Où ramasser ?' : 'Où livrer ?'}
-              aria-label={editable === 'pickup' ? 'Adresse du chantier à nettoyer' : 'Adresse de livraison'}
-            />
-          </label>
+          <AddressSearch
+            name={searchField}
+            value={form[searchField]}
+            onChange={handleChange}
+            onPick={({ lat, lng, name }) => {
+              autoNamed.current[searchField] = false;
+              setForm((prev) => ({ ...prev, [`${editable}_lat`]: lat, [`${editable}_lng`]: lng, [searchField]: name }));
+            }}
+            near={{ lat: Number(form[`${editable}_lat`]), lng: Number(form[`${editable}_lng`]) }}
+            placeholder={editable === 'pickup' ? 'Où ramasser ?' : 'Où livrer ?'}
+            label={editable === 'pickup' ? 'Adresse du chantier à nettoyer' : 'Adresse de livraison'}
+          />
         </div>
 
         <section className="bn-order__sheet">
