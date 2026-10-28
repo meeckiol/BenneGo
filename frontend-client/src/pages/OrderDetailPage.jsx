@@ -423,7 +423,7 @@ function InfoRow({ label, value, bold }) {
 
 const styles = {
   container: { minHeight: '100vh', background: 'var(--surface-2)' },
-  header: { background: '#F6A906', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' },
+  header: { background: '#D9A55B', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' },
   back: { background: 'none', border: 'none', color: 'var(--text-strong)', fontSize: '16px', cursor: 'pointer' },
   title: { color: 'var(--text-strong)', fontSize: '18px', fontWeight: '700', margin: 0 },
   content: { padding: '20px', maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' },
@@ -433,7 +433,7 @@ const styles = {
   step: { display: 'flex', alignItems: 'center', gap: '12px' },
   stepDot: { width: '12px', height: '12px', borderRadius: '50%', flexShrink: 0 },
   stepLabel: { fontSize: '14px' },
-  primaryBtn: { padding: '16px', background: '#F6A906', color: '#0b0b10', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', width: '100%' },
+  primaryBtn: { padding: '16px', background: '#D9A55B', color: '#0b0b10', border: 'none', borderRadius: '10px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', width: '100%' },
   secure: { background: 'var(--success-soft)', border: '1px solid rgba(34, 197, 94, 0.35)', color: 'var(--success)', borderRadius: '12px', padding: '14px 16px', fontSize: '14px', lineHeight: '1.5' },
   cancelled: { background: 'var(--danger-soft)', border: '1px solid rgba(239, 68, 68, 0.35)', color: 'var(--danger)', borderRadius: '12px', padding: '14px 16px', fontSize: '14px' },
   mapHint: { margin: '10px 0 0', fontSize: '13px', color: 'var(--text-2)' },
@@ -446,11 +446,11 @@ const styles = {
   // Chat styles
   chatBox: { maxHeight: '250px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px', background: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '12px' },
   chatEmpty: { textAlign: 'center', color: 'var(--text-3)', fontSize: '13px', padding: '16px 0' },
-  chatMsgMe: { alignSelf: 'flex-end', background: '#F6A906', color: '#0b0b10', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
+  chatMsgMe: { alignSelf: 'flex-end', background: '#D9A55B', color: '#0b0b10', borderRadius: '12px 12px 4px 12px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
   chatMsgThem: { alignSelf: 'flex-start', background: 'var(--surface-3)', color: 'var(--text-strong)', borderRadius: '12px 12px 12px 4px', padding: '8px 12px', fontSize: '13px', maxWidth: '80%', wordBreak: 'break-word' },
   chatSender: { fontSize: '10px', fontWeight: '700', opacity: 0.8, marginBottom: '2px' },
   chatTime: { fontSize: '9px', textAlign: 'right', marginTop: '4px' },
   chatForm: { display: 'flex', gap: '8px' },
   chatInput: { flex: 1, padding: '10px 12px', border: '1px solid var(--border-2)', borderRadius: '8px', fontSize: '13px', outline: 'none' },
-  chatSendBtn: { background: '#F6A906', color: '#0b0b10', border: 'none', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' },
+  chatSendBtn: { background: '#D9A55B', color: '#0b0b10', border: 'none', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' },
 };

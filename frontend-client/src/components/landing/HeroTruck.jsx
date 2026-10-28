@@ -7,12 +7,12 @@ export default function HeroTruck() {
     <svg className="landing-truck" viewBox="0 0 480 240" role="img" aria-label="Camion-benne qui roule vers le chantier">
       <defs>
         <linearGradient id="landing-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff7d6" />
+          <stop offset="0" stopColor="#fbf3e4" />
           <stop offset="1" stopColor="#ffffff" />
         </linearGradient>
       </defs>
       <rect width="480" height="240" rx="28" fill="url(#landing-sky)" />
-      <circle cx="390" cy="62" r="24" fill="#fdeaa0" />
+      <circle cx="390" cy="62" r="24" fill="#f3e1bf" />
       <rect x="0" y="176" width="480" height="20" rx="10" fill="#e7e0d6" />
       <motion.line
         x1="0"
@@ -26,8 +26,8 @@ export default function HeroTruck() {
         transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
       />
       <motion.g animate={{ x: [-170, 500] }} transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}>
-        <rect x="0" y="92" width="122" height="62" rx="8" fill="#f6a906" />
-        <rect x="10" y="102" width="102" height="8" rx="4" fill="#fde28a" />
+        <rect x="0" y="92" width="122" height="62" rx="8" fill="#d9a55b" />
+        <rect x="10" y="102" width="102" height="8" rx="4" fill="#f1dab0" />
         <path d="M122 112 H160 Q174 112 180 126 L190 152 V156 H122 Z" fill="#111827" />
         <rect x="136" y="118" width="26" height="16" rx="3" fill="#dbeafe" />
         <circle className="landing-wheel" cx="34" cy="158" r="14" fill="#111827" />
@@ -36,7 +36,7 @@ export default function HeroTruck() {
         <circle cx="150" cy="158" r="5" fill="#f2ebe2" />
       </motion.g>
       <g aria-hidden="true">
-        <path d="M410 150 C410 136 396 128 396 112 C396 102 404 96 412 96 C420 96 428 102 428 112 C428 128 414 136 410 150 Z" fill="#f6a906" />
+        <path d="M410 150 C410 136 396 128 396 112 C396 102 404 96 412 96 C420 96 428 102 428 112 C428 128 414 136 410 150 Z" fill="#d9a55b" />
         <circle cx="412" cy="112" r="6" fill="#ffffff" />
       </g>
     </svg>

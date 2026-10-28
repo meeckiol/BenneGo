@@ -174,7 +174,7 @@ const s = {
     colorScheme: 'dark',
   },
   generateBtn: {
-    padding: '11px 24px', background: '#F6A906', border: 'none',
+    padding: '11px 24px', background: '#D9A55B', border: 'none',
     borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700',
     cursor: 'pointer', whiteSpace: 'nowrap',
   },

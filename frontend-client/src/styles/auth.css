@@ -6,7 +6,7 @@
   display: grid;
   grid-template-rows: auto 1fr;
   background:
-    radial-gradient(120% 60% at 85% 0%, rgba(246, 169, 6, 0.28), transparent 60%),
+    radial-gradient(120% 60% at 85% 0%, rgba(217, 165, 91, 0.28), transparent 60%),
     #0b0b10;
 }
 
@@ -142,7 +142,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   background:
-    radial-gradient(120% 60% at 50% 10%, rgba(246, 169, 6, 0.3), transparent 60%),
+    radial-gradient(120% 60% at 50% 10%, rgba(217, 165, 91, 0.3), transparent 60%),
     #0b0b10;
   color: #ffffff;
 }
@@ -192,8 +192,8 @@
   height: 200px;
   margin-bottom: 12px;
   border-radius: 56px;
-  background: linear-gradient(145deg, rgba(252, 206, 9, 0.95), rgba(246, 169, 6, 0.85));
-  box-shadow: 0 30px 70px rgba(246, 169, 6, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: linear-gradient(145deg, rgba(232, 195, 138, 0.95), rgba(217, 165, 91, 0.85));
+  box-shadow: 0 30px 70px rgba(217, 165, 91, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   color: #0b0b10;
 }
 

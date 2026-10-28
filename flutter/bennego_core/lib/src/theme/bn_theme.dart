@@ -5,7 +5,7 @@ enum BnTone { neutral, brand, info, success, warning, danger, violet }
 
 /// Couleurs de BenneGo, identiques aux jetons de `shared/theme.css` (thème sombre).
 abstract final class BnColors {
-  static const brand = Color(0xFFF6A906);
+  static const brand = Color(0XFFD9A55B);
   static const bg = Color(0xFF0B0B10);
   static const surface = Color(0xFF15151D);
   static const surface2 = Color(0xFF1C1C26);
@@ -33,13 +33,13 @@ Color toneColor(BnTone tone) => switch (tone) {
       BnTone.violet => BnColors.violet,
     };
 
-/// Thème Material sombre avec l'accent or du logo, comme l'interface web.
+/// Thème Material sombre avec l'accent sable doré, comme l'interface web.
 ThemeData bennegoTheme() {
   final scheme = ColorScheme.fromSeed(
     seedColor: BnColors.brand,
     brightness: Brightness.dark,
     primary: BnColors.brand,
-    // Texte sombre sur l'or : le blanc n'atteint que 2:1
+    // Texte sombre sur le sable doré : le blanc n'atteint que 2,2:1
     onPrimary: const Color(0xFF0B0B10),
     surface: BnColors.surface,
   );

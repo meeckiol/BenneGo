@@ -43,12 +43,12 @@ export function Glyph({ kind, size = 28 }) {
   if (kind === 'machine') {
     return (
       <svg width={size} height={size * 0.8} viewBox="0 0 32 24" aria-hidden="true">
-        <rect x="2" y="12" width="16" height="6" rx="2" fill="#111827" /><path d="M18 14 26 4l3 2-7 10z" fill="#f6a906" />
+        <rect x="2" y="12" width="16" height="6" rx="2" fill="#111827" /><path d="M18 14 26 4l3 2-7 10z" fill="#d9a55b" />
         <circle cx="6" cy="20" r="3" fill="#374151" /><circle cx="14" cy="20" r="3" fill="#374151" />
       </svg>
     );
   }
-  if (kind === 'waste') return <Trash2 size={size * 0.75} aria-hidden="true" color="#805c00" />;
+  if (kind === 'waste') return <Trash2 size={size * 0.75} aria-hidden="true" color="#7a4e14" />;
   return (
     <svg width={size} height={size * 0.8} viewBox="0 0 28 22" aria-hidden="true">
       <path d="M2 20 C6 8 10 4 14 4 C18 4 22 8 26 20 Z" fill="#d9a55b" /><path d="M8 20 C10 12 12 9 14 9 C16 9 18 12 20 20 Z" fill="#ecc27f" />
@@ -74,7 +74,7 @@ export function describe(order) {
 
 export const TruckIcon = ({ idle }) => (
   <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-    <rect x="0" y="2" width="9" height="6" rx="1" fill={idle ? '#d5d0c8' : '#f6a906'} />
+    <rect x="0" y="2" width="9" height="6" rx="1" fill={idle ? '#d5d0c8' : '#d9a55b'} />
     <path d="M9 4h4l2 3v1H9z" fill={idle ? '#9aa0aa' : '#111827'} />
     <circle cx="3" cy="10" r="1.6" fill={idle ? '#9aa0aa' : '#111827'} />
     <circle cx="12" cy="10" r="1.6" fill={idle ? '#9aa0aa' : '#111827'} />

@@ -115,7 +115,7 @@ const s = {
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 },
   label: { display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--text-3)', fontWeight: 600 },
   input: { padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)', fontSize: 14 },
-  primaryBtn: { padding: '11px 18px', borderRadius: 8, border: 'none', background: '#F6A906', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
+  primaryBtn: { padding: '11px 18px', borderRadius: 8, border: 'none', background: '#D9A55B', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
   empty: { background: 'var(--surface)', borderRadius: 12, padding: 20, color: 'var(--text-3)', textAlign: 'center' },
   row: { display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderBottom: '1px solid var(--border-2)', fontSize: 14 },
 };

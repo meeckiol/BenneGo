@@ -325,7 +325,7 @@ export default function PromoCodesAdminPage() {
                   name="is_active"
                   checked={form.is_active}
                   onChange={handleChange}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#F6A906' }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#D9A55B' }}
                 />
                 <label htmlFor="is_active" style={s.checkboxLabel}>Code actif</label>
               </div>
@@ -349,7 +349,7 @@ const s = {
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' },
   title: { color: 'var(--text-strong)', fontSize: '22px', fontWeight: '800', margin: '0 0 4px' },
   subtitle: { color: 'var(--text-2)', fontSize: '14px', margin: 0 },
-  newBtn: { padding: '10px 20px', background: '#F6A906', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' },
+  newBtn: { padding: '10px 20px', background: '#D9A55B', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   tableTitle: { color: 'var(--text-3)', fontSize: '14px' },
@@ -384,5 +384,5 @@ const s = {
   checkboxRow: { display: 'flex', alignItems: 'center', gap: '10px' },
   checkboxLabel: { color: 'var(--text-2)', fontSize: '14px', cursor: 'pointer' },
   cancelBtn: { padding: '10px 20px', background: 'rgba(17, 24, 39, 0.05)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: '600' },
-  saveBtn: { padding: '10px 24px', background: '#F6A906', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
+  saveBtn: { padding: '10px 24px', background: '#D9A55B', border: 'none', borderRadius: '8px', color: '#0b0b10', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 };

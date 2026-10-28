@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'BenneGo Driver',
         short_name: 'BenneGo',
         description: 'Application chauffeur - Livraison de matériaux & BTP au Bénin',
-        theme_color: '#F6A906',
+        theme_color: '#D9A55B',
         background_color: '#1a1a2e',
         display: 'standalone',
         orientation: 'portrait',

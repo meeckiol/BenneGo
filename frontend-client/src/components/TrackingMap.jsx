@@ -10,7 +10,7 @@ const GLIDE_MS = 900;
 const driverIcon = L.divIcon({
   className: '',
   html: renderToStaticMarkup(
-    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: '#F6A906', color: '#0b0b10', boxShadow: '0 2px 6px rgba(0,0,0,.4)' }}>
+    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: '50%', background: '#D9A55B', color: '#0b0b10', boxShadow: '0 2px 6px rgba(0,0,0,.4)' }}>
       <Navigation size={16} fill="currentColor" aria-hidden="true" />
     </span>
   ),
@@ -54,7 +54,7 @@ export default function TrackingMap({ pickup, delivery, driver, route = [] }) {
       .bindTooltip('Chargement').addTo(map.current);
     L.marker([delivery.lat, delivery.lng], { icon: goldPin, title: 'Livraison', alt: 'Livraison' })
       .bindTooltip('Livraison').addTo(map.current);
-    layers.current.line = L.polyline([], { color: '#805c00', weight: 4, opacity: 0.8 }).addTo(map.current);
+    layers.current.line = L.polyline([], { color: '#7a4e14', weight: 4, opacity: 0.8 }).addTo(map.current);
     map.current.fitBounds([[pickup.lat, pickup.lng], [delivery.lat, delivery.lng]], { padding: [40, 40] });
 
     return () => { map.current.remove(); map.current = null; layers.current = {}; };

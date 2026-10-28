@@ -53,9 +53,9 @@ export default function AdminLayout({ children }) {
               end={item.path === '/'}
               style={({ isActive }) => ({
                 ...s.navItem,
-                background: isActive ? 'rgba(246, 169, 6,0.15)' : 'transparent',
+                background: isActive ? 'rgba(217, 165, 91,0.15)' : 'transparent',
                 color: isActive ? 'var(--brand-ink)' : 'var(--text-2)',
-                borderLeft: isActive ? '3px solid #F6A906' : '3px solid transparent',
+                borderLeft: isActive ? '3px solid #D9A55B' : '3px solid transparent',
               })}
             >
               <span style={s.navIcon}><item.Icon size={18} aria-hidden="true" /></span>

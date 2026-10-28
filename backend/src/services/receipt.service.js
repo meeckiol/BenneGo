@@ -10,9 +10,9 @@
 const PDFDocument = require('pdfkit');
 
 // ─── Couleurs et polices ────────────────────────────────────────────────────
-// Or du logo pour les aplats, or foncé pour le texte (lisible sur fond blanc)
-const GOLD    = '#F6A906';
-const GOLD_INK = '#805C00';
+// Sable doré pour les aplats, sable foncé pour le texte (lisible sur fond blanc)
+const GOLD    = '#D9A55B';
+const GOLD_INK = '#7A4E14';
 const DARK    = '#1a1a2e';
 const GREY    = '#64748b';
 const WHITE   = '#ffffff';
@@ -50,7 +50,7 @@ const fmtBirth = (d) => {
  * Dessine l'en-tête commun à tous les reçus
  */
 const drawHeader = (doc, type) => {
-  // Bandeau or en haut, texte sombre (le blanc est illisible sur l'or)
+  // Bandeau sable doré en haut, texte sombre (le blanc y est illisible)
   doc.rect(0, 0, doc.page.width, 90).fill(GOLD);
 
   // Titre
@@ -222,7 +222,7 @@ const generateReceiptPDF = (res, order, type = 'client') => {
   y = drawSection(doc, 'Paiement', y);
 
   // Cadre montant total
-  doc.rect(50, y, doc.page.width - 100, 36).fill('#fffbeb').stroke(GOLD);
+  doc.rect(50, y, doc.page.width - 100, 36).fill('#fbf3e4').stroke(GOLD);
   doc.fillColor(GREY).fontSize(10).font('Helvetica').text('Montant total payé', 62, y + 8);
   doc.fillColor(GOLD_INK).fontSize(16).font('Helvetica-Bold')
      .text(fcfa(order.total_amount), 250, y + 6, { width: doc.page.width - 310 });

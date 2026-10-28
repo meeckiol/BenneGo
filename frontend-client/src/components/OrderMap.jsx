@@ -23,7 +23,7 @@ export default function OrderMap({ pickup, delivery, showPickup = true, editable
     addTiles(map.current);
 
     const l = layers.current;
-    l.route = L.polyline([asLatLng(pickup), asLatLng(delivery)], { color: '#f6a906', weight: 5, dashArray: '2 10', lineCap: 'round' }).addTo(map.current);
+    l.route = L.polyline([asLatLng(pickup), asLatLng(delivery)], { color: '#d9a55b', weight: 5, dashArray: '2 10', lineCap: 'round' }).addTo(map.current);
     l.pickup = L.marker(asLatLng(pickup), { icon: startDot, title: 'Départ', alt: 'Départ', draggable: true }).addTo(map.current);
     l.delivery = L.marker(asLatLng(delivery), { icon: goldPin, title: 'Arrivée', alt: 'Arrivée', draggable: true }).addTo(map.current);
 

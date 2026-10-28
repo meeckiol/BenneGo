@@ -75,7 +75,7 @@ export async function payOrder(orderId) {
       name: cfg.name,
       data: cfg.order_id,        // renvoyé par le webhook pour retrouver la commande
       reason: `BenneGo ${cfg.order_number}`,
-      theme: '#F6A906',
+      theme: '#D9A55B',
     });
   });
 }

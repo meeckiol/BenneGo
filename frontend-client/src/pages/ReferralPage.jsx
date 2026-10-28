@@ -157,5 +157,5 @@ const styles = {
   statLabel: { fontSize: '12.5px', color: 'var(--text-2)' },
   formRow: { display: 'flex', gap: '10px' },
   input: { flex: 1, padding: '12px 14px', border: '1px solid var(--border-2)', borderRadius: '8px', fontSize: '15px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', outline: 'none' },
-  applyBtn: { background: '#F6A906', color: '#0b0b10', border: 'none', padding: '12px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
+  applyBtn: { background: '#D9A55B', color: '#0b0b10', border: 'none', padding: '12px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' },
 };

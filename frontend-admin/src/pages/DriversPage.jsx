@@ -210,7 +210,7 @@ export default function DriversPage() {
   );
 }
 
-function SummaryCard({ icon, label, value, color = '#F6A906' }) {
+function SummaryCard({ icon, label, value, color = '#D9A55B' }) {
   return (
     <div style={s.summaryCard}>
       <span style={{ fontSize: '24px' }}>{icon}</span>

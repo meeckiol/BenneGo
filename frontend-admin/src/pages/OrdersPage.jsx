@@ -85,9 +85,9 @@ export default function OrdersPage() {
               onClick={() => setFilter(st.value)}
               style={{
                 ...s.filterBtn,
-                background: filter === st.value ? '#F6A906' : 'transparent',
+                background: filter === st.value ? '#D9A55B' : 'transparent',
                 color: filter === st.value ? '#0b0b10' : 'var(--text-2)',
-                borderColor: filter === st.value ? '#F6A906' : 'var(--border-2)',
+                borderColor: filter === st.value ? '#D9A55B' : 'var(--border-2)',
               }}
             >
               {st.label}

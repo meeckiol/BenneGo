@@ -23,7 +23,7 @@ const DriverFallback = () => (
       width: '44px',
       height: '44px',
       border: '4px solid var(--border-2)',
-      borderTopColor: '#F6A906',
+      borderTopColor: '#D9A55B',
       borderRadius: '50%',
       animation: 'driverSpin 0.7s linear infinite',
     }} />

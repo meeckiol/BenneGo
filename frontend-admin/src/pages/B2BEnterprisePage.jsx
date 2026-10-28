@@ -279,5 +279,5 @@ const styles = {
   badgePending: { background: 'rgba(245, 158, 11, 0.15)', color: 'var(--warning)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' },
   badgeInactive: { background: 'rgba(148, 163, 184, 0.15)', color: 'var(--text-3)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px' },
   badgeAlert: { background: 'rgba(239, 68, 68, 0.2)', color: 'var(--danger)', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' },
-  validateBtn: { background: '#F6A906', color: '#0b0b10', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
+  validateBtn: { background: '#D9A55B', color: '#0b0b10', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' },
 };

@@ -92,10 +92,10 @@ const s = {
   title: { margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: 'var(--text-strong)' },
   tabs: { display: 'flex', gap: 8, marginBottom: 16 },
   tab: { flex: 1, padding: '10px 8px', borderRadius: 8, border: '2px solid var(--border)', background: 'var(--surface)', fontWeight: 600, cursor: 'pointer', color: 'var(--text-2)' },
-  tabOn: { borderColor: '#F6A906', color: 'var(--brand-ink)', background: 'var(--warning-soft)' },
+  tabOn: { borderColor: '#D9A55B', color: 'var(--brand-ink)', background: 'var(--warning-soft)' },
   form: { display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start' },
   hint: { margin: 0, fontSize: 14, color: 'var(--text-2)' },
   textarea: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 8, border: '2px solid var(--border)', fontSize: 15, fontFamily: 'inherit', resize: 'vertical' },
-  btn: { alignSelf: 'stretch', padding: 14, background: '#F6A906', color: '#0b0b10', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' },
+  btn: { alignSelf: 'stretch', padding: 14, background: '#D9A55B', color: '#0b0b10', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer' },
   done: { color: 'var(--success)', fontSize: 14 },
 };

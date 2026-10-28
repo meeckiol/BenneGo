@@ -116,6 +116,6 @@ const s = {
   reason: { marginTop: 12, background: 'var(--bg)', borderRadius: 8, padding: 12, fontSize: 14, lineHeight: 1.5 },
   input: { marginTop: 14, width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' },
   actions: { display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' },
-  primaryBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: 'none', background: '#F6A906', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
+  primaryBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: 'none', background: '#D9A55B', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
   dangerBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: '1px solid #EF4444', background: 'transparent', color: 'var(--danger)', fontWeight: 700, cursor: 'pointer' },
 };

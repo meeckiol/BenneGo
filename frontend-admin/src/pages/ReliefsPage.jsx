@@ -115,5 +115,5 @@ const s = {
   warn: { marginTop: 14, background: '#422006', color: '#FDE68A', borderRadius: 8, padding: 12, fontSize: 14 },
   actions: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' },
   select: { flex: 1, minWidth: 260, padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)' },
-  primaryBtn: { padding: '10px 16px', borderRadius: 8, border: 'none', background: '#F6A906', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
+  primaryBtn: { padding: '10px 16px', borderRadius: 8, border: 'none', background: '#D9A55B', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
 };
