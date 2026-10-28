@@ -1,14 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Phone, Search } from 'lucide-react';
 import api from '../services/api';
 import { payOrder } from '../services/kkiapay';
-import LocationPicker from '../components/LocationPicker';
+import OrderMap from '../components/OrderMap';
+import { STATUS, Track, describe } from '../components/delivery';
+import '../styles/order.css';
 
 const DEFAULT_COTONOU = { lat: 6.3654, lng: 2.4183, address: 'Cotonou, Bénin' };
 const DEFAULT_CARRIERE = { lat: 6.5050, lng: 2.3050, address: 'Carrière de Tori-Bossito' };
 const DEFAULT_DECHARGE = { lat: 6.4800, lng: 2.3500, address: 'Décharge contrôlée d\'Akassato' };
+
+const SERVICES = [
+  { type: 'MATERIAL', label: 'Matériaux' },
+  { type: 'RENTAL', label: 'Engins' },
+  { type: 'EVACUATION', label: 'Gravats' },
+];
+
+/** Livraison en cours en haut du volet : chauffeur, appel, frise de progression. */
+function CurrentDelivery({ order }) {
+  const initials = (order.driver_name || 'BG').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+  return (
+    <div className="bn-order__current">
+      <div className="bn-order__driver">
+        <span className="bn-order__avatar" aria-hidden="true">{initials}</span>
+        <Link to={`/orders/${order.id}`} className="bn-order__who">
+          <small>{order.driver_name ? 'Chauffeur' : 'Commande en cours'}</small>
+          <strong>{order.driver_name || order.order_number}</strong>
+        </Link>
+        {order.driver_phone && (
+          <a className="bn-order__call" href={`tel:${order.driver_phone}`} aria-label={`Appeler ${order.driver_name}`}>
+            <Phone size={18} aria-hidden="true" />
+          </a>
+        )}
+      </div>
+      <p className="bn-order__note"><i aria-hidden="true" />{describe(order)} · {STATUS[order.status]?.label || order.status}</p>
+      <Track status={order.status} />
+    </div>
+  );
+}
 
 export default function NewOrderPage() {
   const navigate = useNavigate();
@@ -54,6 +85,19 @@ export default function NewOrderPage() {
   });
 
   const [estimate, setEstimate] = useState(null);
+
+  // Livraison en cours, montrée en haut du volet comme sur la maquette
+  const [current, setCurrent] = useState(null);
+  const paramsRef = useRef(null);
+  useEffect(() => {
+    api.get('/orders')
+      .then(({ data }) => setCurrent((data.orders || []).find((o) => (STATUS[o.status]?.group || 'done') === 'active') || null))
+      .catch(() => {});
+  }, []);
+  const showParams = () => {
+    paramsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    paramsRef.current?.querySelector('input, select')?.focus({ preventScroll: true });
+  };
 
   // Code promo
   const [promoCode, setPromoCode] = useState('');
@@ -180,6 +224,271 @@ export default function NewOrderPage() {
     }
   };
 
+  // Étape 1 (design C) : la carte en plein écran, puis un volet avec la livraison en cours,
+  // les boutons « Mes commandes » / « Nouvelle commande » et, en dessous, les paramètres de la commande
+  if (step === 1) {
+    const editable = orderType === 'EVACUATION' ? 'pickup' : 'delivery';
+    const searchField = editable === 'pickup' ? 'pickup_address' : 'delivery_address';
+    return (
+      <div className="bn-order">
+        <div className="bn-order__map">
+          <OrderMap
+            pickup={{ lat: form.pickup_lat, lng: form.pickup_lng }}
+            delivery={{ lat: form.delivery_lat, lng: form.delivery_lng }}
+            showPickup={orderType !== 'RENTAL'}
+            editable={editable}
+            onChange={(which, { lat, lng }) => setForm((prev) => ({ ...prev, [`${which}_lat`]: lat, [`${which}_lng`]: lng }))}
+          />
+        </div>
+
+        <div className="bn-order__top">
+          <button type="button" className="bn-order__round" onClick={() => navigate(-1)} aria-label="Retour">
+            <ArrowLeft size={20} aria-hidden="true" />
+          </button>
+          <label className="bn-order__search">
+            <Search size={18} aria-hidden="true" />
+            <input
+              name={searchField}
+              value={form[searchField]}
+              onChange={handleChange}
+              placeholder={editable === 'pickup' ? 'Où ramasser ?' : 'Où livrer ?'}
+              aria-label={editable === 'pickup' ? 'Adresse du chantier à nettoyer' : 'Adresse de livraison'}
+            />
+          </label>
+        </div>
+
+        <section className="bn-order__sheet">
+          <span className="bn-order__grab" aria-hidden="true" />
+
+          {current && <CurrentDelivery order={current} />}
+
+          <div className="bn-order__ctas">
+            <Link to="/orders" className="bn-order__cta bn-order__cta--ghost">Mes commandes</Link>
+            <button type="button" className="bn-order__cta bn-order__cta--gold" onClick={showParams}>Nouvelle commande</button>
+          </div>
+
+            <form ref={paramsRef} onSubmit={getEstimate} style={styles.form} aria-label="Paramètres de la commande">
+              <div className="bn-order__services" role="radiogroup" aria-label="Service">
+                {SERVICES.map((sv) => (
+                  <button
+                    key={sv.type}
+                    type="button"
+                    role="radio"
+                    aria-checked={orderType === sv.type}
+                    className={`bn-order__service${orderType === sv.type ? ' is-active' : ''}`}
+                    onClick={() => handleTypeSelect(sv.type)}
+                  >
+                    {sv.label}
+                  </button>
+                ))}
+              </div>
+              {/* Rattachement à un chantier B2B optionnel */}
+              {projects.length > 0 && (
+                <Section title="Chantier Entreprise (Optionnel)">
+                  <Field label="Associer à un projet de chantier">
+                    <select
+                      name="project_id"
+                      value={form.project_id}
+                      onChange={handleProjectSelect}
+                      style={styles.input}
+                    >
+                      <option value="">-- Commande ponctuelle (hors projet) --</option>
+                      {projects.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </Field>
+                </Section>
+              )}
+
+              {/* CAS 1 : TRANSPORT DE MATÉRIAUX */}
+              {orderType === 'MATERIAL' && (
+                <>
+                  <Section title="1. Matériaux & Camion">
+                    <Field label="Matériau commandé">
+                      <input
+                        name="material_description"
+                        value={form.material_description}
+                        onChange={handleChange}
+                        placeholder="Ex: Sable de mer, Gravier concassé 15/25, Latérite, Briques..."
+                        style={styles.input}
+                        required
+                      />
+                    </Field>
+                    <div style={styles.row}>
+                      <Field label="Volume estimé (m³ ou tonnes)">
+                        <input
+                          name="quantity_m3"
+                          type="number"
+                          min="1"
+                          max="200"
+                          step="0.5"
+                          value={form.quantity_m3}
+                          onChange={handleChange}
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                      <Field label="Type de camion requis">
+                        <select name="truck_type" value={form.truck_type} onChange={handleChange} style={styles.input}>
+                          <option value="simple_benne">Camion Benne 10m³</option>
+                          <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
+                          <option value="double_benne">Camion Benne 16m³ (Double benne)</option>
+                          <option value="semi_remorque">Semi-remorque Benne (25m³)</option>
+                          <option value="plateau">Camion Plateau (Briques/Fer)</option>
+                          <option value="grue">Camion avec Grue embarquée</option>
+                        </select>
+                      </Field>
+                    </div>
+                  </Section>
+
+                  <Section title="2. Itinéraire de Livraison">
+                    <Field label="Carrière de chargement (Départ)">
+                      <input
+                        name="pickup_address"
+                        value={form.pickup_address}
+                        onChange={handleChange}
+                        style={styles.input}
+                        required
+                      />
+                    </Field>
+                    <Field label="Adresse du Chantier de livraison (Arrivée)">
+                      <input
+                        name="delivery_address"
+                        value={form.delivery_address}
+                        onChange={handleChange}
+                        style={styles.input}
+                        required
+                      />
+                    </Field>
+                  </Section>
+                </>
+              )}
+
+              {/* CAS 2 : LOCATION D'ENGINS LOURDS */}
+              {orderType === 'RENTAL' && (
+                <>
+                  <Section title="1. Sélection de l'Engin Lourd">
+                    <Field label="Type d'engin de chantier requis">
+                      <select name="machinery_type" value={form.machinery_type} onChange={handleChange} style={styles.input}>
+                        <option value="excavatrice">Pelle Mécanique (Excavatrice 20T) - 35 000 FCFA/h</option>
+                        <option value="chargeuse">Chargeuse sur Pneus (15T) - 30 000 FCFA/h</option>
+                        <option value="bulldozer">Bulldozer de terrassement (25T) - 40 000 FCFA/h</option>
+                        <option value="compacteur">Compacteur / Rouleau compresseur - 25 000 FCFA/h</option>
+                        <option value="niveleuse">Niveleuse de voiries (18T) - 35 000 FCFA/h</option>
+                      </select>
+                    </Field>
+                    <div style={styles.row}>
+                      <Field label="Date de début d'opération">
+                        <input
+                          name="rental_start_date"
+                          type="date"
+                          value={form.rental_start_date}
+                          onChange={handleChange}
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                      <Field label="Durée de travail (Heures)">
+                        <select name="duration_hours" value={form.duration_hours} onChange={handleChange} style={styles.input}>
+                          <option value="4">Demi-journée (4 heures)</option>
+                          <option value="8">Journée complète (8 heures)</option>
+                          <option value="16">2 Journées (16 heures)</option>
+                          <option value="24">3 Journées (24 heures)</option>
+                          <option value="40">Semaine ouvrée (40 heures)</option>
+                        </select>
+                      </Field>
+                    </div>
+                  </Section>
+
+                  <Section title="2. Chantier de déploiement de l'engin">
+                    <Field label="Adresse du chantier">
+                      <input
+                        name="delivery_address"
+                        value={form.delivery_address}
+                        onChange={handleChange}
+                        placeholder="Ex: Chantier Cocotomey, Calavi ou Akpakpa"
+                        style={styles.input}
+                        required
+                      />
+                    </Field>
+                  </Section>
+                </>
+              )}
+
+              {/* CAS 3 : ÉVACUATION DE GRAVATS */}
+              {orderType === 'EVACUATION' && (
+                <>
+                  <Section title="1. Débris & Volume à Évacuer">
+                    <Field label="Nature des débris">
+                      <select
+                        name="evacuation_debris_type"
+                        value={form.evacuation_debris_type}
+                        onChange={handleChange}
+                        style={styles.input}
+                      >
+                        <option value="Gravats de démolition et béton">Gravats de démolition et morceaux de béton</option>
+                        <option value="Terre de déblai excédentaire">Terre excédentaire de fouille / terrassement</option>
+                        <option value="Débris mixtes et chutes de chantier">Débris mixtes, plâtre et chutes de chantier</option>
+                      </select>
+                    </Field>
+                    <div style={styles.row}>
+                      <Field label="Nombre estimé de camions (rotations)">
+                        <input
+                          name="rotations"
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={form.rotations}
+                          onChange={handleChange}
+                          style={styles.input}
+                          required
+                        />
+                      </Field>
+                      <Field label="Photo du tas de gravats (Optionnel)">
+                        <input
+                          name="evacuation_photo_url"
+                          value={form.evacuation_photo_url}
+                          onChange={handleChange}
+                          placeholder="Lien ou référence photo"
+                          style={styles.input}
+                        />
+                      </Field>
+                    </div>
+                  </Section>
+
+                  <Section title="2. Points de Ramassage et de Décharge">
+                    <Field label="Adresse du Chantier à nettoyer (Ramassage)">
+                      <input
+                        name="pickup_address"
+                        value={form.pickup_address}
+                        onChange={handleChange}
+                        style={styles.input}
+                        required
+                      />
+                    </Field>
+                    <Field label="Décharge autorisée de destination">
+                      <input
+                        name="delivery_address"
+                        value={form.delivery_address}
+                        onChange={handleChange}
+                        style={styles.input}
+                        required
+                      />
+                    </Field>
+                  </Section>
+                </>
+              )}
+
+              <button type="submit" disabled={loading} style={styles.primaryBtn}>
+                {loading ? 'Calcul du devis…' : <>Voir le devis <ArrowRight size={16} aria-hidden="true" /></>}
+              </button>
+            </form>
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
@@ -192,260 +501,6 @@ export default function NewOrderPage() {
       </header>
 
       <div style={styles.content}>
-        {/* Onglets de sélection du service */}
-        {step === 1 && (
-          <div style={styles.tabs}>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('MATERIAL')}
-              style={{
-                ...styles.tabBtn,
-                background: orderType === 'MATERIAL' ? '#F6A906' : 'white',
-                color: orderType === 'MATERIAL' ? '#0b0b10' : '#475569',
-              }}
-            >
-              Matériaux
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('RENTAL')}
-              style={{
-                ...styles.tabBtn,
-                background: orderType === 'RENTAL' ? '#1976D2' : 'white',
-                color: orderType === 'RENTAL' ? 'white' : '#475569',
-              }}
-            >
-              Louer un Engin
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeSelect('EVACUATION')}
-              style={{
-                ...styles.tabBtn,
-                background: orderType === 'EVACUATION' ? '#388E3C' : 'white',
-                color: orderType === 'EVACUATION' ? 'white' : '#475569',
-              }}
-            >
-              Évacuer Gravats
-            </button>
-          </div>
-        )}
-
-        {/* Étape 1 : Formulaire adapté selon le service */}
-        {step === 1 && (
-          <form onSubmit={getEstimate} style={styles.form}>
-            {/* Rattachement à un chantier B2B optionnel */}
-            {projects.length > 0 && (
-              <Section title="Chantier Entreprise (Optionnel)">
-                <Field label="Associer à un projet de chantier">
-                  <select
-                    name="project_id"
-                    value={form.project_id}
-                    onChange={handleProjectSelect}
-                    style={styles.input}
-                  >
-                    <option value="">-- Commande ponctuelle (hors projet) --</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </Field>
-              </Section>
-            )}
-
-            {/* CAS 1 : TRANSPORT DE MATÉRIAUX */}
-            {orderType === 'MATERIAL' && (
-              <>
-                <Section title="1. Matériaux & Camion">
-                  <Field label="Matériau commandé">
-                    <input
-                      name="material_description"
-                      value={form.material_description}
-                      onChange={handleChange}
-                      placeholder="Ex: Sable de mer, Gravier concassé 15/25, Latérite, Briques..."
-                      style={styles.input}
-                      required
-                    />
-                  </Field>
-                  <div style={styles.row}>
-                    <Field label="Volume estimé (m³ ou tonnes)">
-                      <input
-                        name="quantity_m3"
-                        type="number"
-                        min="1"
-                        max="200"
-                        step="0.5"
-                        value={form.quantity_m3}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Type de camion requis">
-                      <select name="truck_type" value={form.truck_type} onChange={handleChange} style={styles.input}>
-                        <option value="simple_benne">Camion Benne 10m³</option>
-                        <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
-                        <option value="double_benne">Camion Benne 16m³ (Double benne)</option>
-                        <option value="semi_remorque">Semi-remorque Benne (25m³)</option>
-                        <option value="plateau">Camion Plateau (Briques/Fer)</option>
-                        <option value="grue">Camion avec Grue embarquée</option>
-                      </select>
-                    </Field>
-                  </div>
-                </Section>
-
-                <Section title="2. Itinéraire de Livraison">
-                  <Field label="Carrière de chargement (Départ)">
-                    <input
-                      name="pickup_address"
-                      value={form.pickup_address}
-                      onChange={handleChange}
-                      style={styles.input}
-                      required
-                    />
-                  </Field>
-                  <Field label="Adresse du Chantier de livraison (Arrivée)">
-                    <input
-                      name="delivery_address"
-                      value={form.delivery_address}
-                      onChange={handleChange}
-                      style={styles.input}
-                      required
-                    />
-                  </Field>
-                  <LocationPicker
-                    value={{ lat: form.delivery_lat, lng: form.delivery_lng }}
-                    onChange={({ lat, lng }) => setForm((prev) => ({ ...prev, delivery_lat: lat, delivery_lng: lng }))}
-                  />
-                </Section>
-              </>
-            )}
-
-            {/* CAS 2 : LOCATION D'ENGINS LOURDS */}
-            {orderType === 'RENTAL' && (
-              <>
-                <Section title="1. Sélection de l'Engin Lourd">
-                  <Field label="Type d'engin de chantier requis">
-                    <select name="machinery_type" value={form.machinery_type} onChange={handleChange} style={styles.input}>
-                      <option value="excavatrice">Pelle Mécanique (Excavatrice 20T) - 35 000 FCFA/h</option>
-                      <option value="chargeuse">Chargeuse sur Pneus (15T) - 30 000 FCFA/h</option>
-                      <option value="bulldozer">Bulldozer de terrassement (25T) - 40 000 FCFA/h</option>
-                      <option value="compacteur">Compacteur / Rouleau compresseur - 25 000 FCFA/h</option>
-                      <option value="niveleuse">Niveleuse de voiries (18T) - 35 000 FCFA/h</option>
-                    </select>
-                  </Field>
-                  <div style={styles.row}>
-                    <Field label="Date de début d'opération">
-                      <input
-                        name="rental_start_date"
-                        type="date"
-                        value={form.rental_start_date}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Durée de travail (Heures)">
-                      <select name="duration_hours" value={form.duration_hours} onChange={handleChange} style={styles.input}>
-                        <option value="4">Demi-journée (4 heures)</option>
-                        <option value="8">Journée complète (8 heures)</option>
-                        <option value="16">2 Journées (16 heures)</option>
-                        <option value="24">3 Journées (24 heures)</option>
-                        <option value="40">Semaine ouvrée (40 heures)</option>
-                      </select>
-                    </Field>
-                  </div>
-                </Section>
-
-                <Section title="2. Chantier de déploiement de l'engin">
-                  <Field label="Adresse du chantier">
-                    <input
-                      name="delivery_address"
-                      value={form.delivery_address}
-                      onChange={handleChange}
-                      placeholder="Ex: Chantier Cocotomey, Calavi ou Akpakpa"
-                      style={styles.input}
-                      required
-                    />
-                  </Field>
-                  <LocationPicker
-                    value={{ lat: form.delivery_lat, lng: form.delivery_lng }}
-                    onChange={({ lat, lng }) => setForm((prev) => ({ ...prev, delivery_lat: lat, delivery_lng: lng }))}
-                  />
-                </Section>
-              </>
-            )}
-
-            {/* CAS 3 : ÉVACUATION DE GRAVATS */}
-            {orderType === 'EVACUATION' && (
-              <>
-                <Section title="1. Débris & Volume à Évacuer">
-                  <Field label="Nature des débris">
-                    <select
-                      name="evacuation_debris_type"
-                      value={form.evacuation_debris_type}
-                      onChange={handleChange}
-                      style={styles.input}
-                    >
-                      <option value="Gravats de démolition et béton">Gravats de démolition et morceaux de béton</option>
-                      <option value="Terre de déblai excédentaire">Terre excédentaire de fouille / terrassement</option>
-                      <option value="Débris mixtes et chutes de chantier">Débris mixtes, plâtre et chutes de chantier</option>
-                    </select>
-                  </Field>
-                  <div style={styles.row}>
-                    <Field label="Nombre estimé de camions (rotations)">
-                      <input
-                        name="rotations"
-                        type="number"
-                        min="1"
-                        max="20"
-                        value={form.rotations}
-                        onChange={handleChange}
-                        style={styles.input}
-                        required
-                      />
-                    </Field>
-                    <Field label="Photo du tas de gravats (Optionnel)">
-                      <input
-                        name="evacuation_photo_url"
-                        value={form.evacuation_photo_url}
-                        onChange={handleChange}
-                        placeholder="Lien ou référence photo"
-                        style={styles.input}
-                      />
-                    </Field>
-                  </div>
-                </Section>
-
-                <Section title="2. Points de Ramassage et de Décharge">
-                  <Field label="Adresse du Chantier à nettoyer (Ramassage)">
-                    <input
-                      name="pickup_address"
-                      value={form.pickup_address}
-                      onChange={handleChange}
-                      style={styles.input}
-                      required
-                    />
-                  </Field>
-                  <Field label="Décharge autorisée de destination">
-                    <input
-                      name="delivery_address"
-                      value={form.delivery_address}
-                      onChange={handleChange}
-                      style={styles.input}
-                      required
-                    />
-                  </Field>
-                </Section>
-              </>
-            )}
-
-            <button type="submit" disabled={loading} style={styles.primaryBtn}>
-              {loading ? 'Calcul de l\'estimation...' : <>Calculer le tarif officiel BenneGo <ArrowRight size={16} aria-hidden="true" /></>}
-            </button>
-          </form>
-        )}
-
         {/* Étape 2 : Récapitulatif du prix et engagement séquestre */}
         {step === 2 && estimate && (
           <div style={styles.estimate}>
@@ -610,8 +665,8 @@ export default function NewOrderPage() {
 
 function Section({ title, children }) {
   return (
-    <div style={{ marginBottom: '22px' }}>
-      <h3 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-strong)', marginBottom: '12px' }}>
+    <div style={{ marginBottom: '20px' }}>
+      <h3 style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', margin: '0 0 10px' }}>
         {title}
       </h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -651,27 +706,33 @@ const styles = {
   },
   form: { display: 'flex', flexDirection: 'column' },
   input: {
-    padding: '12px 14px',
-    borderRadius: '8px',
-    border: '1px solid var(--border-2)',
-    fontSize: '14.5px',
+    minHeight: '50px',
+    padding: '0 14px',
+    borderRadius: '14px',
+    border: '1.5px solid transparent',
+    fontSize: '15px',
     width: '100%',
     boxSizing: 'border-box',
-    background: 'var(--surface)',
+    background: 'var(--surface-2)',
     color: 'var(--text-strong)',
   },
-  row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+  row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'end' },
   primaryBtn: {
-    padding: '16px',
-    background: '#F6A906',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    minHeight: '54px',
+    padding: '0 16px',
+    background: 'var(--brand-grad)',
     color: '#0b0b10',
     border: 'none',
-    borderRadius: '10px',
+    borderRadius: '16px',
     fontSize: '16px',
     fontWeight: '800',
     cursor: 'pointer',
     width: '100%',
-    boxShadow: '0 4px 12px rgba(246, 169, 6,0.25)',
+    boxShadow: 'var(--shadow-brand)',
   },
   secondaryBtn: {
     padding: '16px',
