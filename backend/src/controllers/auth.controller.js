@@ -284,4 +284,34 @@ const updateProfilePhoto = async (req, res, next) => {
   }
 };
 
-module.exports = { register, requestOtp, verifyOtp, login, getMe, createDriverProfile, updateProfilePhoto };
+// Champs que l'utilisateur peut modifier lui-même ; le téléphone, vérifié par SMS, ne change pas ici
+const EDITABLE_FIELDS = ['prenom', 'nom', 'adresse', 'email', 'date_naissance'];
+
+const updateMe = async (req, res, next) => {
+  try {
+    const changes = EDITABLE_FIELDS.filter((field) => req.body[field] !== undefined);
+    if (!changes.length) throw new AppError('Aucune information à mettre à jour', 400);
+
+    const values = changes.map((field) => {
+      const value = req.body[field];
+      if (value === null) return null;
+      const text = String(value).trim();
+      return text === '' ? null : text;
+    });
+    const sets = changes.map((field, i) => `${field} = $${i + 1}`);
+    // Le nom affiché suit le prénom et le nom
+    sets.push(`full_name = TRIM(CONCAT(COALESCE(${changes.includes('prenom') ? `$${changes.indexOf('prenom') + 1}` : 'prenom'}, ''), ' ', COALESCE(${changes.includes('nom') ? `$${changes.indexOf('nom') + 1}` : 'nom'}, '')))`);
+
+    const { rows } = await query(
+      `UPDATE users SET ${sets.join(', ')}, updated_at = NOW()
+       WHERE id = $${changes.length + 1}
+       RETURNING id, phone, full_name, prenom, nom, date_naissance, adresse, email, role, profile_photo_url`,
+      [...values, req.user.id]
+    );
+    res.json({ user: rows[0] });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, requestOtp, verifyOtp, login, getMe, createDriverProfile, updateProfilePhoto, updateMe };

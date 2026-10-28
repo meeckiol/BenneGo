@@ -40,6 +40,9 @@ const useAuthStore = create(
       },
 
       setProfilePhoto: (url) => set((state) => ({ user: { ...state.user, profile_photo_url: url } })),
+
+      // Après une modification des informations personnelles
+      updateUser: (changes) => set((state) => ({ user: { ...state.user, ...changes } })),
     }),
     {
       name: 'bennego-auth',

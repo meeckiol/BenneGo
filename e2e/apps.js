@@ -5,7 +5,7 @@ const APPS = {
   client: {
     dir: 'frontend-client', port: 4173,
     storageKey: 'bennego-auth', role: 'client', fullName: 'Ing. Koffi (Entreprise BTP)',
-    routes: ['/', '/orders', '/orders/new', '/messages', '/referral', '/profil', '/code-promo', '/confidentialite'],
+    routes: ['/', '/orders', '/orders/new', '/messages', '/referral', '/profil', '/profil/infos', '/code-promo', '/confidentialite'],
   },
   admin: {
     dir: 'frontend-admin', port: 4174,

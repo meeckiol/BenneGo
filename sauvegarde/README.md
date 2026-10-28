@@ -99,3 +99,17 @@ Pour revenir au logo or, depuis la racine du dépôt :
 ```bash
 (cd sauvegarde/logo-or && find . -type f) | while read f; do cp "sauvegarde/logo-or/$f" "$f"; done
 ```
+
+## profil-avant-fusion (28 octobre 2026)
+
+Section Profil avant la fusion des maquettes A, B et C (en-tête de A, carte du code de B, « Informations
+personnelles » de C, icônes en couleurs variées).
+
+```bash
+B=sauvegarde/profil-avant-fusion
+cp $B/ProfilePage.jsx frontend-client/src/pages/ProfilePage.jsx
+cp $B/App.jsx frontend-client/src/App.jsx
+```
+
+Les fichiers ajoutés ensuite (`pages/PersonalInfoPage.jsx`, `styles/profile.css`) ne sont plus utilisés une fois
+cette version remise. La route serveur `PATCH /api/auth/me` peut rester : elle ne gêne pas l'ancienne page.

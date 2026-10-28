@@ -15,7 +15,7 @@ export default function BottomNav() {
   const isActive = (path) => {
     if (path === '/') return pathname === '/';
     if (path === '/messages') return pathname.startsWith('/messages');
-    if (path === '/profil') return pathname === '/profil' || pathname === '/referral' || pathname === '/code-promo';
+    if (path === '/profil') return pathname.startsWith('/profil') || pathname === '/referral' || pathname === '/code-promo';
     if (path === '/orders') return pathname === '/orders' || (pathname.startsWith('/orders/') && pathname !== '/orders/new');
     return pathname === path;
   };

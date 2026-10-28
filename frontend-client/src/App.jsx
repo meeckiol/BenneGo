@@ -14,6 +14,7 @@ const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'));
 const EnterprisePage = lazy(() => import('./pages/EnterprisePage'));
 const ReferralPage = lazy(() => import('./pages/ReferralPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const PersonalInfoPage = lazy(() => import('./pages/PersonalInfoPage'));
 const PromoPage = lazy(() => import('./pages/PromoPage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
@@ -98,6 +99,7 @@ function App() {
         <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
         <Route path="/messages/:id" element={<PrivateRoute nav={false}><ChatPage /></PrivateRoute>} />
         <Route path="/profil" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/profil/infos" element={<PrivateRoute><PersonalInfoPage /></PrivateRoute>} />
         <Route path="/code-promo" element={<PrivateRoute><PromoPage /></PrivateRoute>} />
 
         {/* Fallback */}

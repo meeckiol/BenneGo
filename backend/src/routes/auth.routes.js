@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { register, login, getMe, createDriverProfile, updateProfilePhoto } = require('../controllers/auth.controller');
+const { register, login, getMe, createDriverProfile, updateProfilePhoto, updateMe } = require('../controllers/auth.controller');
 const { uploadPhotos } = require('../services/photo.service');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
 const { validateRequest } = require('../middlewares/validate.middleware');
@@ -35,6 +35,15 @@ router.get('/me', authenticate, getMe);
 
 // POST /api/auth/me/photo : photo de profil (champ « photo », image unique)
 router.post('/me/photo', authenticate, uploadPhotos.single('photo'), updateProfilePhoto);
+
+// PATCH /api/auth/me - Informations personnelles (prénom, nom, adresse, email, date de naissance)
+router.patch('/me', authenticate, [
+  body('prenom').optional().isString().trim().notEmpty().withMessage('Prénom requis').isLength({ max: 80 }),
+  body('nom').optional().isString().trim().notEmpty().withMessage('Nom requis').isLength({ max: 80 }),
+  body('adresse').optional({ nullable: true }).isString().trim().isLength({ max: 200 }),
+  body('email').optional({ nullable: true, checkFalsy: true }).isEmail().withMessage('Email invalide'),
+  body('date_naissance').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Date de naissance invalide'),
+], validateRequest, updateMe);
 
 // POST /api/auth/driver/profile
 router.post('/driver/profile', authenticate, requireRole('driver'), [
