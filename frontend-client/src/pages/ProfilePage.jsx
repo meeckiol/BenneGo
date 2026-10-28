@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Camera, ChevronRight, FileText, Gift, LogOut, Tag } from 'lucide-react';
 import api, { mediaUrl } from '../services/api';
 import useAuthStore, { selectAccountType } from '../store/authStore';
+import CompanyProfileForm from '../components/CompanyProfileForm';
 
 const ACCOUNT_LABELS = { particulier: 'Compte client', entreprise: 'Compte entreprise' };
 const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -87,6 +88,8 @@ export default function ProfilePage() {
           <input ref={fileInput} type="file" accept={PHOTO_TYPES.join(',')} onChange={handlePhoto} hidden />
         </div>
       </section>
+
+      {accountType === 'entreprise' && <CompanyProfileForm />}
 
       <div className="bn-list">
         <Rubrique to="/code-promo" icon={Tag} title="Code promo" text="Vérifiez la remise d'un code avant de commander." />

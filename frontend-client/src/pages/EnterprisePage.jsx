@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import api from '../services/api';
 
 const fcfa = (amount) => `${Number(amount || 0).toLocaleString('fr-FR')} FCFA`;
 
 export default function EnterprisePage() {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('projects'); // 'projects', 'bulk', 'subscription', 'company'
+  const [activeTab, setActiveTab] = useState('projects'); // 'projects', 'bulk', 'subscription'
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState(null);
   const [projects, setProjects] = useState([]);
   const [bulkResult, setBulkResult] = useState(null);
-
-  // Formulaire Entreprise
-  const [compForm, setCompForm] = useState({
-    name: '',
-    ifu: '',
-    address: '',
-    phone: '',
-    email: '',
-  });
 
   // Formulaire Nouveau Chantier
   const [projForm, setProjForm] = useState({
@@ -59,13 +48,6 @@ export default function EnterprisePage() {
       ]);
       if (compRes.data.company) {
         setCompany(compRes.data.company);
-        setCompForm({
-          name: compRes.data.company.name || '',
-          ifu: compRes.data.company.ifu || '',
-          address: compRes.data.company.address || '',
-          phone: compRes.data.company.phone || '',
-          email: compRes.data.company.email || '',
-        });
       }
       setProjects(projRes.data.projects || []);
       if (projRes.data.projects?.length > 0) {
@@ -79,16 +61,6 @@ export default function EnterprisePage() {
   };
 
   useEffect(() => { loadData(); }, []);
-
-  // Enregistrer profil entreprise
-  const handleSaveCompany = async (e) => {
-    e.preventDefault();
-    try {
-      const { data } = await api.post('/companies/my-company', compForm);
-      setCompany(data.company);
-      toast.success('Profil entreprise enregistré !');
-    } catch {}
-  };
 
   // Souscrire abonnement B2B
   const handleSubscribe = async (plan) => {
@@ -154,7 +126,6 @@ export default function EnterprisePage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <div style={styles.headerLeft}>
-          <button onClick={() => navigate('/')} style={styles.backBtn}><ArrowLeft size={16} aria-hidden="true" /> Accueil</button>
           <span style={styles.logo}>BenneGo Business</span>
           <span style={styles.badge}>Portail Ingénieurs & BTP</span>
         </div>
@@ -189,12 +160,6 @@ export default function EnterprisePage() {
             style={{ ...styles.navTab, ...(activeTab === 'subscription' ? styles.navTabActive : {}) }}
           >
             Abonnements B2B & Packs
-          </button>
-          <button
-            onClick={() => setActiveTab('company')}
-            style={{ ...styles.navTab, ...(activeTab === 'company' ? styles.navTabActive : {}) }}
-          >
-            Profil Entreprise
           </button>
         </div>
 
@@ -504,71 +469,6 @@ export default function EnterprisePage() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* ONGLET 4 : PROFIL ENTREPRISE */}
-        {activeTab === 'company' && (
-          <div style={styles.sectionContainer}>
-            <div style={styles.sectionHeader}>
-              <div>
-                <h3 style={styles.sectionTitle}>Informations de l'Entreprise</h3>
-                <p style={styles.sectionSub}>Renseignez vos coordonnées légales pour la facturation proforma et les reçus.</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveCompany} style={styles.card}>
-              <div style={styles.grid2}>
-                <div style={styles.field}>
-                  <label style={styles.label}>Raison Sociale (Nom de l'entreprise)</label>
-                  <input
-                    placeholder="Ex: Colas Bénin, Sogea-Satom, Immo Cotonou..."
-                    value={compForm.name}
-                    onChange={(e) => setCompForm({ ...compForm, name: e.target.value })}
-                    style={styles.input}
-                    required
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Numéro IFU (Bénin)</label>
-                  <input
-                    placeholder="Ex: 0201912345678"
-                    value={compForm.ifu}
-                    onChange={(e) => setCompForm({ ...compForm, ifu: e.target.value })}
-                    style={styles.input}
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Adresse du Siège</label>
-                  <input
-                    placeholder="Ex: Haie Vive, Cotonou"
-                    value={compForm.address}
-                    onChange={(e) => setCompForm({ ...compForm, address: e.target.value })}
-                    style={styles.input}
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Téléphone Direction</label>
-                  <input
-                    placeholder="+229 21 00 00 00"
-                    value={compForm.phone}
-                    onChange={(e) => setCompForm({ ...compForm, phone: e.target.value })}
-                    style={styles.input}
-                  />
-                </div>
-                <div style={styles.field}>
-                  <label style={styles.label}>Email Facturation</label>
-                  <input
-                    type="email"
-                    placeholder="facturation@entreprise.bj"
-                    value={compForm.email}
-                    onChange={(e) => setCompForm({ ...compForm, email: e.target.value })}
-                    style={styles.input}
-                  />
-                </div>
-              </div>
-              <button type="submit" style={styles.actionBtn}>Enregistrer l'Entreprise</button>
-            </form>
           </div>
         )}
       </main>
