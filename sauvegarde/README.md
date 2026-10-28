@@ -125,3 +125,14 @@ cp $B/NewOrderPage.jsx frontend-client/src/pages/
 cp $B/order.css $B/home.css frontend-client/src/styles/
 cp $B/theme.css shared/theme.css
 ```
+
+## messages-avant-design (28 octobre 2026)
+
+Avant : la liste des discussions façon A (en-tête doré, étiquette commande), la discussion avec
+l'en-tête sombre de C, la barre de progression et les réponses rapides de B.
+
+```bash
+B=sauvegarde/messages-avant-design
+cp $B/MessagesPage.jsx $B/ChatPage.jsx frontend-client/src/pages/
+cp $B/messages.css frontend-client/src/styles/
+```

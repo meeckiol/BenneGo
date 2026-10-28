@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
 import api from '../services/api';
-import { STATUS, describe } from '../components/delivery';
+import { STATUS } from '../components/delivery';
 import '../styles/messages.css';
 
 // Une discussion disparaît de l'application quand la commande est terminée ou annulée.
@@ -39,11 +39,8 @@ export default function MessagesPage() {
   }, []);
 
   return (
-    <main className="bn-page bn-home">
-      <header className="bn-home__head">
-        <p className="bn-home__kicker">Vos chauffeurs</p>
-        <h1 className="bn-home__title">Messages</h1>
-      </header>
+    <main className="bn-page bn-msgs">
+      <h1 className="bn-msgs__title">Messages</h1>
 
       {threads === null ? (
         <p className="bn-subtitle">Chargement des discussions…</p>
@@ -51,23 +48,28 @@ export default function MessagesPage() {
         <div className="bn-empty">
           <MessageCircle size={40} aria-hidden="true" color="var(--brand-ink)" />
           <strong>Aucune discussion en cours</strong>
-          <span>Une discussion s'ouvre avec le chauffeur dès qu'il accepte une commande, jusqu'à la fin de la livraison.</span>
+          <span>Une discussion s'ouvre avec le chauffeur dès qu'il accepte une commande.</span>
         </div>
       ) : (
         <div className="bn-threads">
-          {threads.map(({ order, last }) => (
-            <Link key={order.id} to={`/messages/${order.id}`} className="bn-thread">
-              <span className="bn-thread__avatar" aria-hidden="true">{initialsOf(order.driver_name)}</span>
-              <span className="bn-thread__main">
-                <span className="bn-thread__top">
-                  <strong>{order.driver_name || 'Chauffeur'}</strong>
-                  <small>{timeOf(last?.created_at)}</small>
+          {threads.map(({ order, last }) => {
+            const fromDriver = last && last.sender_role !== 'client';
+            return (
+              <Link key={order.id} to={`/messages/${order.id}`} className="bn-thread">
+                <span className="bn-thread__avatar" aria-hidden="true">{initialsOf(order.driver_name)}</span>
+                <span className="bn-thread__main">
+                  <span className="bn-thread__top">
+                    <strong>{order.driver_name || 'Chauffeur'}</strong>
+                    <small>{timeOf(last?.created_at)}</small>
+                  </span>
+                  <span className="bn-thread__tag">{order.order_number} · {STATUS[order.status]?.tag || order.status}</span>
+                  <span className={`bn-thread__last${fromDriver ? ' is-new' : ''}`}>
+                    {last ? `${fromDriver ? '' : 'Vous : '}${last.message}` : 'Écrivez au chauffeur'}
+                  </span>
                 </span>
-                <span className="bn-thread__sub">{order.order_number} · {describe(order)} · {STATUS[order.status]?.label || order.status}</span>
-                <span className="bn-thread__last">{last ? `${last.sender_role === 'client' ? 'Vous : ' : ''}${last.message}` : 'Écrivez au chauffeur'}</span>
-              </span>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </main>

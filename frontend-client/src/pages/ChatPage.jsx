@@ -5,11 +5,26 @@ import { ArrowLeft, Phone, SendHorizontal } from 'lucide-react';
 import api from '../services/api';
 import { getSocket } from '../services/socket';
 import useAuthStore from '../store/authStore';
-import { STATUS } from '../components/delivery';
+import { STATUS, describe } from '../components/delivery';
 import { CHAT_CLOSED, initialsOf } from './MessagesPage';
 import '../styles/messages.css';
 
 const hour = (d) => (d ? new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '');
+
+// Séparateur de jour entre les messages : « Aujourd'hui », « Hier » ou la date
+const dayOf = (d) => {
+  if (!d) return '';
+  const date = new Date(d);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
+  if (date.toDateString() === yesterday.toDateString()) return 'Hier';
+  return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+};
+
+// Réponses rapides proposées au-dessus du champ de saisie
+const QUICK = ['Je suis sur place', 'Où êtes-vous ?', 'Appelez-moi', 'Merci !'];
 
 /** Discussion avec le chauffeur d'une commande en cours. Elle se ferme quand la commande est terminée. */
 export default function ChatPage() {
@@ -65,60 +80,96 @@ export default function ChatPage() {
 
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [messages.length]);
 
-  const send = (e) => {
-    e.preventDefault();
-    const message = text.trim();
+  const post = (raw) => {
+    const message = raw.trim();
     const socket = getSocket();
     if (!message || !socket) return;
     socket.emit('chat_message', { order_id: id, message });
     setText('');
   };
 
+  const send = (e) => {
+    e.preventDefault();
+    post(text);
+  };
+
   const mine = (m) => m.sender_id === me?.id || m.sender_role === 'client';
+
+  const status = order ? STATUS[order.status] : null;
+  const progress = status ? Math.max(8, Math.round((status.stage / 3) * 100)) : 0;
 
   return (
     <main className="bn-chat">
       <header className="bn-chat__head">
-        <button type="button" className="bn-chat__back" onClick={() => navigate('/messages')} aria-label="Retour aux messages">
-          <ArrowLeft size={20} aria-hidden="true" />
-        </button>
-        <span className="bn-thread__avatar" aria-hidden="true">{initialsOf(order?.driver_name)}</span>
-        <span className="bn-chat__who">
-          <strong>{order?.driver_name || 'Chauffeur'}</strong>
-          <small>{order ? `${order.order_number} · ${STATUS[order.status]?.label || order.status}` : 'Chargement…'}</small>
-        </span>
-        {order?.driver_phone ? (
-          <a className="bn-chat__call" href={`tel:${order.driver_phone}`} aria-label={`Appeler ${order.driver_name || 'le chauffeur'}`}>
-            <Phone size={18} aria-hidden="true" />
-          </a>
-        ) : (
-          <span className="bn-chat__call is-off" aria-hidden="true"><Phone size={18} /></span>
+        <div className="bn-chat__bar-top">
+          <button type="button" className="bn-chat__back" onClick={() => navigate('/messages')} aria-label="Retour aux messages">
+            <ArrowLeft size={20} aria-hidden="true" />
+          </button>
+          <span className="bn-chat__ring" aria-hidden="true">
+            <span className="bn-thread__avatar">{initialsOf(order?.driver_name)}</span>
+          </span>
+          <span className="bn-chat__who">
+            <strong>{order?.driver_name || 'Chauffeur'}</strong>
+            <small>{order ? `${status?.label || order.status} · ${order.order_number}` : 'Chargement…'}</small>
+          </span>
+          {order?.driver_phone ? (
+            <a className="bn-chat__call" href={`tel:${order.driver_phone}`} aria-label={`Appeler ${order.driver_name || 'le chauffeur'}`}>
+              <Phone size={18} aria-hidden="true" />
+            </a>
+          ) : (
+            <span className="bn-chat__call is-off" aria-hidden="true"><Phone size={18} /></span>
+          )}
+        </div>
+        {order && (
+          <div className="bn-chat__progress">
+            <span className="bn-chat__progress-text">
+              <span>{describe(order)}</span>
+              <strong>{status?.tag || order.status}</strong>
+            </span>
+            <span className="bn-chat__track" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Avancement de la livraison">
+              <span style={{ width: `${progress}%` }} />
+            </span>
+          </div>
         )}
       </header>
 
       <div className="bn-chat__list" aria-live="polite">
         {messages.length === 0 && <p className="bn-chat__empty">Aucun message pour l'instant. Posez votre question au chauffeur.</p>}
-        {messages.map((m, i) => (
-          <div key={m.id || i} className={`bn-bubble${mine(m) ? ' is-me' : ''}`}>
-            <p>{m.message}</p>
-            <time>{hour(m.created_at)}</time>
-          </div>
-        ))}
+        {messages.map((m, i) => {
+          const day = dayOf(m.created_at);
+          const showDay = day && day !== dayOf(messages[i - 1]?.created_at);
+          return (
+            <React.Fragment key={m.id || i}>
+              {showDay && <span className="bn-chat__day">{day}</span>}
+              <div className={`bn-bubble${mine(m) ? ' is-me' : ''}`}>
+                <p>{m.message}</p>
+                <time>{hour(m.created_at)}</time>
+              </div>
+            </React.Fragment>
+          );
+        })}
         <span ref={end} />
       </div>
 
-      <form className="bn-chat__bar" onSubmit={send}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Écrire un message…"
-          aria-label="Message"
-          maxLength={1000}
-        />
-        <button type="submit" disabled={!text.trim()} aria-label="Envoyer">
-          <SendHorizontal size={20} aria-hidden="true" />
-        </button>
-      </form>
+      <footer className="bn-chat__foot">
+        <div className="bn-chat__quick" aria-label="Réponses rapides">
+          {QUICK.map((q) => (
+            <button key={q} type="button" onClick={() => post(q)}>{q}</button>
+          ))}
+        </div>
+        <form className="bn-chat__bar" onSubmit={send}>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Écrire un message…"
+            aria-label="Message"
+            maxLength={1000}
+          />
+          <button type="submit" disabled={!text.trim()} aria-label="Envoyer">
+            <SendHorizontal size={20} aria-hidden="true" />
+          </button>
+        </form>
+      </footer>
     </main>
   );
 }
