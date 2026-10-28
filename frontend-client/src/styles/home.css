@@ -3,6 +3,7 @@
 
 .bn-home {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
   padding-bottom: 120px;
 }
@@ -35,7 +36,7 @@
 /* Tuiles de matériaux */
 .bn-tiles {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -153,6 +154,8 @@
 }
 
 .bn-live__text { flex: 1; min-width: 0; }
+.bn-live { grid-template-columns: minmax(0, 1fr); }
+.bn-live__text small, .bn-live__text strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bn-live__text small { display: block; font-size: 12px; color: #aab0ba; }
 .bn-live__text strong { display: block; margin-top: 2px; font-size: 18px; }
 
@@ -384,7 +387,7 @@
 
 .bn-dcard__legs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
   font-size: 11px;
   color: var(--text-3);

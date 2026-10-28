@@ -343,6 +343,8 @@ option { background: var(--surface); color: var(--text); }
   margin: 0 auto;
   padding: 18px 16px 24px;
   display: grid;
+  /* minmax(0, 1fr) : un texte long passe à la ligne au lieu d'élargir la page */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 .bn-shell { padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px); min-height: 100vh; }
@@ -602,6 +604,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--brand); }
    Pas de zoom au double-tap ni au pincement (les cartes gardent leur propre zoom),
    pas de surlignage au toucher, pas de sélection de texte sur les commandes.
    Les champs restent à 16 px minimum : en dessous, iOS zoome la page à la saisie. */
+/* Jamais de défilement horizontal : la page reste fixe de gauche à droite */
+html, body, #root { overflow-x: clip; }
 html { touch-action: manipulation; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 * { -webkit-tap-highlight-color: transparent; }
 button, a, [role="button"], [role="tab"], [role="radio"], nav, img {

@@ -113,3 +113,15 @@ cp $B/App.jsx frontend-client/src/App.jsx
 
 Les fichiers ajoutés ensuite (`pages/PersonalInfoPage.jsx`, `styles/profile.css`) ne sont plus utilisés une fois
 cette version remise. La route serveur `PATCH /api/auth/me` peut rester : elle ne gêne pas l'ancienne page.
+
+## commande-avant-etapes (28 octobre 2026)
+
+Avant : la commande en 3 pages successives dans un volet fixe (la carte reste visible), et la correction
+des blocs qui élargissaient la page (accueil, commandes, affiliation, confidentialité).
+
+```bash
+B=sauvegarde/commande-avant-etapes
+cp $B/NewOrderPage.jsx frontend-client/src/pages/
+cp $B/order.css $B/home.css frontend-client/src/styles/
+cp $B/theme.css shared/theme.css
+```

@@ -77,7 +77,7 @@ export default function PrivacyPage() {
         </div>
       </header>
 
-      <p><span className="bn-pill bn-pill--warning">Version provisoire : à faire relire par un juriste avant publication</span></p>
+      <p><span className="bn-pill bn-pill--warning" style={{ whiteSpace: 'normal' }}>Version provisoire : à faire relire par un juriste avant publication</span></p>
 
       {SECTIONS.map((section) => (
         <section key={section.title} className="bn-card" style={{ display: 'grid', gap: 10 }}>

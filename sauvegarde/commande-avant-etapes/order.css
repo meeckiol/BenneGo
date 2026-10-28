@@ -1,0 +1,302 @@
+/* Passer une commande (design C) : carte en plein écran, volet blanc qui monte par-dessus. */
+
+.bn-order {
+  position: relative;
+  min-height: 100dvh;
+}
+
+.bn-order__map {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  width: 100%;
+  max-width: 560px;
+  height: 56dvh;
+  transform: translateX(-50%);
+  background: #efece6;
+  isolation: isolate;
+}
+
+.bn-order__mapcanvas { width: 100%; height: 100%; background: #efece6; }
+
+.bn-order__top {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  gap: 10px;
+  width: calc(100% - 32px);
+  max-width: 528px;
+  transform: translateX(-50%);
+}
+
+.bn-order__round {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.16);
+  transition: box-shadow 0.2s ease;
+}
+
+/* Ancrée en en-tête : bande blanche pleine largeur, plus rien ne passe dessous */
+.bn-order__top {
+  transition: top 0.2s ease, padding 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bn-order__top.is-docked {
+  top: 0;
+  width: 100%;
+  max-width: 560px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.08);
+}
+
+.bn-order__top.is-docked .bn-order__round,
+.bn-order__top.is-docked .bn-order__search { box-shadow: none; background: var(--surface-2); }
+
+/* Bouton « ma position », en bas à droite de la partie visible de la carte */
+.bn-order__locate {
+  position: absolute;
+  right: 16px;
+  bottom: calc(8dvh + 16px);
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--brand-ink);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.16);
+}
+
+.bn-order__search {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-3);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.14);
+}
+
+.bn-order__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-strong);
+}
+
+.bn-order__sheet {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 16px;
+  margin-top: 48dvh;
+  padding: 10px 20px 120px;
+  border-radius: 28px 28px 0 0;
+  background: var(--surface);
+  box-shadow: 0 -12px 34px rgba(17, 24, 39, 0.12);
+  animation: bn-sheet-up 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.bn-order__grab {
+  justify-self: center;
+  width: 44px;
+  height: 5px;
+  border-radius: 999px;
+  background: #dcd7cf;
+}
+
+/* Livraison en cours */
+.bn-order__current { display: grid; gap: 12px; }
+.bn-order__driver { display: flex; align-items: center; gap: 12px; }
+
+.bn-order__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: #2a2b33;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.bn-order__who { flex: 1; min-width: 0; color: var(--text-strong); text-decoration: none; }
+.bn-order__who small { display: block; font-size: 12px; color: var(--text-3); }
+.bn-order__who strong { display: block; font-size: 18px; }
+
+.bn-order__call {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: #0b0b10;
+  color: #ffffff;
+}
+
+.bn-order__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.bn-order__note i { width: 8px; height: 8px; flex: none; border-radius: 999px; background: var(--brand); }
+
+/* Boutons « Mes commandes » et « Nouvelle commande » */
+.bn-order__ctas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.bn-order__cta {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.bn-order__cta--ghost { border: 1px solid var(--border); background: var(--surface); color: var(--text-strong); }
+.bn-order__cta--gold { border: 0; background: var(--brand-grad); color: #0b0b10; box-shadow: var(--shadow-brand); }
+
+/* Paramètres de la commande, sous les boutons */
+.bn-order__services {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--surface-3);
+  scroll-margin-top: 80px;
+}
+
+.bn-order__service {
+  min-height: 42px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.bn-order__service.is-active { background: #0b0b10; color: #ffffff; }
+
+.bn-order__sheet form { scroll-margin-top: 80px; }
+.bn-order__sheet input:focus, .bn-order__sheet select:focus { outline: 0; border-color: var(--brand) !important; background: var(--surface) !important; }
+
+/* Étapes de la commande : paramètres, devis, chauffeur */
+.bn-order__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bn-order__steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 3px solid var(--surface-3);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+}
+
+.bn-order__steps li span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  font-size: 11px;
+}
+
+.bn-order__steps li.is-current { border-top-color: var(--brand); color: var(--text-strong); }
+.bn-order__steps li.is-current span { background: #0b0b10; color: #ffffff; }
+.bn-order__steps li.is-done { border-top-color: var(--brand); color: var(--text-2); }
+.bn-order__steps li.is-done span { background: var(--brand); color: #0b0b10; }
+
+/* Étape 3 : recherche du chauffeur */
+.bn-order__waiting {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.bn-order__waiting strong { font-size: 18px; color: var(--text-strong); }
+.bn-order__waiting p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.bn-order__waiting .bn-track { align-self: stretch; }
+.bn-order__waiting .bn-order__cta { width: 100%; }
+
+.bn-order__radar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: var(--brand-grad);
+  color: #0b0b10;
+}
+
+.bn-order__radar::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--brand);
+  border-radius: 999px;
+  animation: bn-radar 1.6s ease-out infinite;
+}
+
+@keyframes bn-radar {
+  from { opacity: 0.8; transform: scale(0.8); }
+  to { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes bn-sheet-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bn-order__sheet, .bn-order__radar::after { animation: none; }
+}

@@ -21,7 +21,9 @@ const SERVICES = [
 
 // Statuts où la commande attend encore un chauffeur
 const WAITING = ['pending', 'awaiting_payment'];
-const STEPS = ['Paramètres', 'Devis', 'Chauffeur'];
+const STEPS = ['Commande', 'Adresses', 'Devis'];
+// Les sections du formulaire ne s'affichent qu'à leur étape (1 : commande, 2 : adresses)
+const FormStep = React.createContext(1);
 
 /** Les trois étapes de la commande, en haut du volet. */
 function OrderSteps({ step }) {
@@ -79,7 +81,8 @@ export default function NewOrderPage() {
   const initialType = searchParams.get('type') || 'MATERIAL';
 
   const [orderType, setOrderType] = useState(initialType);
-  const [step, setStep] = useState(1); // 1: Formulaire, 2: Estimation, 3: Paiement
+  // 1 : commande, 2 : adresses, 3 : devis, 4 : recherche du chauffeur (après paiement)
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [materials, setMaterials] = useState([]);
   const [vehicles, setVehicles] = useState([]);
@@ -128,19 +131,13 @@ export default function NewOrderPage() {
   }, []);
   const [placed, setPlaced] = useState(null);
 
-  // La barre de recherche flotte sur la carte, puis s'ancre en en-tête quand le volet arrive en haut
-  const sheetRef = useRef(null);
-  const [docked, setDocked] = useState(false);
-  useEffect(() => {
-    const update = () => setDocked((sheetRef.current?.getBoundingClientRect().top ?? 999) <= 76);
-    update();
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    return () => {
-      window.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-    };
-  }, [step]);
+  // Chaque étape repart du haut du volet
+  const bodyRef = useRef(null);
+  useEffect(() => { bodyRef.current?.scrollTo({ top: 0 }); }, [step]);
+  const nextStep = (e) => {
+    e.preventDefault();
+    setStep(2);
+  };
 
   // Bouton « ma position » : place le point modifiable (chantier ou ramassage) sur la position du téléphone
   const locate = (which) => {
@@ -153,13 +150,14 @@ export default function NewOrderPage() {
   };
   const goBack = () => {
     if (step === 2) setStep(1);
-    else if (step === 3) navigate('/orders');
+    else if (step === 3) setStep(2);
+    else if (step === 4) navigate('/orders');
     else navigate(-1);
   };
 
   // Étape 3 : dès qu'un chauffeur accepte (temps réel ou relevé toutes les 5 s), on ouvre le suivi
   useEffect(() => {
-    if (step !== 3 || !placed) return undefined;
+    if (step !== 4 || !placed) return undefined;
     let done = false;
     const open = (event) => {
       if (done || (event?.order_id && event.order_id !== placed.id)) return;
@@ -265,7 +263,7 @@ export default function NewOrderPage() {
 
       const { data } = await api.post('/orders/estimate', payload);
       setEstimate(data);
-      setStep(2);
+      setStep(3);
     } catch (err) {
       // Affiché par l'intercepteur API
     } finally {
@@ -297,7 +295,7 @@ export default function NewOrderPage() {
       if (res.ok) {
         // Étape 3 : on reste sur la carte jusqu'à ce qu'un chauffeur accepte
         setPlaced({ id: orderId, order_number: data.order.order_number, total_amount: data.order.total_amount });
-        setStep(3);
+        setStep(4);
         orderId = undefined;
       } else {
         toast('Paiement non finalisé : vous pouvez régler depuis votre espace de suivi.');
@@ -330,7 +328,7 @@ export default function NewOrderPage() {
           </button>
         </div>
 
-        <div className={`bn-order__top${docked ? ' is-docked' : ''}`}>
+        <div className="bn-order__top">
           <button type="button" className="bn-order__round" onClick={goBack} aria-label="Retour">
             <ArrowLeft size={20} aria-hidden="true" />
           </button>
@@ -346,21 +344,25 @@ export default function NewOrderPage() {
           </label>
         </div>
 
-        <section className="bn-order__sheet" ref={sheetRef}>
+        <section className="bn-order__sheet">
           <span className="bn-order__grab" aria-hidden="true" />
+          {step <= 3 && <OrderSteps step={step} />}
 
-          <OrderSteps step={step} />
-
-          {step === 1 && (
+          <div className="bn-order__body" ref={bodyRef}>
+          {step <= 2 && (
             <>
-            {current && <CurrentDelivery order={current} />}
+            {step === 1 && current && <CurrentDelivery order={current} />}
 
-            <div className="bn-order__ctas">
-              <Link to="/orders" className="bn-order__cta bn-order__cta--ghost">Mes commandes</Link>
-              <button type="button" className="bn-order__cta bn-order__cta--gold" onClick={showParams}>Nouvelle commande</button>
-            </div>
+            {step === 1 && (
+              <div className="bn-order__ctas">
+                <Link to="/orders" className="bn-order__cta bn-order__cta--ghost">Mes commandes</Link>
+                <button type="button" className="bn-order__cta bn-order__cta--gold" onClick={showParams}>Nouvelle commande</button>
+              </div>
+            )}
 
-              <form ref={paramsRef} onSubmit={getEstimate} style={styles.form} aria-label="Paramètres de la commande">
+              <FormStep.Provider value={step}>
+              <form ref={paramsRef} onSubmit={step === 1 ? nextStep : getEstimate} style={styles.form} aria-label="Paramètres de la commande">
+                {step === 1 && (
                 <div className="bn-order__services" role="radiogroup" aria-label="Service">
                   {SERVICES.map((sv) => (
                     <button
@@ -375,9 +377,10 @@ export default function NewOrderPage() {
                     </button>
                   ))}
                 </div>
+                )}
                 {/* Rattachement à un chantier B2B optionnel */}
                 {projects.length > 0 && (
-                  <Section title="Chantier Entreprise (Optionnel)">
+                  <Section part={2} title="Chantier entreprise (facultatif)">
                     <Field label="Associer à un projet de chantier">
                       <select
                         name="project_id"
@@ -397,7 +400,7 @@ export default function NewOrderPage() {
                 {/* CAS 1 : TRANSPORT DE MATÉRIAUX */}
                 {orderType === 'MATERIAL' && (
                   <>
-                    <Section title="1. Matériaux & Camion">
+                    <Section part={1} title="Matériaux & Camion">
                       <Field label="Matériau commandé">
                         <input
                           name="material_description"
@@ -435,7 +438,7 @@ export default function NewOrderPage() {
                       </div>
                     </Section>
 
-                    <Section title="2. Itinéraire de Livraison">
+                    <Section part={2} title="Itinéraire de Livraison">
                       <Field label="Carrière de chargement (Départ)">
                         <input
                           name="pickup_address"
@@ -461,7 +464,7 @@ export default function NewOrderPage() {
                 {/* CAS 2 : LOCATION D'ENGINS LOURDS */}
                 {orderType === 'RENTAL' && (
                   <>
-                    <Section title="1. Sélection de l'Engin Lourd">
+                    <Section part={1} title="Sélection de l'Engin Lourd">
                       <Field label="Type d'engin de chantier requis">
                         <select name="machinery_type" value={form.machinery_type} onChange={handleChange} style={styles.input}>
                           <option value="excavatrice">Pelle Mécanique (Excavatrice 20T) - 35 000 FCFA/h</option>
@@ -494,7 +497,7 @@ export default function NewOrderPage() {
                       </div>
                     </Section>
 
-                    <Section title="2. Chantier de déploiement de l'engin">
+                    <Section part={2} title="Chantier de déploiement de l'engin">
                       <Field label="Adresse du chantier">
                         <input
                           name="delivery_address"
@@ -512,7 +515,7 @@ export default function NewOrderPage() {
                 {/* CAS 3 : ÉVACUATION DE GRAVATS */}
                 {orderType === 'EVACUATION' && (
                   <>
-                    <Section title="1. Débris & Volume à Évacuer">
+                    <Section part={1} title="Débris & Volume à Évacuer">
                       <Field label="Nature des débris">
                         <select
                           name="evacuation_debris_type"
@@ -550,7 +553,7 @@ export default function NewOrderPage() {
                       </div>
                     </Section>
 
-                    <Section title="2. Points de Ramassage et de Décharge">
+                    <Section part={2} title="Points de Ramassage et de Décharge">
                       <Field label="Adresse du Chantier à nettoyer (Ramassage)">
                         <input
                           name="pickup_address"
@@ -573,14 +576,23 @@ export default function NewOrderPage() {
                   </>
                 )}
 
-                <button type="submit" disabled={loading} style={styles.primaryBtn}>
-                  {loading ? 'Calcul du devis…' : <>Voir le devis <ArrowRight size={16} aria-hidden="true" /></>}
-                </button>
+                <div className="bn-order__footer">
+                  {step === 2 && (
+                    <button type="button" onClick={() => setStep(1)} style={styles.secondaryBtn}>
+                      <ArrowLeft size={16} aria-hidden="true" /> Retour
+                    </button>
+                  )}
+                  <button type="submit" disabled={loading} style={styles.primaryBtn}>
+                    {step === 1 ? <>Suivant : adresses <ArrowRight size={16} aria-hidden="true" /></>
+                      : loading ? 'Calcul du devis…' : <>Voir le devis <ArrowRight size={16} aria-hidden="true" /></>}
+                  </button>
+                </div>
               </form>
+              </FormStep.Provider>
             </>
           )}
 
-          {step === 2 && estimate && (
+          {step === 3 && estimate && (
             <div style={styles.estimate}>
               <h3 style={styles.estimateTitle}>Détail de votre Devis Séquestre</h3>
 
@@ -726,8 +738,8 @@ export default function NewOrderPage() {
                 </p>
               </div>
 
-              <div style={styles.btnGroup}>
-                <button onClick={() => setStep(1)} style={styles.secondaryBtn}>
+              <div style={styles.btnGroup} className="bn-order__footer">
+                <button onClick={() => setStep(2)} style={styles.secondaryBtn}>
                   <ArrowLeft size={16} aria-hidden="true" /> Modifier
                 </button>
                 <button onClick={confirmOrder} disabled={loading} style={styles.primaryBtn}>
@@ -737,14 +749,16 @@ export default function NewOrderPage() {
             </div>
           )}
 
-          {step === 3 && placed && <DriverSearch order={placed} />}
+          {step === 4 && placed && <DriverSearch order={placed} />}
+          </div>
         </section>
       </div>
     );
   }
 }
 
-function Section({ title, children }) {
+function Section({ title, part = 1, children }) {
+  if (React.useContext(FormStep) !== part) return null;
   return (
     <div style={{ marginBottom: '20px' }}>
       <h3 style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-3)', margin: '0 0 10px' }}>
@@ -793,11 +807,12 @@ const styles = {
     border: '1.5px solid transparent',
     fontSize: '15px',
     width: '100%',
+    minWidth: 0,
     boxSizing: 'border-box',
     background: 'var(--surface-2)',
     color: 'var(--text-strong)',
   },
-  row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', alignItems: 'end' },
+  row: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '12px', alignItems: 'end' },
   primaryBtn: {
     display: 'flex',
     alignItems: 'center',

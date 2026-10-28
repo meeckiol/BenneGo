@@ -1,19 +1,26 @@
 /* Passer une commande (design C) : carte en plein écran, volet blanc qui monte par-dessus. */
 
 .bn-order {
+  /* Hauteur du volet : la carte reste visible au-dessus pendant les trois étapes */
+  --sheet-h: 58dvh;
   position: relative;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
 }
+
+/* Sur cet écran, rien ne défile hors du volet : ni la page, ni la marge réservée à la barre du bas */
+.bn-shell:has(> .bn-order) { height: 100dvh; min-height: 0; padding-bottom: 0; overflow: hidden; }
 
 .bn-order__map {
   position: fixed;
   top: 0;
-  left: 50%;
+  right: 0;
+  left: 0;
   z-index: 0;
   width: 100%;
   max-width: 560px;
-  height: 56dvh;
-  transform: translateX(-50%);
+  height: calc(100dvh - var(--sheet-h) - var(--tabbar-h) - env(safe-area-inset-bottom, 0px) + 28px);
+  margin: 0 auto;
   background: #efece6;
   isolation: isolate;
 }
@@ -67,7 +74,7 @@
 .bn-order__locate {
   position: absolute;
   right: 16px;
-  bottom: calc(8dvh + 16px);
+  bottom: 44px;
   z-index: 500;
   display: grid;
   place-items: center;
@@ -106,20 +113,59 @@
 }
 
 .bn-order__sheet {
-  position: relative;
+  position: fixed;
+  right: 0;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+  left: 0;
   z-index: 2;
-  display: grid;
-  gap: 16px;
-  margin-top: 48dvh;
-  padding: 10px 20px 120px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  height: var(--sheet-h);
+  margin: 0 auto;
+  padding-top: 10px;
+  overflow: hidden;
   border-radius: 28px 28px 0 0;
   background: var(--surface);
   box-shadow: 0 -12px 34px rgba(17, 24, 39, 0.12);
   animation: bn-sheet-up 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* Seul le contenu du volet défile, verticalement : la page ne bouge plus de gauche à droite */
+.bn-order__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 4px 20px 0;
+}
+
+.bn-order__body form > * { min-width: 0; }
+
+/* Boutons de l'étape, toujours visibles en bas du volet */
+.bn-order__footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  margin: 8px -20px 0;
+  padding: 12px 20px 14px;
+  background: var(--surface);
+  box-shadow: 0 -8px 18px rgba(17, 24, 39, 0.06);
+}
+
 .bn-order__grab {
-  justify-self: center;
+  flex: none;
+  align-self: center;
+  margin-bottom: 10px;
   width: 44px;
   height: 5px;
   border-radius: 999px;
@@ -174,7 +220,7 @@
 .bn-order__note i { width: 8px; height: 8px; flex: none; border-radius: 999px; background: var(--brand); }
 
 /* Boutons « Mes commandes » et « Nouvelle commande » */
-.bn-order__ctas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bn-order__ctas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 
 .bn-order__cta {
   display: grid;
@@ -192,7 +238,7 @@
 /* Paramètres de la commande, sous les boutons */
 .bn-order__services {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 4px;
   margin-bottom: 18px;
   padding: 4px;
@@ -219,8 +265,10 @@
 
 /* Étapes de la commande : paramètres, devis, chauffeur */
 .bn-order__steps {
+  flex: none;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  margin: 0 20px 12px !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: 0;
   padding: 0;

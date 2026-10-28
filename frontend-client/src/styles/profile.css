@@ -86,7 +86,7 @@
   color: var(--brand-2);
 }
 
-.bn-refer__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bn-refer__actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 
 .bn-refer__share, .bn-refer__more {
   display: flex;
@@ -139,7 +139,7 @@
 /* Chiffres */
 .bn-pstats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   padding: 14px 0;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -176,7 +176,7 @@
 }
 
 .bn-pinfo { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 20px; background: var(--surface); }
-.bn-pinfo__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bn-pinfo__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 
 .bn-pinfo__locked {
   display: flex;
