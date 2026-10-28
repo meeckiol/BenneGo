@@ -34,6 +34,14 @@ const markSeen = () => {
 
 export function DriverSplash({ onDone }) {
   const [first] = EMBLEM_PARTS[0].nodes;
+
+  // Barre d'état du téléphone sombre pendant l'animation, puis couleur de l'app
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const before = meta?.getAttribute('content');
+    meta?.setAttribute('content', '#0b0b10');
+    return () => { if (before) meta?.setAttribute('content', before); };
+  }, []);
   return (
     <div className="bn-dsplash" role="status" aria-label="BenneGo Driver, chargement" onClick={onDone}>
       <div className="bn-dsplash__grid" aria-hidden="true" />

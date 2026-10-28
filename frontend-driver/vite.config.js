@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // Service worker aussi en développement : sans lui, Chrome Android n'installe pas l'app depuis le tunnel HTTPS
       devOptions: { enabled: true },
-      includeAssets: ['icon-192.png', 'icon-512.png', 'icon-splash-512.png'],
+      includeAssets: ['icon-192.png', 'icon-512.png', 'icon-launch-512.png'],
       manifest: {
         name: 'BenneGo Driver',
         short_name: 'BenneGo',
@@ -20,11 +20,11 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
-        // Écran de lancement Android : emblème sans fond (icon-splash-512) sur le fond sombre.
-        // Icône de l'écran d'accueil : logo sur fond blanc (« maskable », recadrée par Android).
+        // Écran de lancement Android : image transparente (icon-launch-512), il ne reste que le fond sombre,
+        // puis le splash animé. Icône de l'écran d'accueil : logo sur fond blanc (« maskable »).
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-splash-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-launch-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ],
       },
