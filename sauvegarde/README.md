@@ -87,3 +87,15 @@ cp $B/driver/NewOrderAlert.jsx frontend-driver/src/components/
 cp $B/driver/ActiveDeliveryPage.jsx frontend-driver/src/pages/
 cp $B/backend/order-events.js backend/src/services/
 ```
+
+## logo-or (28 octobre 2026)
+
+Toutes les images de marque en or sur fond noir, avant le passage au logo sable doré sur fond blanc (variante B) :
+logos et favicons web, icônes d'installation, icônes Android et iOS des applications Flutter, icônes Expo,
+logos officiels de `assets/brand/`. Les chemins sous `sauvegarde/logo-or/` reprennent ceux du dépôt.
+
+Pour revenir au logo or, depuis la racine du dépôt :
+
+```bash
+(cd sauvegarde/logo-or && find . -type f) | while read f; do cp "sauvegarde/logo-or/$f" "$f"; done
+```
