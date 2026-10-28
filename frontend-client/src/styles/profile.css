@@ -16,24 +16,37 @@
   position: relative;
   display: grid;
   place-items: center;
+  flex: none;
   width: 96px;
   height: 96px;
+  aspect-ratio: 1;
   margin-bottom: 10px;
   padding: 0;
-  border: 0;
+  border: 3px solid #ffffff;
   border-radius: 999px;
+  box-shadow: 0 0 0 2px var(--brand), 0 8px 20px rgba(122, 78, 20, 0.18);
   background: linear-gradient(135deg, #b5803f, #7a4e14);
   font-size: 32px;
   font-weight: 800;
   color: #ffffff;
 }
 
-.bn-profile2__photo img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+/* Photo recadrée dans le cercle : position absolue pour que Safari iOS ne l'étire pas en ovale */
+.bn-profile2__photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+}
 
 .bn-profile2__cam {
   position: absolute;
-  right: -2px;
-  bottom: -2px;
+  z-index: 1;
+  right: -4px;
+  bottom: -4px;
   display: grid;
   place-items: center;
   width: 30px;
