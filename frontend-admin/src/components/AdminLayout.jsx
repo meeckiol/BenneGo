@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Building2, ChevronLeft, ChevronRight, CreditCard, FileChartColumn, Gift, IdCard, LayoutDashboard,
-  LogOut, Package, Scale, Star, Ticket, TrendingUp, Users, Wrench,
+  LogOut, MessageCircle, Package, Scale, Star, Ticket, TrendingUp, Users, Wrench,
 } from 'lucide-react';
 import useAdminStore from '../store/adminStore';
 
 const NAV_ITEMS = [
   { path: '/',          Icon: LayoutDashboard, label: 'Tableau de bord' },
   { path: '/orders',    Icon: Package,         label: 'Commandes' },
+  { path: '/messages',  Icon: MessageCircle,   label: 'Messagerie' },
   { path: '/b2b',       Icon: Building2,       label: 'B2B & Séquestre' },
   { path: '/drivers',   Icon: IdCard,          label: 'Chauffeurs' },
   { path: '/clients',   Icon: Users,           label: 'Clients' },

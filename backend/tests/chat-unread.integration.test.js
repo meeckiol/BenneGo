@@ -97,3 +97,42 @@ test('le chauffeur reste disponible tant qu\'une autre connexion est ouverte', a
   row = await query('SELECT is_available FROM driver_profiles WHERE user_id = $1', [driver.id]);
   expect(row.rows[0].is_available).toBe(false);
 });
+
+test('console admin : liste des discussions, message de l\'assistance reçu par le client et le chauffeur', async () => {
+  const bcrypt = require('bcryptjs');
+  const adminPhone = phone();
+  await query(`INSERT INTO users (phone, full_name, role, password_hash) VALUES ($1, 'Admin Chat', 'admin', $2)`, [adminPhone, await bcrypt.hash('AdminPassword123', 4)]);
+  const admin = (await request(app).post('/api/auth/login').send({ phone: adminPhone, password: 'AdminPassword123' }).expect(200)).body;
+  const adminAuth = { Authorization: `Bearer ${admin.token}` };
+
+  const client = await reg('client', 'Admin Vu Client');
+  const driver = await reg('driver', 'Admin Vu Chauffeur');
+  await request(app).post('/api/auth/driver/profile').set(driver.auth).send({
+    truck_type: 'simple_benne', truck_plate: 'RB 80', license_number: 'L4', momo_number: '+22997444444', momo_provider: 'mtn' });
+  await request(app).patch('/api/drivers/availability').set(driver.auth).send({ is_available: true }).expect(200);
+  const o = (await request(app).post('/api/orders').set(client.auth).send({
+    pickup_lat: 6.37, pickup_lng: 2.39, pickup_address: 'A', delivery_lat: 6.36, delivery_lng: 2.41,
+    delivery_address: 'B', quantity_m3: 5 })).body.order;
+  await request(app).post(`/api/payments/orders/${o.id}/confirm`).set(client.auth).send({ transaction_id: `tx_adm_${Date.now()}` }).expect(200);
+  await request(app).patch(`/api/orders/${o.id}/accept`).set(driver.auth).expect(200);
+
+  // Réservé à l'admin
+  await request(app).get('/api/admin/conversations').set(client.auth).expect(403);
+  const list = (await request(app).get(`/api/admin/conversations?scope=active&q=${o.order_number}`).set(adminAuth).expect(200)).body.conversations;
+  expect(list).toEqual([expect.objectContaining({ id: o.id, client_name: 'Admin Vu Client Test', driver_name: 'Admin Vu Chauffeur Test', message_count: 0 })]);
+
+  const cs = await sock(client.token);
+  const ds = await sock(driver.token);
+  const toClient = once(cs, 'chat_notify');
+  const toDriver = once(ds, 'chat_notify');
+  await request(app).post(`/api/admin/orders/${o.id}/chat`).set(adminAuth).send({ message: '' }).expect(400);
+  const sent = (await request(app).post(`/api/admin/orders/${o.id}/chat`).set(adminAuth).send({ message: 'Bonjour, ici l\'assistance.' }).expect(201)).body.message;
+  expect(sent).toMatchObject({ sender_role: 'admin', sender_name: 'Assistance BenneGo' });
+  expect(await toClient).toMatchObject({ order_id: o.id, sender_role: 'admin' });
+  expect(await toDriver).toMatchObject({ order_id: o.id, sender_role: 'admin' });
+  expect((await request(app).get('/api/orders/chat/unread').set(client.auth)).body.total).toBe(1);
+
+  const after = (await request(app).get('/api/admin/conversations?scope=all').set(adminAuth)).body.conversations.find((c) => c.id === o.id);
+  expect(after).toMatchObject({ message_count: 1, last_sender_role: 'admin', last_message: 'Bonjour, ici l\'assistance.' });
+  [cs, ds].forEach((s) => s.close());
+});

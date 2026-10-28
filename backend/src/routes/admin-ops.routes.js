@@ -9,6 +9,7 @@ const { AppError } = require('../middlewares/error.middleware');
 const { query } = require('../config/database');
 const payments = require('../services/payment.service');
 const relief = require('../services/sla-quarry.service');
+const { CHAT_CLOSED, postAdminMessage } = require('../services/chat.service');
 
 const router = express.Router();
 router.use(authenticate, requireRole('admin'));
@@ -33,6 +34,59 @@ router.get('/disputes', async (req, res, next) => {
        ORDER BY o.dispute_opened_at ASC`
     );
     res.json({ disputes: rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/admin/conversations?scope=active|dispute|all&q= — discussions client ↔ chauffeur
+// active : commandes en cours avec chauffeur ; dispute : litiges ouverts ; all : toute commande ayant des messages
+router.get('/conversations', async (req, res, next) => {
+  try {
+    const scope = ['active', 'dispute', 'all'].includes(req.query.scope) ? req.query.scope : 'active';
+    const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 80) : '';
+    const params = [CHAT_CLOSED];
+    const where = [];
+    if (scope === 'active') where.push('o.driver_id IS NOT NULL AND o.status <> ALL($1)');
+    if (scope === 'dispute') where.push("o.dispute_status = 'open'");
+    if (scope === 'all') where.push('m.message_count > 0');
+    if (q) {
+      params.push(`%${q}%`);
+      where.push(`(o.order_number ILIKE $${params.length} OR u_c.full_name ILIKE $${params.length} OR u_d.full_name ILIKE $${params.length})`);
+    }
+    const { rows } = await query(
+      `SELECT o.id, o.order_number, o.status, o.dispute_status, o.created_at,
+              u_c.full_name AS client_name, u_c.phone AS client_phone,
+              u_d.full_name AS driver_name, u_d.phone AS driver_phone,
+              COALESCE(m.message_count, 0)::int AS message_count,
+              last.message AS last_message, last.sender_role AS last_sender_role, last.created_at AS last_at,
+              (o.status = ANY($1)) AS closed
+       FROM orders o
+       LEFT JOIN users u_c ON u_c.id = o.client_id
+       LEFT JOIN users u_d ON u_d.id = o.driver_id
+       LEFT JOIN LATERAL (SELECT COUNT(*) AS message_count FROM order_chat_messages WHERE order_id = o.id) m ON true
+       LEFT JOIN LATERAL (SELECT message, sender_role, created_at FROM order_chat_messages
+                          WHERE order_id = o.id ORDER BY created_at DESC LIMIT 1) last ON true
+       WHERE ${where.join(' AND ') || 'true'}
+       ORDER BY COALESCE(last.created_at, o.created_at) DESC
+       LIMIT 100`,
+      params
+    );
+    res.json({ conversations: rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/admin/orders/:id/chat — { message } : l'assistance écrit au client et au chauffeur
+router.post('/orders/:id/chat', [
+  param('id').isUUID(),
+  body('message').isString().trim().notEmpty().withMessage('Message vide').isLength({ max: 1000 }),
+], validateRequest, async (req, res, next) => {
+  try {
+    const msg = await postAdminMessage(req.app.get('io'), req.params.id, req.user, req.body.message.trim());
+    if (!msg) throw new AppError('Commande introuvable', 404);
+    res.status(201).json({ message: msg });
   } catch (error) {
     next(error);
   }

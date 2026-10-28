@@ -145,6 +145,10 @@
   color: #0b0b10;
 }
 
+/* Message de l'assistance BenneGo : bulle encadrée de vert, avec son nom */
+.bn-bubble.is-team { border: 1.5px solid #86d3a3; background: #f1fbf4; }
+.bn-bubble__who { display: block; margin-bottom: 2px; font-size: 11px; font-weight: 800; color: #157a3c; }
+
 .bn-bubble p { margin: 0; font-size: 15px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
 .bn-bubble time { display: block; margin-top: 4px; font-size: 11px; text-align: right; opacity: 0.6; }
 

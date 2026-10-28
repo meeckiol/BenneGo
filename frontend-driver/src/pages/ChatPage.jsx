@@ -148,7 +148,8 @@ export default function ChatPage() {
           return (
             <React.Fragment key={m.id || i}>
               {showDay && <span className="bn-chat__day">{day}</span>}
-              <div className={`bn-bubble${mine(m) ? ' is-me' : ''}`}>
+              <div className={`bn-bubble${mine(m) ? ' is-me' : ''}${m.sender_role === 'admin' ? ' is-team' : ''}`}>
+                {m.sender_role === 'admin' && <span className="bn-bubble__who">Assistance BenneGo</span>}
                 <p>{m.message}</p>
                 <time>{hour(m.created_at)}</time>
               </div>

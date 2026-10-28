@@ -15,6 +15,7 @@ const MonthlyReportPage = lazy(() => import('./pages/MonthlyReportPage'));
 const ReferralsAdminPage = lazy(() => import('./pages/ReferralsAdminPage'));
 const PromoCodesAdminPage = lazy(() => import('./pages/PromoCodesAdminPage'));
 const DisputesPage = lazy(() => import('./pages/DisputesPage'));
+const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const ReliefsPage = lazy(() => import('./pages/ReliefsPage'));
 const BarometerAdminPage = lazy(() => import('./pages/BarometerAdminPage'));
 
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="/referrals" element={<PrivateRoute><ReferralsAdminPage /></PrivateRoute>} />
         <Route path="/promos"    element={<PrivateRoute><PromoCodesAdminPage /></PrivateRoute>} />
         <Route path="/disputes" element={<PrivateRoute><DisputesPage /></PrivateRoute>} />
+        <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
         <Route path="/reliefs" element={<PrivateRoute><ReliefsPage /></PrivateRoute>} />
         <Route path="/barometer" element={<PrivateRoute><BarometerAdminPage /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />

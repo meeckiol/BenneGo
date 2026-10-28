@@ -70,7 +70,7 @@ export default function MessagesPage() {
                   <span className="bn-thread__tag">{order.order_number} · {STATUS[order.status]?.tag || order.status}</span>
                   <span className="bn-thread__row">
                     <span className={`bn-thread__last${count ? ' is-new' : ''}`}>
-                      {last ? `${fromClient ? '' : 'Vous : '}${last.message}` : 'Écrivez au client'}
+                      {last ? `${last.sender_role === 'admin' ? 'BenneGo : ' : fromClient ? '' : 'Vous : '}${last.message}` : 'Écrivez au client'}
                     </span>
                     {count > 0 && <span className="bn-badge" aria-label={`${count} non lu(s)`}>{badgeText(count)}</span>}
                   </span>

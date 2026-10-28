@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 
@@ -62,6 +63,8 @@ export default function DisputesPage() {
             <div><span style={s.label}>Volume déclaré au départ</span>{d.loading_volume_m3 ? `${Number(d.loading_volume_m3)} m³` : '—'}</div>
           </div>
           <div style={s.reason}><span style={s.label}>Motif du client</span>{d.dispute_reason}</div>
+          {/* La discussion client ↔ chauffeur aide à trancher (horaires, accès, quantité annoncée…) */}
+          <Link to={`/messages?scope=dispute&order=${d.id}`} style={s.chatLink}>Voir la discussion client ↔ chauffeur</Link>
 
           <PhotoRow title="Photos du chargement (départ)" urls={d.loading_photos} />
           <PhotoRow title="Photos du client (refus)" urls={d.dispute_photos} />
@@ -115,6 +118,7 @@ const s = {
   label: { display: 'block', fontSize: 11, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 2 },
   reason: { marginTop: 12, background: 'var(--bg)', borderRadius: 8, padding: 12, fontSize: 14, lineHeight: 1.5 },
   input: { marginTop: 14, width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border-2)', background: 'var(--bg)', color: 'var(--text)', boxSizing: 'border-box' },
+  chatLink: { display: 'inline-block', marginTop: 10, fontSize: 14, fontWeight: 700, color: 'var(--brand-ink)' },
   actions: { display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' },
   primaryBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: 'none', background: '#D9A55B', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' },
   dangerBtn: { flex: 1, minWidth: 220, padding: 12, borderRadius: 8, border: '1px solid #EF4444', background: 'transparent', color: 'var(--danger)', fontWeight: 700, cursor: 'pointer' },

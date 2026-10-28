@@ -35,15 +35,37 @@ const markRead = (orderId, userId) => query(
  * (pastille, bandeau, son) et notification push si l'application est fermée.
  */
 const notifyRecipient = async (io, order, msg) => {
-  const recipientId = msg.sender_id === order.client_id ? order.driver_id : order.client_id;
-  if (!recipientId) return;
-  io.to(`user_${recipientId}`).emit('chat_notify', { ...msg, order_number: order.order_number });
-  await push.sendToUser(recipientId, {
-    title: msg.sender_name || 'Nouveau message',
-    body: msg.message.length > 120 ? `${msg.message.slice(0, 117)}…` : msg.message,
-    tag: `chat-${msg.order_id}`,
-    url: `/messages/${msg.order_id}`,
-  });
+  // Message de l'assistance BenneGo : le client et le chauffeur sont prévenus tous les deux
+  const recipients = msg.sender_role === 'admin'
+    ? [order.client_id, order.driver_id]
+    : [msg.sender_id === order.client_id ? order.driver_id : order.client_id];
+  await Promise.all(recipients.filter(Boolean).map((recipientId) => {
+    io.to(`user_${recipientId}`).emit('chat_notify', { ...msg, order_number: order.order_number });
+    return push.sendToUser(recipientId, {
+      title: msg.sender_name || 'Nouveau message',
+      body: msg.message.length > 120 ? `${msg.message.slice(0, 117)}…` : msg.message,
+      tag: `chat-${msg.order_id}`,
+      url: `/messages/${msg.order_id}`,
+    });
+  }));
 };
 
-module.exports = { CHAT_CLOSED, unreadFor, markRead, notifyRecipient };
+/** Message de l'assistance BenneGo dans la discussion d'une commande (console admin). */
+const postAdminMessage = async (io, orderId, admin, text) => {
+  const { rows: orders } = await query('SELECT id, client_id, driver_id, order_number FROM orders WHERE id = $1', [orderId]);
+  if (!orders.length) return null;
+  const { rows } = await query(
+    `INSERT INTO order_chat_messages (order_id, sender_id, sender_name, sender_role, message)
+     VALUES ($1, $2, 'Assistance BenneGo', 'admin', $3)
+     RETURNING id, order_id, sender_id, sender_name, sender_role, message, created_at`,
+    [orderId, admin.id, text]
+  );
+  const msg = rows[0];
+  if (io) {
+    io.to(`chat_${orderId}`).emit('chat_message', msg);
+    notifyRecipient(io, orders[0], msg).catch((err) => console.error('Erreur alerte message:', err.message));
+  }
+  return msg;
+};
+
+module.exports = { CHAT_CLOSED, unreadFor, markRead, notifyRecipient, postAdminMessage };
