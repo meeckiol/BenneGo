@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import useAuthStore from './store/authStore';
+import useAuthStore, { selectAccountType } from './store/authStore';
 import BottomNav from './components/BottomNav';
 
 // Code-splitting via React.lazy
@@ -12,6 +12,9 @@ const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 const OrderDetailPage = lazy(() => import('./pages/OrderDetailPage'));
 const EnterprisePage = lazy(() => import('./pages/EnterprisePage'));
 const ReferralPage = lazy(() => import('./pages/ReferralPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const PromoPage = lazy(() => import('./pages/PromoPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Composant de chargement avec animation sobre BenneGo
@@ -54,13 +57,14 @@ const PrivateRoute = ({ children }) => {
   );
 };
 
-// Accueil : vitrine publique pour les visiteurs, tableau de bord pour les connectés
+// Accueil : vitrine publique pour les visiteurs ; pour les connectés, l'accueil du type de compte choisi à la connexion
 const HomeRoute = () => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const accountType = useAuthStore(selectAccountType);
   if (!isAuthenticated) return <LandingPage />;
   return (
     <PrivateRoute>
-      <HomePage />
+      {accountType === 'entreprise' ? <EnterprisePage /> : <HomePage />}
     </PrivateRoute>
   );
 };
@@ -72,14 +76,17 @@ function App() {
         {/* Routes publiques */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/confidentialite" element={<PrivacyPage />} />
 
         {/* Routes protégées */}
         <Route path="/" element={<HomeRoute />} />
         <Route path="/orders" element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
         <Route path="/orders/new" element={<PrivateRoute><NewOrderPage /></PrivateRoute>} />
         <Route path="/orders/:id" element={<PrivateRoute><OrderDetailPage /></PrivateRoute>} />
-        <Route path="/enterprise" element={<PrivateRoute><EnterprisePage /></PrivateRoute>} />
+        <Route path="/enterprise" element={<Navigate to="/" replace />} />
         <Route path="/referral" element={<PrivateRoute><ReferralPage /></PrivateRoute>} />
+        <Route path="/profil" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
+        <Route path="/code-promo" element={<PrivateRoute><PromoPage /></PrivateRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { register, login, getMe, createDriverProfile } = require('../controllers/auth.controller');
+const { register, login, getMe, createDriverProfile, updateProfilePhoto } = require('../controllers/auth.controller');
+const { uploadPhotos } = require('../services/photo.service');
 const { authenticate, requireRole } = require('../middlewares/auth.middleware');
 const { validateRequest } = require('../middlewares/validate.middleware');
 
@@ -31,6 +32,9 @@ router.post('/login', [
 
 // GET /api/auth/me
 router.get('/me', authenticate, getMe);
+
+// POST /api/auth/me/photo : photo de profil (champ « photo », image unique)
+router.post('/me/photo', authenticate, uploadPhotos.single('photo'), updateProfilePhoto);
 
 // POST /api/auth/driver/profile
 router.post('/driver/profile', authenticate, requireRole('driver'), [

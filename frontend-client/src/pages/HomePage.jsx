@@ -163,16 +163,6 @@ export default function HomePage() {
         </section>
       )}
 
-      <section className="bn-card bn-card--dark bn-b2b">
-        <span className="bn-pill bn-pill--brand">BenneGo Business</span>
-        <h2 className="bn-b2b__title">Grands comptes, promoteurs et entreprises BTP</h2>
-        <p className="bn-subtitle">Plusieurs rotations sur une seule proforma, suivi GPS en direct et commission réduite.</p>
-        <div className="bn-b2b__actions">
-          <button className="bn-btn bn-btn--primary" onClick={() => navigate('/enterprise')}>Tableau de bord chantiers</button>
-          <button className="bn-btn" onClick={() => navigate('/orders')}>Mes courses</button>
-        </div>
-      </section>
-
       {barometer.length > 0 && (
         <section className="bn-card">
           <div className="bn-section-head">

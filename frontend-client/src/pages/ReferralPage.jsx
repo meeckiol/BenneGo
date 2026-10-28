@@ -64,7 +64,7 @@ export default function ReferralPage() {
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <button onClick={() => navigate(-1)} style={styles.backBtn}><ArrowLeft size={16} aria-hidden="true" /> Retour</button>
-          <span style={styles.logo}>BenneGo Parrainage</span>
+          <span style={styles.logo}>BenneGo Affiliation</span>
         </div>
       </header>
 

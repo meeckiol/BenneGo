@@ -3,12 +3,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 
+const ACCOUNT_TYPES = [
+  { key: 'particulier', label: 'Client', hint: 'Commandes à l\'unité, pour vous ou un proche.' },
+  { key: 'entreprise', label: 'Entreprise', hint: 'Chantiers, commandes groupées et factures proforma.' },
+];
+
 export default function LoginPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [accountType, setAccountType] = useState('particulier');
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
+  const selected = ACCOUNT_TYPES.find((type) => type.key === accountType);
 
   const handleDemoAccess = () => {
     useAuthStore.setState({
@@ -20,6 +27,7 @@ export default function LoginPage() {
       },
       token: 'demo-token-123',
       isAuthenticated: true,
+      accountType,
     });
     toast.success('Mode Démo activé : Bienvenue sur BenneGo !');
     navigate('/');
@@ -29,7 +37,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const user = await login(phone, password);
+      const user = await login(phone, password, accountType);
       toast.success(`Bienvenue ${user.full_name} !`);
       navigate('/');
     } catch (err) {
@@ -49,6 +57,30 @@ export default function LoginPage() {
       </section>
 
       <form className="bn-card bn-auth__card" onSubmit={handleSubmit}>
+        <div className="bn-field">
+          <span className="bn-label" id="account-type-label">Vous vous connectez en tant que</span>
+          <div
+            className="bn-segment"
+            role="radiogroup"
+            aria-labelledby="account-type-label"
+            style={{ gridTemplateColumns: '1fr 1fr' }}
+          >
+            {ACCOUNT_TYPES.map((type) => (
+              <button
+                key={type.key}
+                type="button"
+                role="radio"
+                aria-checked={accountType === type.key}
+                className={`bn-segment__btn${accountType === type.key ? ' is-active' : ''}`}
+                onClick={() => setAccountType(type.key)}
+              >
+                {type.label}
+              </button>
+            ))}
+          </div>
+          <span className="bn-subtitle">{selected.hint}</span>
+        </div>
+
         <label className="bn-field">
           <span className="bn-label">Numéro de téléphone</span>
           <input
@@ -88,6 +120,8 @@ export default function LoginPage() {
 
       <p className="bn-auth__foot">
         Pas encore de compte ? <Link to="/register" className="bn-link">S'inscrire</Link>
+        {' · '}
+        <Link to="/confidentialite" className="bn-link">Confidentialité</Link>
       </p>
     </main>
   );

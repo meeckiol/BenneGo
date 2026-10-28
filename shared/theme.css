@@ -315,6 +315,10 @@ option { background: var(--surface); color: var(--text); }
 .bn-section-head h2 { font-size: 17px; font-weight: 800; color: var(--text-strong); }
 .bn-link { font-size: 13px; font-weight: 700; color: var(--brand-ink); background: none; border: 0; cursor: pointer; }
 
+.bn-avatar--xl { width: 76px; height: 76px; font-size: 26px; object-fit: cover; }
+.bn-profile { display: flex; align-items: center; gap: 16px; }
+.bn-profile__identity { display: grid; justify-items: start; gap: 4px; min-width: 0; }
+
 .bn-avatar {
   width: 40px;
   height: 40px;

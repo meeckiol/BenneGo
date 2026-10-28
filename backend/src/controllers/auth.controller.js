@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 const otp = require('../services/otp.service');
+const { saveImage } = require('../services/photo.service');
 
 /**
  * Génère un numéro de commande unique
@@ -261,4 +262,26 @@ const createDriverProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, requestOtp, verifyOtp, login, getMe, createDriverProfile };
+/**
+ * POST /api/auth/me/photo
+ * Remplace la photo de profil de l'utilisateur connecté (JPEG, PNG ou WebP, 2 Mo maximum)
+ */
+const updateProfilePhoto = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw new AppError('Aucune photo reçue', 400);
+    }
+
+    const url = await saveImage(req.file);
+    await query(
+      'UPDATE users SET profile_photo_url = $1, updated_at = NOW() WHERE id = $2',
+      [url, req.user.id]
+    );
+
+    res.json({ profile_photo_url: url });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { register, requestOtp, verifyOtp, login, getMe, createDriverProfile, updateProfilePhoto };
