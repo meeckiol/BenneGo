@@ -193,6 +193,22 @@ describe('parcours complet : paiement bloqué → livraison → confirmation →
     await request(app).post(`/api/orders/${order.id}/confirm-delivery`).set(driver.auth).expect(403);
   });
 
+  test('8 bis. le client voit seulement ce qu\'il paie, le chauffeur voit la répartition', async () => {
+    const detail = await request(app).get(`/api/orders/${order.id}`).set(client.auth).expect(200);
+    expect(Number(detail.body.order.total_amount)).toBeGreaterThan(0);
+    expect(detail.body.order.driver_amount).toBeUndefined();
+    expect(detail.body.order.commission_amount).toBeUndefined();
+
+    const list = await request(app).get('/api/orders').set(client.auth).expect(200);
+    const mine = list.body.orders.find((o) => o.id === order.id);
+    expect(mine.driver_amount).toBeUndefined();
+    expect(mine.commission_amount).toBeUndefined();
+
+    const forDriver = await request(app).get(`/api/orders/${order.id}`).set(driver.auth).expect(200);
+    expect(Number(forDriver.body.order.driver_amount)).toBe(DRIVER_SHARE);
+    expect(Number(forDriver.body.order.commission_amount)).toBe(COMMISSION);
+  });
+
   test('9. avis impossible avant confirmation', async () => {
     await request(app).post(`/api/reviews/orders/${order.id}/driver`).set(client.auth)
       .send({ rating: 5, comment: 'Top' }).expect(409);
@@ -204,10 +220,13 @@ describe('parcours complet : paiement bloqué → livraison → confirmation →
       request(app).post(`/api/orders/${order.id}/confirm-delivery`).set(client.auth),
     ]);
     expect([a.status, b.status]).toEqual([200, 200]);
-    expect(a.body.commission_amount).toBe(COMMISSION);
-    expect(a.body.driver_amount).toBe(DRIVER_SHARE);
+    // Le client ne reçoit pas la répartition ; elle reste juste en base
+    expect(a.body.commission_amount).toBeUndefined();
+    expect(a.body.driver_amount).toBeUndefined();
 
     const o = await dbOrder(order.id);
+    expect(Number(o.commission_amount)).toBe(COMMISSION);
+    expect(Number(o.driver_amount)).toBe(DRIVER_SHARE);
     expect(o.status).toBe('validated');
     expect(o.payment_status).toBe('payout_pending'); // mode manuel : en attente du versement admin
 

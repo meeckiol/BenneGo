@@ -278,7 +278,7 @@ const exportProjectOrdersCSV = async (req, res, next) => {
               o.pickup_address, o.delivery_address,
               COALESCE(mt.name, o.material_description, vt.name, 'N/A') AS designation,
               o.quantity_m3, o.duration_hours,
-              o.distance_km, o.total_amount, o.driver_amount, o.commission_amount,
+              o.distance_km, o.total_amount,
               u_d.full_name AS chauffeur, o.created_at, o.delivered_at
        FROM orders o
        LEFT JOIN material_types mt ON mt.id = o.material_type_id
@@ -301,9 +301,7 @@ const exportProjectOrdersCSV = async (req, res, next) => {
       'Quantité (m³)',
       'Durée (Heures)',
       'Distance (km)',
-      'Montant Total (FCFA)',
-      'Part Chauffeur (FCFA)',
-      'Commission Séquestre (FCFA)',
+      'Montant payé (FCFA)',
       'Chauffeur Assigné',
       'Date Création',
       'Date Livraison',
@@ -332,8 +330,6 @@ const exportProjectOrdersCSV = async (req, res, next) => {
         r.duration_hours || '',
         r.distance_km || '',
         r.total_amount,
-        r.driver_amount,
-        r.commission_amount,
         r.chauffeur || 'Non assigné',
         r.created_at ? new Date(r.created_at).toISOString() : '',
         r.delivered_at ? new Date(r.delivered_at).toISOString() : '',

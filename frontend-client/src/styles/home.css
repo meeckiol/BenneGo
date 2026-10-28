@@ -58,7 +58,7 @@
 .bn-tile--hero { background: var(--brand-grad); box-shadow: var(--shadow-brand); }
 .bn-tile strong { display: block; font-size: 16px; }
 .bn-tile small { font-size: 12px; color: var(--text-2); }
-.bn-tile--hero small { color: #3f2f00; }
+.bn-tile--hero small { color: #3d2608; }
 
 .bn-home__kicker { margin: 0; font-size: 14px; color: var(--text-3); }
 

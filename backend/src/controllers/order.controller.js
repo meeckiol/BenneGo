@@ -27,6 +27,20 @@ const withClientContactFor = (order, user) => {
   return withoutContact;
 };
 
+// Le client ne voit que ce qu'il paie : la part du prestataire et les frais BenneGo restent
+// réservés au chauffeur et à l'administration.
+const SPLIT_FIELDS = ['driver_amount', 'commission_amount'];
+const hideSplitFor = (data, user) => {
+  if (!data || user?.role !== 'client') return data;
+  const copy = { ...data };
+  SPLIT_FIELDS.forEach((field) => delete copy[field]);
+  if (copy.breakdown) {
+    const { commission_rate: _rate, ...breakdown } = copy.breakdown;
+    copy.breakdown = breakdown;
+  }
+  return copy;
+};
+
 // Camionnette (sacs de ciment, briques) : ses chauffeurs ne prennent que les commandes légères, et inversement
 const LIGHT_TRUCK = 'pickup';
 const canDriverTakeOrder = (orderTruckType, driverTruckType) => (orderTruckType === LIGHT_TRUCK) === (driverTruckType === LIGHT_TRUCK);
@@ -147,7 +161,7 @@ const estimatePrice = async (req, res, next) => {
       distance_km: route.distance_km,
       duration_min: route.duration_min,
       route_coordinates: route.coordinates,
-      ...pricing,
+      ...hideSplitFor(pricing, req.user),
     });
   } catch (error) {
     next(error);
@@ -262,8 +276,8 @@ const createOrder = async (req, res, next) => {
 
     res.status(201).json({
       message: 'Commande créée. Procédez au paiement pour la bloquer en séquestre.',
-      order,
-      breakdown: pricing.breakdown,
+      order: hideSplitFor(order, req.user),
+      breakdown: hideSplitFor(pricing, req.user).breakdown,
       next_step: 'payment',
     });
   } catch (error) {
@@ -375,8 +389,6 @@ const createBulkOrders = async (req, res, next) => {
     await client.query('COMMIT');
 
     const totalAmountGlobal = unitPricing.total_amount * totalTrips;
-    const totalCommissionGlobal = unitPricing.commission_amount * totalTrips;
-    const totalDriverGlobal = unitPricing.driver_amount * totalTrips;
 
     res.status(201).json({
       message: `Planification massive créée avec succès : ${totalTrips} camions programmés.`,
@@ -385,8 +397,6 @@ const createBulkOrders = async (req, res, next) => {
       total_orders_count: totalTrips,
       unit_price_per_trip: unitPricing.total_amount,
       total_amount_global: totalAmountGlobal,
-      total_commission_global: totalCommissionGlobal,
-      total_driver_global: totalDriverGlobal,
       escrow_bank_details: {
         bank_name: 'BOA Bénin / Ecobank Bénin',
         account_name: 'BenneGo Escrow Account SARL',
@@ -480,7 +490,7 @@ const getOrders = async (req, res, next) => {
     );
 
     res.json({
-      orders: result.rows.map((order) => withClientContactFor(order, req.user)),
+      orders: result.rows.map((order) => hideSplitFor(withClientContactFor(order, req.user), req.user)),
       pagination: {
         total: parseInt(countResult.rows[0].count),
         page: parseInt(page),
@@ -536,7 +546,7 @@ const getOrder = async (req, res, next) => {
       'SELECT kind, url, created_at FROM order_photos WHERE order_id = $1 ORDER BY created_at',
       [req.params.id]
     );
-    res.json({ order: { ...withClientContactFor(order, req.user), photos: photosRes.rows } });
+    res.json({ order: { ...hideSplitFor(withClientContactFor(order, req.user), req.user), photos: photosRes.rows } });
   } catch (error) {
     next(error);
   }
@@ -687,8 +697,6 @@ const confirmDelivery = async (req, res, next) => {
 
     res.json({
       message: 'Livraison confirmée. Le paiement séquestré a été débloqué et transmis au chauffeur.',
-      commission_amount: Number(result.order.commission_amount),
-      driver_amount: Number(result.order.driver_amount),
       payout: result.settlement.status,
       can_review: true,
     });
@@ -723,8 +731,6 @@ const confirmRental = async (req, res, next) => {
 
     res.json({
       message: 'Heures d\'opération de l\'engin validées ! Le paiement séquestré a été transmis au propriétaire de la machine.',
-      commission_amount: Number(result.order.commission_amount),
-      driver_amount: Number(result.order.driver_amount),
       payout: result.settlement.status,
     });
   } catch (error) {
@@ -758,8 +764,6 @@ const confirmEvacuation = async (req, res, next) => {
 
     res.json({
       message: 'Propreté du chantier validée ! Le paiement séquestré a été transmis au chauffeur.',
-      commission_amount: Number(result.order.commission_amount),
-      driver_amount: Number(result.order.driver_amount),
       payout: result.settlement.status,
     });
   } catch (error) {
