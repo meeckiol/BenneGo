@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { X } from 'lucide-react';
+import { km, money, quoteLines } from '../../../shared/quoteLines';
 
 const STATUSES = [
   { value: '', label: 'Toutes' },
@@ -136,10 +137,10 @@ export default function OrdersPage() {
                       </div>
                     </td>
                     <td style={{ ...s.td, fontWeight: '700', color: 'var(--text-strong)' }}>
-                      {parseFloat(order.total_amount || 0).toLocaleString()}
+                      {parseFloat(order.total_amount || 0).toLocaleString('fr-FR')}
                     </td>
                     <td style={{ ...s.td, color: 'var(--success)' }}>
-                      {parseFloat(order.commission_amount || 0).toLocaleString()}
+                      {parseFloat(order.commission_amount || 0).toLocaleString('fr-FR')}
                     </td>
                     <td style={s.td}>
                       <PaymentBadge status={order.payment_status} />
@@ -191,9 +192,11 @@ export default function OrdersPage() {
               <div style={s.detailGrid}>
                 <div><span style={s.detailLabel}>Client :</span> <strong>{selectedOrder.client_name || '—'}</strong></div>
                 <div><span style={s.detailLabel}>Chauffeur :</span> <strong>{selectedOrder.driver_name || 'Non assigné'}</strong></div>
-                <div><span style={s.detailLabel}>Montant total :</span> <strong style={{ color: 'var(--brand-ink)' }}>{Number(selectedOrder.total_amount || 0).toLocaleString()} FCFA</strong></div>
+                <div><span style={s.detailLabel}>Montant total :</span> <strong style={{ color: 'var(--brand-ink)' }}>{money(selectedOrder.total_amount)}</strong></div>
                 <div><span style={s.detailLabel}>Statut :</span> <strong>{selectedOrder.status}</strong></div>
               </div>
+
+              <PriceDetail order={selectedOrder} />
 
               <div style={s.podBox}>
                 <h4 style={s.podTitle}>Preuves de Livraison (PoD)</h4>
@@ -223,6 +226,50 @@ export default function OrdersPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Devis de la commande ligne par ligne, puis répartition : payé par le client, part du chauffeur,
+ * commission BenneGo et ce qu'il en reste après les réductions (parrainage, crédit).
+ */
+function PriceDetail({ order }) {
+  const total = Number(order.total_amount) || 0;
+  const referral = Number(order.referral_discount) || 0;
+  const credit = Number(order.credit_used) || 0;
+  const discount = Number(order.discount_amount) || referral + credit;
+  const commission = Number(order.commission_amount) || 0;
+  const breakdown = order.price_breakdown;
+  const lines = quoteLines(breakdown, { distanceKm: Number(order.distance_km), pricePerKm: Number(order.price_per_km) });
+  const row = (label, value, style) => (
+    <div style={{ ...s.priceRow, ...style }}><span>{label}</span><span style={{ whiteSpace: 'nowrap' }}>{value}</span></div>
+  );
+
+  return (
+    <div style={{ ...s.podBox, marginBottom: '16px' }}>
+      <h4 style={s.podTitle}>Détail du prix</h4>
+      {Number(order.distance_km) > 0 && row('Distance de l\'itinéraire', km(order.distance_km), { color: 'var(--text-2)' })}
+      {lines.length > 0 ? lines.map((line) => (
+        <div key={line.label} style={s.priceRow}>
+          <span>{line.label}{line.hint && <small style={s.priceHint}>{line.hint}</small>}</span>
+          <span style={{ whiteSpace: 'nowrap' }}>{money(line.amount)}</span>
+        </div>
+      )) : (
+        <p style={s.priceNote}>
+          Détail non enregistré pour cette commande (créée avant la mise à jour)
+          {Number(order.price_per_km) > 0 && ` · ${money(order.price_per_km)}/km`}.
+        </p>
+      )}
+      {row('Prix de la course', money(total), s.priceTotal)}
+      {referral > 0 && row('Réduction parrainage (1re commande)', `− ${money(referral)}`, { color: 'var(--success)' })}
+      {credit > 0 && row('Crédit BenneGo utilisé', `− ${money(credit)}`, { color: 'var(--success)' })}
+      {discount > 0 && row('Payé par le client', money(Math.max(0, total - discount)), { fontWeight: 700 })}
+      <div style={s.priceSplit}>
+        {row('Part du chauffeur', money(order.driver_amount))}
+        {row(`Commission BenneGo${breakdown?.commission_rate ? ` (${breakdown.commission_rate}${breakdown.is_b2b ? ' · B2B' : ''})` : ''}`, money(commission))}
+        {discount > 0 && row('Net BenneGo après réductions', money(commission - discount), { fontWeight: 700 })}
+      </div>
     </div>
   );
 }
@@ -275,6 +322,11 @@ const s = {
   detailLabel: { color: 'var(--text-3)' },
   podBox: { background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '16px' },
   podTitle: { margin: '0 0 10px', color: 'var(--text-strong)', fontSize: '14px', fontWeight: '700' },
+  priceRow: { display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '5px 0', fontSize: '13px', color: 'var(--text)' },
+  priceHint: { display: 'block', fontSize: '11.5px', color: 'var(--text-3)' },
+  priceNote: { margin: '4px 0', fontSize: '12.5px', color: 'var(--text-3)' },
+  priceTotal: { marginTop: '6px', paddingTop: '8px', borderTop: '1px solid var(--border-2)', fontWeight: 700, color: 'var(--text-strong)' },
+  priceSplit: { marginTop: '8px', paddingTop: '6px', borderTop: '1px dashed var(--border-2)' },
   podMeta: { color: 'var(--text-2)', fontSize: '12px', margin: '0 0 8px' },
   podNotes: { background: 'var(--surface)', padding: '10px', borderRadius: '8px', color: 'var(--text-2)', fontSize: '13px', marginBottom: '12px' },
   podGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px' },

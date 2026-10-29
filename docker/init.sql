@@ -785,3 +785,6 @@ CREATE TABLE IF NOT EXISTS user_credits (
 CREATE INDEX IF NOT EXISTS idx_user_credits_user ON user_credits(user_id);
 -- Une seule prime par parrainage et par bénéficiaire, même si la confirmation est rejouée
 CREATE UNIQUE INDEX IF NOT EXISTS uq_user_credits_referral ON user_credits(referral_id, user_id, reason) WHERE referral_id IS NOT NULL;
+
+-- Détail du prix calculé à la commande (prise en charge, transport, chargement, arrondi…) pour la console admin
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS price_breakdown JSONB;

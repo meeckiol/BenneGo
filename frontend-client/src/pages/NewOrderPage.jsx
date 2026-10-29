@@ -8,19 +8,8 @@ import { getSocket } from '../services/socket';
 import OrderMap from '../components/OrderMap';
 import AddressSearch from '../components/AddressSearch';
 import { STATUS, Track, describe } from '../components/delivery';
+import { km, money, quoteLines } from '../../../shared/quoteLines';
 import '../styles/order.css';
-
-// Montants et distances au format français : « 10 000 FCFA », « 25,9 km »
-const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('fr-FR')} FCFA`;
-const km = (n) => `${(Number(n) || 0).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km`;
-const TRUCK_LABELS = {
-  simple_benne: 'Benne simple · tarif de base',
-  double_benne: 'Double benne · ×1,4',
-  plateau: 'Plateau · ×1,2',
-  pickup: 'Pick-up léger · ×0,55',
-  grue: 'Camion grue · ×1,6',
-  semi_remorque: 'Semi-remorque · ×1,8',
-};
 
 const DEFAULT_COTONOU = { lat: 6.3654, lng: 2.4183, address: 'Cotonou, Bénin' };
 const DEFAULT_CARRIERE = { lat: 6.5050, lng: 2.3050, address: 'Carrière de Tori-Bossito' };
@@ -652,80 +641,22 @@ export default function NewOrderPage() {
                   </strong>
                 </div>
 
-                {orderType === 'RENTAL' ? (
-                  <>
-                    <div style={styles.estimateRow}>
-                      <span>Durée de réservation</span>
-                      <strong>{estimate.breakdown?.duration_hours} heures</strong>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Tarif horaire engin</span>
-                      <span>{money(estimate.breakdown?.hourly_rate)}/h</span>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Sous-total opération</span>
-                      <span>{money(estimate.breakdown?.rental_subtotal)}</span>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Mobilisation & transport engin</span>
-                      <span>{money(estimate.breakdown?.mobilization_fee)}</span>
-                    </div>
-                  </>
-                ) : orderType === 'EVACUATION' ? (
-                  <>
-                    <div style={styles.estimateRow}>
-                      <span>Nombre de rotations / camions</span>
-                      <strong>{estimate.breakdown?.rotations} rotation(s)</strong>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Forfait prise en charge</span>
-                      <span>{money(estimate.breakdown?.base_pickup_fee)}</span>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Transport vers la décharge ({km(estimate.distance_km)} × {money(estimate.breakdown?.price_per_km)}/km)</span>
-                      <span>{money(estimate.breakdown?.distance_cost)}</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={styles.estimateRow}>
-                      <span>Distance de l'itinéraire</span>
-                      <strong>{km(estimate.distance_km)} (~{estimate.duration_min} min)</strong>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Prise en charge du camion</span>
-                      <span>{money(estimate.breakdown?.base_fee)}</span>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>
-                        Transport : {km(estimate.distance_km)} × {money(estimate.price_per_km)}/km
-                        <small style={styles.estimateHint}>{TRUCK_LABELS[estimate.breakdown?.truck_type] || 'Camion'}</small>
-                      </span>
-                      <span>{money(estimate.breakdown?.distance_cost)}</span>
-                    </div>
-                    <div style={styles.estimateRow}>
-                      <span>Chargement à la carrière</span>
-                      <span>{money(estimate.breakdown?.loading_fee)}</span>
-                    </div>
-                    {estimate.breakdown?.material_cost > 0 && (
-                      <div style={styles.estimateRow}>
-                        <span>Matériau ({estimate.breakdown.quantity} m³ × {money(estimate.breakdown.material_unit_price)})</span>
-                        <span>{money(estimate.breakdown.material_cost)}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-                {/* Écart avec le prix affiché : arrondi au millier supérieur, ou complément jusqu'au prix minimum */}
-                {estimate.breakdown?.rounding > 0 && (
+                {estimate.distance_km > 0 && (
                   <div style={styles.estimateRow}>
-                    <span>
-                      {estimate.breakdown.minimum_applied
-                        ? `Complément au prix minimum (${money(estimate.breakdown.minimum_price)})`
-                        : 'Arrondi au millier supérieur'}
-                    </span>
-                    <span>{money(estimate.breakdown.rounding)}</span>
+                    <span>Distance de l'itinéraire</span>
+                    <strong>{km(estimate.distance_km)} (~{estimate.duration_min} min)</strong>
                   </div>
                 )}
+                {/* La somme des lignes donne le prix (arrondi ou complément au prix minimum compris) */}
+                {quoteLines(estimate.breakdown, { distanceKm: estimate.distance_km, pricePerKm: estimate.price_per_km }).map((line) => (
+                  <div key={line.label} style={styles.estimateRow}>
+                    <span>
+                      {line.label}
+                      {line.hint && <small style={styles.estimateHint}>{line.hint}</small>}
+                    </span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{money(line.amount)}</span>
+                  </div>
+                ))}
 
                 <div style={styles.divider} />
 

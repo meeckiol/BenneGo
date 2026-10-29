@@ -181,3 +181,19 @@ test('camionneur parraine camionneur : 1 500 chacun ; croisé client → camionn
     .set({ Authorization: `Bearer ${admin.token}` }).send({ decision: 'paid', reference: 'MOMO-123' }).expect(200);
   expect((await me(parrain)).payouts[0]).toMatchObject({ status: 'paid' });
 });
+
+test('le détail du prix est enregistré : complet pour l\'admin, sans taux de commission pour le client', async () => {
+  const client = await register('client', 'Client Devis');
+  const order = (await request(app).post('/api/orders').set(client.auth).send(orderBody).expect(201)).body.order;
+  expect(order.price_breakdown.commission_rate).toBeUndefined();
+  expect(order.price_breakdown.base_fee).toBeGreaterThan(0);
+
+  const adminPhone = nextPhone();
+  await query(`INSERT INTO users (phone, full_name, role, password_hash) VALUES ($1, 'Admin Devis', 'admin', $2)`, [adminPhone, await bcrypt.hash('AdminPassword123', 4)]);
+  const admin = (await request(app).post('/api/auth/login').send({ phone: adminPhone, password: 'AdminPassword123' }).expect(200)).body;
+  const list = (await request(app).get('/api/admin/orders').set({ Authorization: `Bearer ${admin.token}` }).expect(200)).body.orders;
+  const b = list.find((o) => o.id === order.id).price_breakdown;
+  expect(b.commission_rate).toBe('10%');
+  const lines = b.base_fee + b.distance_cost + b.loading_fee + b.material_cost + b.rounding;
+  expect(lines).toBe(Number(order.total_amount));
+});

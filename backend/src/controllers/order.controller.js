@@ -39,10 +39,11 @@ const hideSplitFor = (data, user) => {
   if (!data || user?.role !== 'client') return data;
   const copy = { ...data };
   SPLIT_FIELDS.forEach((field) => delete copy[field]);
-  if (copy.breakdown) {
-    const { commission_rate: _rate, ...breakdown } = copy.breakdown;
-    copy.breakdown = breakdown;
-  }
+  ['breakdown', 'price_breakdown'].forEach((field) => {
+    if (!copy[field]) return;
+    const { commission_rate: _rate, ...breakdown } = copy[field];
+    copy[field] = breakdown;
+  });
   return copy;
 };
 
@@ -294,10 +295,11 @@ const createOrder = async (req, res, next) => {
     );
     // Le type de camion demandé et les réductions sont enregistrés avec la commande (même transaction)
     const discountRes = await client.query(
-      `UPDATE orders SET truck_type = $2, referral_discount = $3, credit_used = $4, discount_amount = $5
+      `UPDATE orders SET truck_type = $2, referral_discount = $3, credit_used = $4, discount_amount = $5,
+              price_breakdown = $6
        WHERE id = $1 RETURNING *`,
       [result.rows[0].id, truck_type, discounts.referralDiscount, discounts.creditUsed,
-        discounts.referralDiscount + discounts.creditUsed]
+        discounts.referralDiscount + discounts.creditUsed, JSON.stringify(pricing.breakdown)]
     );
     result.rows[0] = discountRes.rows[0];
     await referrals.reserveForOrder(client, result.rows[0].id, req.user.id, discounts);
@@ -390,7 +392,7 @@ const createBulkOrders = async (req, res, next) => {
             distance_km, price_per_km,
             total_amount, commission_amount, driver_amount,
             is_bulk_order, bulk_group_id, proforma_invoice_number,
-            notes, status, payment_status
+            notes, price_breakdown, status, payment_status
           ) VALUES (
             $1, $2, $3, $4, $5,
             $6, $7, $8, $9,
@@ -399,7 +401,7 @@ const createBulkOrders = async (req, res, next) => {
             $17, $18,
             $19, $20, $21,
             true, $22, $23,
-            $24, 'awaiting_payment', 'unpaid'
+            $24, $25, 'awaiting_payment', 'unpaid'
           ) RETURNING id, order_number, total_amount`,
           [
             orderNumber, req.user.id, project_id || null, order_type, vehicle_type_id || null,
@@ -410,6 +412,7 @@ const createBulkOrders = async (req, res, next) => {
             unitPricing.total_amount, unitPricing.commission_amount, unitPricing.driver_amount,
             bulkGroupId, proformaInvoiceNumber,
             `${notes || ''} (Jour ${day + 1}/${number_of_days} - Rotation ${rot}/${rotations_per_day})`.trim(),
+            JSON.stringify(unitPricing.breakdown),
           ]
         );
         await client.query('UPDATE orders SET truck_type = $2 WHERE id = $1', [resOrder.rows[0].id, truck_type]);

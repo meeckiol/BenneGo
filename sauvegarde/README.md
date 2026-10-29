@@ -215,3 +215,14 @@ cp $B/new_order_screen.dart flutter/client/lib/screens/
 cp $B/client_repository.dart flutter/client/lib/data/
 git rm flutter/client/lib/domain/quote_lines.dart flutter/client/test/quote_lines_test.dart
 ```
+
+## admin-devis-avant-detail (29 octobre 2026)
+
+Avant : bloc « Détail du prix » dans la fiche commande de la console admin (lignes du devis, part du chauffeur,
+commission, net après réductions), colonne `orders.price_breakdown` et détail partagé `shared/quoteLines.js`
+(aussi utilisé par le devis du client web).
+
+```bash
+cp sauvegarde/admin-devis-avant-detail/OrdersPage.jsx frontend-admin/src/pages/
+```
+La colonne `price_breakdown` peut rester en base : l'ancienne fiche l'ignore.

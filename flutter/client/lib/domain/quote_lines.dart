@@ -42,7 +42,10 @@ List<QuoteLine> quoteLines(Map<String, dynamic> breakdown, {double? distanceKm, 
       add('Mobilisation & transport engin', breakdown['mobilization_fee']);
     case 'EVACUATION':
       final rotations = parseNum(breakdown['rotations']).round();
-      add('Forfait prise en charge', breakdown['base_pickup_fee'], hint: rotations > 1 ? '$rotations rotations' : null);
+      // Le forfait est compté à chaque rotation ; le transport l'est déjà dans distance_cost
+      final pickupFee = parseNum(breakdown['base_pickup_fee']);
+      add(rotations > 1 ? 'Forfait prise en charge : $rotations × ${formatFcfa(pickupFee)}' : 'Forfait prise en charge',
+          pickupFee * (rotations < 1 ? 1 : rotations));
       add(
         'Transport vers la décharge : ${formatKm(km)} × ${formatFcfa(parseNum(breakdown['price_per_km']))}/km',
         breakdown['distance_cost'],
