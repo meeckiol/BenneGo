@@ -176,7 +176,8 @@ export default function AnalyticsPage() {
         <div className="an-card">
           <h2>Chiffre d'affaires — réel & projeté</h2>
           <p className="an-card__sub">Barres : réalisé · Pointillés bleus : tendance et projection sur 7 jours</p>
-          <ResponsiveContainer width="100%" height={300}>
+          <div translate="no">
+            <ResponsiveContainer width="100%" height={300}>
             <ComposedChart data={chart} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="day" tickFormatter={dayTick} interval="preserveStartEnd" minTickGap={18} stroke="var(--text-3)" fontSize={12} tickLine={false} />
@@ -187,12 +188,13 @@ export default function AnalyticsPage() {
               <Line dataKey="trend" stroke="#2563eb" strokeDasharray="6 5" strokeWidth={2} dot={false} isAnimationActive={false} />
               <Line dataKey="projection" stroke="#2563eb" strokeDasharray="6 5" strokeWidth={2.5} dot={{ r: 2 }} connectNulls isAnimationActive={false} />
             </ComposedChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer></div>
         </div>
         <div className="an-card">
           <h2>Commissions par jour</h2>
           <p className="an-card__sub">{`${fcfa(revenue.commission)} sur la période`}</p>
-          <ResponsiveContainer width="100%" height={300}>
+          <div translate="no">
+            <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data.series} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="day" tickFormatter={dayTick} interval="preserveStartEnd" minTickGap={18} stroke="var(--text-3)" fontSize={12} tickLine={false} />
@@ -201,7 +203,7 @@ export default function AnalyticsPage() {
                 formatter={(v) => [fcfa(v), t('Commissions')]} />
               <Bar dataKey="commission" fill="#16a34a" radius={[5, 5, 0, 0]} maxBarSize={22} />
             </BarChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer></div>
         </div>
       </section>
 
@@ -225,7 +227,8 @@ export default function AnalyticsPage() {
         <div className="an-card">
           <h2>{`Activité des ${days} derniers jours`}</h2>
           <p className="an-card__sub">Commandes créées, livrées et annulées chaque jour</p>
-          <ResponsiveContainer width="100%" height={260}>
+          <div translate="no">
+            <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid stroke="var(--border)" vertical={false} />
               <XAxis dataKey="day" tickFormatter={dayTick} interval="preserveStartEnd" minTickGap={18} stroke="var(--text-3)" fontSize={12} tickLine={false} />
@@ -237,7 +240,7 @@ export default function AnalyticsPage() {
               <Line type="monotone" dataKey="delivered" stroke="#16a34a" strokeWidth={2.5} dot={false} />
               <Line type="monotone" dataKey="cancelled" stroke="#ef476f" strokeWidth={2} dot={false} strokeDasharray="4 4" />
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer></div>
         </div>
         <div className="an-card">
           <div className="an-card__head">

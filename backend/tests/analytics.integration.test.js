@@ -109,6 +109,18 @@ test('API : réservée à l\'admin, objectif mensuel modifiable', async () => {
   expect(res.body.series).toHaveLength(90);
   expect(res.body).toHaveProperty('objective.amount');
 
+  // Tableau de bord et compteurs du menu
+  await request(app).get('/api/admin/dashboard').set({ Authorization: `Bearer ${client.token}` }).expect(403);
+  const dash = (await request(app).get('/api/admin/dashboard?days=30').set(auth).expect(200)).body;
+  expect(dash.period.days).toBe(30);
+  expect(dash.monthly).toHaveLength(12);
+  expect(dash.week).toHaveLength(7);
+  expect(dash).toHaveProperty('alerts.disputes');
+  expect(dash).toHaveProperty('live.drivers_online');
+  expect(Array.isArray(dash.recent_orders)).toBe(true);
+  const badges = (await request(app).get('/api/admin/badges').set(auth).expect(200)).body;
+  expect(Object.keys(badges).sort()).toEqual(['disputes', 'drivers', 'orders', 'payments', 'referrals', 'reliefs']);
+
   await request(app).put('/api/admin/analytics/objective').set(auth).send({ amount: -5 }).expect(400);
   await request(app).put('/api/admin/analytics/objective').set(auth).send({ amount: 7500000 }).expect(200);
   const after = await request(app).get('/api/admin/analytics?days=7').set(auth).expect(200);

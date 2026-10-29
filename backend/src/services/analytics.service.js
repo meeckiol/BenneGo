@@ -269,4 +269,145 @@ async function getAnalytics({ days = 30, now } = {}) {
   };
 }
 
-module.exports = { getAnalytics, getObjective, setObjective, linearTrend, forecast, PERIODS };
+const ACTIVE = `('pending', 'accepted', 'driver_en_route_pickup', 'loading', 'driver_en_route_delivery', 'machine_operating', 'dumping', 'delivered')`;
+
+/**
+ * Tableau de bord : les analyses de la période + 12 mois, activité de la semaine, commandes en cours sur la carte,
+ * dernières commandes, clients, chauffeurs, paiements, avis et points à traiter.
+ */
+async function getDashboard({ days = 7, now } = {}) {
+  const analytics = await getAnalytics({ days, now });
+  const { from, to, previous_from: prevFrom } = analytics.period;
+  const at = (day) => `('${day}'::date::timestamp AT TIME ZONE '${TZ}')`;
+  const next = addDays(to, 1);
+  const monthStart = `${to.slice(0, 7)}-01`;
+  const yearAgo = addDays(monthStart, -330).slice(0, 7) + '-01';
+
+  const [monthly, previous, live, points, orders, clients, drivers, payments, reviews, alerts, approvals, totals] = await Promise.all([
+    // 12 derniers mois (mois en cours compris)
+    query(`WITH months AS (
+        SELECT to_char(m, 'YYYY-MM') AS month FROM generate_series($1::date, $2::date, INTERVAL '1 month') AS m
+      ), agg AS (
+        SELECT to_char(created_at AT TIME ZONE '${TZ}', 'YYYY-MM') AS month,
+          COUNT(*)::int AS orders,
+          COUNT(*) FILTER (WHERE status IN ${DELIVERED})::int AS delivered,
+          COALESCE(SUM(total_amount) FILTER (WHERE payment_status IN ${PAID}), 0)::float AS revenue
+        FROM orders WHERE created_at >= (($1::date)::timestamp AT TIME ZONE '${TZ}') GROUP BY 1
+      )
+      SELECT months.month, COALESCE(agg.orders, 0) AS orders, COALESCE(agg.delivered, 0) AS delivered, COALESCE(agg.revenue, 0) AS revenue
+      FROM months LEFT JOIN agg USING (month) ORDER BY months.month`, [yearAgo, monthStart]),
+    // Période précédente : nouveaux clients, taux de livraison
+    query(`SELECT
+        (SELECT COUNT(*) FROM users WHERE role = 'client' AND created_at >= ${at(prevFrom)} AND created_at < ${at(from)})::int AS new_clients,
+        COUNT(*) FILTER (WHERE o.status IN ${DELIVERED})::int AS delivered,
+        COUNT(*) FILTER (WHERE o.payment_status IN ${PAID} OR o.payment_status = 'refunded')::int AS paid
+      FROM orders o WHERE o.created_at >= ${at(prevFrom)} AND o.created_at < ${at(from)}`),
+    query(`SELECT
+        (SELECT COUNT(*) FROM orders WHERE status IN ${ACTIVE} AND payment_status <> 'unpaid')::int AS active_orders,
+        (SELECT COUNT(*) FROM orders WHERE status IN ('awaiting_payment'))::int AS awaiting_payment,
+        (SELECT COUNT(*) FROM driver_profiles WHERE is_available)::int AS drivers_online,
+        (SELECT COUNT(*) FROM driver_profiles)::int AS drivers_total`),
+    // Commandes en cours et chauffeurs en ligne, pour la carte
+    query(`SELECT 'order' AS kind, o.id, o.order_number AS label, COALESCE(o.order_type, 'MATERIAL') AS type, o.status,
+        o.delivery_lat::float AS lat, o.delivery_lng::float AS lng, o.delivery_address AS address
+      FROM orders o WHERE o.status IN ${ACTIVE} AND o.payment_status <> 'unpaid' AND o.delivery_lat IS NOT NULL
+      UNION ALL
+      SELECT 'driver', u.id, u.full_name, dp.truck_type, 'online', dp.current_lat::float, dp.current_lng::float, NULL
+      FROM driver_profiles dp JOIN users u ON u.id = dp.user_id
+      WHERE dp.is_available AND dp.current_lat IS NOT NULL
+      LIMIT 200`),
+    query(`SELECT o.id, o.order_number, u.full_name AS client, ${CATEGORY_SQL} AS service, o.created_at, o.status,
+        o.payment_status, o.total_amount::float AS amount
+      FROM orders o LEFT JOIN users u ON u.id = o.client_id LEFT JOIN material_types mt ON mt.id = o.material_type_id
+      ORDER BY o.created_at DESC LIMIT 40`),
+    query(`SELECT u.id, u.full_name AS name, u.phone, COUNT(o.id)::int AS orders,
+        COALESCE(SUM(o.total_amount) FILTER (WHERE o.payment_status IN ${PAID}), 0)::float AS spent, MAX(o.created_at) AS last_order
+      FROM users u JOIN orders o ON o.client_id = u.id
+      WHERE u.role = 'client' GROUP BY u.id ORDER BY MAX(o.created_at) DESC LIMIT 6`),
+    query(`SELECT u.id, u.full_name AS name, dp.truck_type, dp.truck_plate, dp.is_available, dp.verification_status,
+        dp.rating::float AS rating,
+        (SELECT COUNT(*) FROM orders o WHERE o.driver_id = u.id AND o.status IN ${DELIVERED})::int AS deliveries,
+        (SELECT o.order_number FROM orders o WHERE o.driver_id = u.id AND o.status IN ${ACTIVE} ORDER BY o.updated_at DESC LIMIT 1) AS current_order
+      FROM driver_profiles dp JOIN users u ON u.id = dp.user_id
+      WHERE dp.verification_status = 'verified'
+      ORDER BY dp.is_available DESC, deliveries DESC LIMIT 6`),
+    query(`SELECT o.id, o.order_number, u.full_name AS client, o.payment_at, o.total_amount::float AS amount, o.payment_status, o.payment_method
+      FROM orders o LEFT JOIN users u ON u.id = o.client_id
+      WHERE o.payment_at IS NOT NULL ORDER BY o.payment_at DESC LIMIT 6`),
+    query(`SELECT o.id, u.full_name AS client, o.client_rating AS rating, o.client_review AS review, COALESCE(o.rated_at, o.validated_at, o.updated_at) AS rated_at
+      FROM orders o LEFT JOIN users u ON u.id = o.client_id
+      WHERE o.client_rating IS NOT NULL ORDER BY COALESCE(o.rated_at, o.validated_at, o.updated_at) DESC LIMIT 4`),
+    query(`SELECT
+        (SELECT COUNT(*) FROM orders WHERE dispute_status = 'open')::int AS disputes,
+        (SELECT COUNT(*) FROM breakdown_relief_requests WHERE status = 'pending')::int AS reliefs,
+        (SELECT COUNT(*) FROM orders WHERE payment_status = 'payout_pending')::int AS payouts,
+        (SELECT COALESCE(SUM(driver_amount), 0) FROM orders WHERE payment_status = 'payout_pending')::float AS payouts_amount,
+        (SELECT COUNT(*) FROM credit_payouts WHERE status = 'requested')::int AS credit_payouts,
+        (SELECT COUNT(*) FROM orders WHERE status = 'pending' AND payment_status = 'escrow_held'
+           AND COALESCE(payment_at, created_at) < NOW() - INTERVAL '30 minutes')::int AS unassigned`),
+    // Chauffeurs inscrits en attente de vérification de leurs papiers
+    query(`SELECT u.id, u.full_name AS name, dp.truck_type, dp.truck_plate, u.created_at
+      FROM driver_profiles dp JOIN users u ON u.id = dp.user_id
+      WHERE dp.verification_status = 'pending' AND u.is_active
+      ORDER BY u.created_at DESC LIMIT 5`),
+    query(`SELECT
+        (SELECT COUNT(*) FROM users WHERE role = 'client')::int AS clients,
+        (SELECT COUNT(*) FROM users WHERE role = 'client' AND created_at < ${at(monthStart)})::int AS clients_before_month,
+        (SELECT COUNT(*) FROM companies WHERE subscription_status = 'active')::int AS companies,
+        (SELECT COUNT(*) FROM driver_profiles WHERE verification_status = 'pending')::int AS pending_drivers`),
+  ]);
+
+  const p = previous.rows[0];
+  const k = analytics.kpis;
+  const t = totals.rows[0];
+  // Activité de la semaine en cours (lundi → dimanche), jours à venir signalés pour le graphique
+  const todayDow = (new Date(`${to}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const monday = addDays(to, -todayDow);
+  const byDay = new Map(analytics.series.map((d) => [d.day, d]));
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const day = addDays(monday, i);
+    const d = byDay.get(day);
+    return { day, orders: d?.orders || 0, revenue: d?.revenue || 0, future: day > to };
+  });
+
+  return {
+    ...analytics,
+    comparisons: {
+      new_clients_previous: p.new_clients,
+      new_clients_change: change(k.new_clients, p.new_clients),
+      delivery_rate_previous: ratio(p.delivered, p.paid),
+    },
+    live: live.rows[0],
+    map: points.rows,
+    monthly: monthly.rows,
+    week,
+    recent_orders: orders.rows,
+    recent_clients: clients.rows,
+    drivers: drivers.rows,
+    payments: payments.rows,
+    reviews: reviews.rows,
+    alerts: alerts.rows[0],
+    approvals: approvals.rows,
+    totals: {
+      ...t,
+      clients_change: change(t.clients, t.clients_before_month),
+      repeat_rate: k.repeat_rate,
+    },
+    range: { from, to: next },
+  };
+}
+
+/** Compteurs du menu de la console : ce qui attend une action, par rubrique. */
+async function getBadges() {
+  const { rows: [b] } = await query(`SELECT
+      (SELECT COUNT(*) FROM orders WHERE status = 'pending' AND payment_status = 'escrow_held'
+         AND COALESCE(payment_at, created_at) < NOW() - INTERVAL '30 minutes')::int AS orders,
+      (SELECT COUNT(*) FROM orders WHERE dispute_status = 'open')::int AS disputes,
+      (SELECT COUNT(*) FROM breakdown_relief_requests WHERE status = 'pending')::int AS reliefs,
+      (SELECT COUNT(*) FROM driver_profiles WHERE verification_status = 'pending')::int AS drivers,
+      (SELECT COUNT(*) FROM orders WHERE payment_status = 'payout_pending')::int AS payments,
+      (SELECT COUNT(*) FROM credit_payouts WHERE status = 'requested')::int AS referrals`);
+  return b;
+}
+
+module.exports = { getAnalytics, getDashboard, getBadges, getObjective, setObjective, linearTrend, forecast, PERIODS };

@@ -237,3 +237,23 @@ au commit d1e66097 (main avant cette étape).
 ```bash
 git checkout d1e66097 -- flutter/
 ```
+
+## admin-tableau-de-bord-avant-refonte (29 octobre 2026)
+
+Avant : tableau de bord de la console admin (6 cartes chiffrées, 2 graphiques de la semaine, commandes récentes).
+La nouvelle version (thème sombre/clair, statistiques rapides, CA sur 12 mois, carte, points à traiter…)
+utilise GET /api/admin/dashboard ; l'ancienne page n'utilise que /api/admin/stats et /api/admin/orders, toujours présents.
+
+```bash
+cp sauvegarde/admin-tableau-de-bord-avant-refonte/DashboardPage.jsx frontend-admin/src/pages/
+rm frontend-admin/src/pages/dashboard.css
+```
+
+## admin-menu-avant-sections (29 octobre 2026)
+
+Avant : menu latéral de la console en liste simple (sans rubriques, compteurs, recherche ni tiroir sur téléphone).
+
+```bash
+cp sauvegarde/admin-menu-avant-sections/AdminLayout.jsx frontend-admin/src/components/
+rm frontend-admin/src/components/layout.css
+```

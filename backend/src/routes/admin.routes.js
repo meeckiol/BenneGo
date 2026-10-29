@@ -60,6 +60,24 @@ router.get('/analytics', async (req, res, next) => {
   }
 });
 
+// GET /api/admin/badges - Compteurs du menu (commandes sans chauffeur, litiges, pannes, chauffeurs à vérifier…)
+router.get('/badges', async (req, res, next) => {
+  try {
+    res.json(await analytics.getBadges());
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/admin/dashboard?days=7|30|90 - Tableau de bord : analyses + 12 mois, carte, listes récentes, points à traiter
+router.get('/dashboard', async (req, res, next) => {
+  try {
+    res.json(await analytics.getDashboard({ days: req.query.days || 7 }));
+  } catch (error) {
+    next(error);
+  }
+});
+
 // PUT /api/admin/analytics/objective - Objectif mensuel de chiffre d'affaires (FCFA)
 router.put('/analytics/objective', [
   body('amount').isInt({ min: 0, max: 1e12 }).withMessage('Objectif invalide'),
