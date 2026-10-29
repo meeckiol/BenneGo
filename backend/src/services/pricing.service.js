@@ -244,6 +244,10 @@ const calculatePrice = (arg1, truckType = 'simple_benne', materialType = null) =
   const commission_amount = Math.round(total_amount * commissionRate);
   const driver_amount = total_amount - commission_amount;
 
+  // Écart entre le calcul et le prix affiché : arrondi au millier, ou complément jusqu'au prix minimum
+  breakdown.rounding = total_amount - Math.round(rawTotal);
+  breakdown.minimum_applied = Math.ceil(rawTotal / 1000) * 1000 < minFloor;
+  breakdown.minimum_price = minFloor;
   breakdown.commission_rate = `${Math.round(commissionRate * 100)}%`;
   breakdown.is_b2b = isB2b;
 

@@ -10,6 +10,18 @@ import AddressSearch from '../components/AddressSearch';
 import { STATUS, Track, describe } from '../components/delivery';
 import '../styles/order.css';
 
+// Montants et distances au format français : « 10 000 FCFA », « 25,9 km »
+const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('fr-FR')} FCFA`;
+const km = (n) => `${(Number(n) || 0).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km`;
+const TRUCK_LABELS = {
+  simple_benne: 'Benne simple · tarif de base',
+  double_benne: 'Double benne · ×1,4',
+  plateau: 'Plateau · ×1,2',
+  pickup: 'Pick-up léger · ×0,55',
+  grue: 'Camion grue · ×1,6',
+  semi_remorque: 'Semi-remorque · ×1,8',
+};
+
 const DEFAULT_COTONOU = { lat: 6.3654, lng: 2.4183, address: 'Cotonou, Bénin' };
 const DEFAULT_CARRIERE = { lat: 6.5050, lng: 2.3050, address: 'Carrière de Tori-Bossito' };
 const DEFAULT_DECHARGE = { lat: 6.4800, lng: 2.3500, address: 'Décharge contrôlée d\'Akassato' };
@@ -648,15 +660,15 @@ export default function NewOrderPage() {
                     </div>
                     <div style={styles.estimateRow}>
                       <span>Tarif horaire engin</span>
-                      <span>{estimate.breakdown?.hourly_rate?.toLocaleString()} FCFA/h</span>
+                      <span>{money(estimate.breakdown?.hourly_rate)}/h</span>
                     </div>
                     <div style={styles.estimateRow}>
                       <span>Sous-total opération</span>
-                      <span>{estimate.breakdown?.rental_subtotal?.toLocaleString()} FCFA</span>
+                      <span>{money(estimate.breakdown?.rental_subtotal)}</span>
                     </div>
                     <div style={styles.estimateRow}>
                       <span>Mobilisation & transport engin</span>
-                      <span>{estimate.breakdown?.mobilization_fee?.toLocaleString()} FCFA</span>
+                      <span>{money(estimate.breakdown?.mobilization_fee)}</span>
                     </div>
                   </>
                 ) : orderType === 'EVACUATION' ? (
@@ -667,28 +679,52 @@ export default function NewOrderPage() {
                     </div>
                     <div style={styles.estimateRow}>
                       <span>Forfait prise en charge</span>
-                      <span>{estimate.breakdown?.base_pickup_fee?.toLocaleString()} FCFA</span>
+                      <span>{money(estimate.breakdown?.base_pickup_fee)}</span>
                     </div>
                     <div style={styles.estimateRow}>
-                      <span>Distance vers décharge</span>
-                      <span>{estimate.distance_km} km ({estimate.breakdown?.distance_cost?.toLocaleString()} FCFA)</span>
+                      <span>Transport vers la décharge ({km(estimate.distance_km)} × {money(estimate.breakdown?.price_per_km)}/km)</span>
+                      <span>{money(estimate.breakdown?.distance_cost)}</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div style={styles.estimateRow}>
-                      <span>Distance itinéraire OSRM</span>
-                      <strong>{estimate.distance_km} km (~{estimate.duration_min} min)</strong>
+                      <span>Distance de l'itinéraire</span>
+                      <strong>{km(estimate.distance_km)} (~{estimate.duration_min} min)</strong>
                     </div>
                     <div style={styles.estimateRow}>
-                      <span>Prise en charge camion benne</span>
-                      <span>{estimate.breakdown?.base_fee?.toLocaleString()} FCFA</span>
+                      <span>Prise en charge du camion</span>
+                      <span>{money(estimate.breakdown?.base_fee)}</span>
                     </div>
                     <div style={styles.estimateRow}>
-                      <span>Transport au kilomètre</span>
-                      <span>{estimate.breakdown?.distance_cost?.toLocaleString()} FCFA</span>
+                      <span>
+                        Transport : {km(estimate.distance_km)} × {money(estimate.price_per_km)}/km
+                        <small style={styles.estimateHint}>{TRUCK_LABELS[estimate.breakdown?.truck_type] || 'Camion'}</small>
+                      </span>
+                      <span>{money(estimate.breakdown?.distance_cost)}</span>
                     </div>
+                    <div style={styles.estimateRow}>
+                      <span>Chargement à la carrière</span>
+                      <span>{money(estimate.breakdown?.loading_fee)}</span>
+                    </div>
+                    {estimate.breakdown?.material_cost > 0 && (
+                      <div style={styles.estimateRow}>
+                        <span>Matériau ({estimate.breakdown.quantity} m³ × {money(estimate.breakdown.material_unit_price)})</span>
+                        <span>{money(estimate.breakdown.material_cost)}</span>
+                      </div>
+                    )}
                   </>
+                )}
+                {/* Écart avec le prix affiché : arrondi au millier supérieur, ou complément jusqu'au prix minimum */}
+                {estimate.breakdown?.rounding > 0 && (
+                  <div style={styles.estimateRow}>
+                    <span>
+                      {estimate.breakdown.minimum_applied
+                        ? `Complément au prix minimum (${money(estimate.breakdown.minimum_price)})`
+                        : 'Arrondi au millier supérieur'}
+                    </span>
+                    <span>{money(estimate.breakdown.rounding)}</span>
+                  </div>
                 )}
 
                 <div style={styles.divider} />
@@ -697,29 +733,29 @@ export default function NewOrderPage() {
                 {(estimate.referral_discount > 0 || estimate.credit_balance > 0) && (
                   <div style={styles.estimateRow}>
                     <span>Prix de la course</span>
-                    <span>{estimate.total_amount?.toLocaleString('fr-FR')} FCFA</span>
+                    <span>{money(estimate.total_amount)}</span>
                   </div>
                 )}
                 {estimate.referral_discount > 0 && (
                   <div style={{ ...styles.estimateRow, color: 'var(--success)' }}>
                     <span>Réduction parrainage (1re commande)</span>
-                    <strong>− {estimate.referral_discount.toLocaleString('fr-FR')} FCFA</strong>
+                    <strong>− {money(estimate.referral_discount)}</strong>
                   </div>
                 )}
                 {estimate.credit_balance > 0 && (
                   <label style={{ ...styles.estimateRow, alignItems: 'center', cursor: 'pointer' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <input type="checkbox" checked={useCredit} onChange={(e) => toggleCredit(e.target.checked)} />
-                      Utiliser mon crédit ({estimate.credit_balance.toLocaleString('fr-FR')} FCFA)
+                      Utiliser mon crédit ({money(estimate.credit_balance)})
                     </span>
-                    {estimate.credit_used > 0 && <strong style={{ color: 'var(--success)' }}>− {estimate.credit_used.toLocaleString('fr-FR')} FCFA</strong>}
+                    {estimate.credit_used > 0 && <strong style={{ color: 'var(--success)', whiteSpace: 'nowrap' }}>− {money(estimate.credit_used)}</strong>}
                   </label>
                 )}
 
                 <div style={{ ...styles.estimateRow, ...styles.total }}>
                   <span>TOTAL À PAYER</span>
                   <strong style={styles.totalAmount}>
-                    {(estimate.amount_due ?? estimate.total_amount)?.toLocaleString('fr-FR')} FCFA
+                    {money(estimate.amount_due ?? estimate.total_amount)}
                   </strong>
                 </div>
 
@@ -769,7 +805,7 @@ export default function NewOrderPage() {
                                                                                                                                                                                            
                     {promoResult && (                                                                                                                                                        
                       <p style={{ color: 'var(--success)', fontSize: '13px', fontWeight: '700', margin: '0 0 10px' }}>                                                                              
-                        Remise déduite : -{promoResult.discount_amount.toLocaleString()} FCFA                                                                                                
+                        Remise déduite : -{money(promoResult.discount_amount)}                                                                                                
                       </p>                                                                                                                                                                   
                     )}                                                                                                                                                                       
                                                                                                                                                                                            
@@ -901,7 +937,8 @@ const styles = {
   estimate: { display: 'flex', flexDirection: 'column', gap: '20px' },
   estimateTitle: { fontSize: '20px', fontWeight: '800', color: 'var(--text-strong)', margin: 0 },
   estimateCard: { background: 'var(--surface)', borderRadius: '14px', padding: '22px', boxShadow: '0 4px 14px rgba(0,0,0,0.06)', border: '1px solid var(--border)' },
-  estimateRow: { display: 'flex', justifyContent: 'space-between', padding: '9px 0', fontSize: '14.5px', color: 'var(--text)' },
+  estimateRow: { display: 'flex', justifyContent: 'space-between', gap: '12px', padding: '9px 0', fontSize: '14.5px', color: 'var(--text)' },
+  estimateHint: { display: 'block', marginTop: '2px', fontSize: '12px', color: 'var(--text-3)' },
   divider: { height: '1px', background: 'var(--surface-3)', margin: '10px 0' },
   total: { fontSize: '18px', fontWeight: '800', color: 'var(--text-strong)' },
   totalAmount: { color: 'var(--brand-ink)', fontSize: '24px' },
