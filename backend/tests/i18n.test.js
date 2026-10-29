@@ -34,9 +34,9 @@ test('chaque dictionnaire est du JSON valide et n\'invente pas de variable', () 
 });
 
 test('la langue fait partie des réglages, avec validation', () => {
-  expect(settings.merge('client', {}).language).toBe('fr');
+  expect(settings.merge('client', {}).language).toBeNull();
   expect(settings.merge('client', { language: 'en' }).language).toBe('en');
-  expect(settings.merge('client', { language: 'xx' }).language).toBe('fr');
+  expect(settings.merge('client', { language: 'xx' }).language).toBeNull();
   expect(settings.validatePatch('driver', { language: 'ja' })).toEqual({ language: 'ja' });
   expect(() => settings.validatePatch('driver', { language: 'klingon' })).toThrow('Langue non prise en charge');
 });

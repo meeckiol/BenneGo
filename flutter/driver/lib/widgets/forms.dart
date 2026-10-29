@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:image_picker/image_picker.dart';
 
 /// Saisie du chargement : volume, poids de pesée et photos.
@@ -106,10 +106,10 @@ class _LoadingSheetState extends State<_LoadingSheet> {
               TextFormField(
                 controller: _volume,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Volume chargé (m³)', hintText: 'ex. 10'),
+                decoration: InputDecoration(labelText: tr('Volume chargé (m³)'), hintText: tr('ex. 10')),
                 validator: (value) {
                   final volume = double.tryParse((value ?? '').trim().replaceAll(',', '.'));
-                  if (volume == null || volume < 0.5 || volume > 100) return 'Volume entre 0,5 et 100 m³';
+                  if (volume == null || volume < 0.5 || volume > 100) return tr('Volume entre 0,5 et 100 m³');
                   return null;
                 },
               ),
@@ -117,18 +117,18 @@ class _LoadingSheetState extends State<_LoadingSheet> {
               TextFormField(
                 controller: _weighbridge,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Poids net à la pesée (kg, facultatif)'),
+                decoration: InputDecoration(labelText: tr('Poids net à la pesée (kg, facultatif)')),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) return null;
                   final kg = int.tryParse(value.trim());
-                  return (kg == null || kg < 1 || kg > 100000) ? 'Poids invalide' : null;
+                  return (kg == null || kg < 1 || kg > 100000) ? tr('Poids invalide') : null;
                 },
               ),
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: _addPhotos,
                 icon: const Icon(Icons.photo_camera_outlined),
-                label: Text(_photos.isEmpty ? 'Photos du chargement' : '${_photos.length} photo(s) sélectionnée(s)'),
+                label: Text(_photos.isEmpty ? tr('Photos du chargement') : tr('${_photos.length} photo(s) sélectionnée(s)')),
               ),
               if (_photoError != null)
                 Padding(
@@ -139,10 +139,10 @@ class _LoadingSheetState extends State<_LoadingSheet> {
               OutlinedButton.icon(
                 onPressed: _addTicket,
                 icon: const Icon(Icons.receipt_long_outlined),
-                label: Text(_ticket == null ? 'Ticket de pesée (facultatif)' : 'Ticket de pesée ajouté'),
+                label: Text(_ticket == null ? tr('Ticket de pesée (facultatif)') : tr('Ticket de pesée ajouté')),
               ),
               const SizedBox(height: 20),
-              BnPrimaryButton(label: 'Enregistrer le chargement', icon: Icons.check, onPressed: _submit),
+              BnPrimaryButton(label: tr('Enregistrer le chargement'), icon: Icons.check, onPressed: _submit),
             ],
           ),
         ),
@@ -181,11 +181,11 @@ class _PodSheetState extends State<_PodSheet> {
           OutlinedButton.icon(
             onPressed: _addPhotos,
             icon: const Icon(Icons.photo_camera_outlined),
-            label: Text(_photos.isEmpty ? 'Ajouter des photos' : '${_photos.length} photo(s) sélectionnée(s)'),
+            label: Text(_photos.isEmpty ? tr('Ajouter des photos') : tr('${_photos.length} photo(s) sélectionnée(s)')),
           ),
           const SizedBox(height: 20),
           BnPrimaryButton(
-            label: 'Envoyer les photos',
+            label: tr('Envoyer les photos'),
             icon: Icons.cloud_upload_outlined,
             onPressed: _photos.isEmpty ? null : () => Navigator.of(context).pop(_photos),
           ),

@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 
 import '../api/api_client.dart';
 import '../api/api_exception.dart';
 import '../theme/bn_theme.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Ligne de profil avec une icône sur fond de couleur (vert, ardoise, sable, bleu, rouge), comme le profil web.
 class ProfileRow extends StatelessWidget {
@@ -74,6 +76,7 @@ class ProfileGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    LangScope.watch(context); // titre traduit puis mis en majuscules
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,7 +84,7 @@ class ProfileGroup extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
-              title!.toUpperCase(),
+              tr(title!).toUpperCase(),
               style: const TextStyle(color: BnColors.text3, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.8),
             ),
           ),
@@ -150,7 +153,7 @@ class ReferralCard extends StatelessWidget {
           const SizedBox(height: 12),
           Semantics(
             button: true,
-            label: 'Copier le code parrain',
+            label: tr('Copier le code parrain'),
             child: InkWell(
               borderRadius: BorderRadius.circular(14),
               onTap: code == null
@@ -309,7 +312,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   ),
                   const SizedBox(height: 12),
                   InputDecorator(
-                    decoration: const InputDecoration(labelText: 'Téléphone', prefixIcon: Icon(Icons.lock_outline)),
+                    decoration: InputDecoration(labelText: tr('Téléphone'), prefixIcon: Icon(Icons.lock_outline)),
                     child: Text('$_phone · vérifié par SMS', style: const TextStyle(color: BnColors.text2)),
                   ),
                   const SizedBox(height: 12),
@@ -322,7 +325,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                   ElevatedButton(
                     onPressed: _dirty && !_saving ? _save : null,
                     style: ElevatedButton.styleFrom(foregroundColor: const Color(0xFF0B0B10)),
-                    child: Text(_saving ? 'Enregistrement…' : 'Enregistrer'),
+                    child: Text(_saving ? tr('Enregistrement…') : tr('Enregistrer')),
                   ),
                 ],
               ),
@@ -337,11 +340,11 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       decoration: InputDecoration(labelText: label),
       validator: (value) {
         final text = (value ?? '').trim();
-        if (required && text.isEmpty) return 'Obligatoire';
+        if (required && text.isEmpty) return tr('Obligatoire');
         if (name == 'email' && text.isNotEmpty && !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text)) {
-          return 'E-mail invalide';
+          return tr('E-mail invalide');
         }
-        if (name == 'date_naissance' && text.isNotEmpty && DateTime.tryParse(text) == null) return 'Date invalide';
+        if (name == 'date_naissance' && text.isNotEmpty && DateTime.tryParse(text) == null) return tr('Date invalide');
         return null;
       },
     );

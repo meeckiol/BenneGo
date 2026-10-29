@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:intl/intl.dart';
 
 import '../api/api_client.dart';
@@ -12,6 +12,8 @@ import '../realtime/realtime_client.dart';
 import '../theme/bn_theme.dart';
 import 'chat_center.dart';
 import 'chat_message.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Dégradé sable doré des messages envoyés, comme l'interface web.
 const _sandGradient = LinearGradient(colors: [Color(0xFFE8C38A), BnColors.brand]);
@@ -58,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String get _orderId => widget.order.id;
   bool get _iAmClient => widget.myRole == 'client';
   String get _name =>
-      (_iAmClient ? widget.order.driverName : widget.order.clientName) ?? (_iAmClient ? 'Chauffeur' : 'Client');
+      (_iAmClient ? widget.order.driverName : widget.order.clientName) ?? (_iAmClient ? tr('Chauffeur') : tr('Client'));
   String? get _phone => _iAmClient ? widget.order.driverPhone : widget.order.clientPhone;
 
   @override
@@ -172,8 +174,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       padding: const EdgeInsets.all(24),
                       child: Text(
                         _iAmClient
-                            ? "Aucun message pour l'instant. Posez votre question au chauffeur."
-                            : "Aucun message pour l'instant. Prévenez le client de votre arrivée.",
+                            ? tr("Aucun message pour l'instant. Posez votre question au chauffeur.")
+                            : tr("Aucun message pour l'instant. Prévenez le client de votre arrivée."),
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: BnColors.text2),
                       ),
@@ -233,7 +235,7 @@ class _Header extends StatelessWidget {
         children: [
           Row(
             children: [
-              _RoundButton(icon: Icons.arrow_back, label: 'Retour', onTap: () => Navigator.of(context).maybePop()),
+              _RoundButton(icon: Icons.arrow_back, label: tr('Retour'), onTap: () => Navigator.of(context).maybePop()),
               const SizedBox(width: 12),
               Container(
                 padding: const EdgeInsets.all(3),
@@ -270,7 +272,7 @@ class _Header extends StatelessWidget {
               if (onCall != null)
                 Semantics(
                   button: true,
-                  label: 'Appeler $name',
+                  label: tr('Appeler $name'),
                   child: InkWell(
                     onTap: onCall,
                     customBorder: const CircleBorder(),
@@ -368,9 +370,9 @@ class _DaySeparator extends StatelessWidget {
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
     final label = _sameDay(date, now)
-        ? "Aujourd'hui"
+        ? tr("Aujourd'hui")
         : _sameDay(date, yesterday)
-        ? 'Hier'
+        ? tr('Hier')
         : DateFormat('EEEE d MMMM', 'fr_FR').format(date);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -494,7 +496,7 @@ class _Composer extends StatelessWidget {
                     textInputAction: TextInputAction.send,
                     onSubmitted: (_) => onSend(),
                     decoration: InputDecoration(
-                      hintText: 'Écrire un message…',
+                      hintText: tr('Écrire un message…'),
                       counterText: '',
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(999), borderSide: BorderSide.none),
@@ -512,7 +514,7 @@ class _Composer extends StatelessWidget {
                 const SizedBox(width: 10),
                 Semantics(
                   button: true,
-                  label: 'Envoyer',
+                  label: tr('Envoyer'),
                   child: InkWell(
                     onTap: () => onSend(),
                     customBorder: const CircleBorder(),

@@ -27,6 +27,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # Dictionnaires de traduction, copiés depuis shared/i18n par scripts/i18n-sync-flutter.sh
+  assets:
+    - assets/i18n/
 
   # To add assets to your package, add an assets section, like this:
   # assets:

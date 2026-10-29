@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -86,7 +86,7 @@ class _BarometerScreenState extends State<BarometerScreen> {
 
   String? _requiredNumber(String? value) {
     final number = double.tryParse((value ?? '').trim().replaceAll(',', '.'));
-    return (number == null || number <= 0) ? 'Prix invalide' : null;
+    return (number == null || number <= 0) ? tr('Prix invalide') : null;
   }
 
   @override
@@ -104,8 +104,8 @@ class _BarometerScreenState extends State<BarometerScreen> {
                 children: [
                   TextFormField(
                     controller: _material,
-                    decoration: const InputDecoration(labelText: 'Matériau', hintText: 'ex. Gravier concassé 15/25'),
-                    validator: (v) => (v == null || v.trim().length < 2) ? 'Requis' : null,
+                    decoration: InputDecoration(labelText: tr('Matériau'), hintText: tr('ex. Gravier concassé 15/25')),
+                    validator: (v) => (v == null || v.trim().length < 2) ? tr('Requis') : null,
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -114,7 +114,7 @@ class _BarometerScreenState extends State<BarometerScreen> {
                         child: TextFormField(
                           controller: _min,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Minimum (FCFA/m³)'),
+                          decoration: InputDecoration(labelText: tr('Minimum (FCFA/m³)')),
                           validator: _requiredNumber,
                         ),
                       ),
@@ -123,7 +123,7 @@ class _BarometerScreenState extends State<BarometerScreen> {
                         child: TextFormField(
                           controller: _avg,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Moyen'),
+                          decoration: InputDecoration(labelText: tr('Moyen')),
                           validator: _requiredNumber,
                         ),
                       ),
@@ -132,7 +132,7 @@ class _BarometerScreenState extends State<BarometerScreen> {
                         child: TextFormField(
                           controller: _max,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Maximum'),
+                          decoration: InputDecoration(labelText: tr('Maximum')),
                           validator: _requiredNumber,
                         ),
                       ),
@@ -141,7 +141,7 @@ class _BarometerScreenState extends State<BarometerScreen> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _trend,
-                    decoration: const InputDecoration(labelText: 'Tendance'),
+                    decoration: InputDecoration(labelText: tr('Tendance')),
                     items: [for (final entry in _trends.entries) DropdownMenuItem(value: entry.key, child: Text(entry.value))],
                     onChanged: (value) => setState(() => _trend = value ?? _trend),
                   ),
@@ -152,8 +152,8 @@ class _BarometerScreenState extends State<BarometerScreen> {
                         child: TextFormField(
                           controller: _week,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Semaine ISO'),
-                          validator: (v) => (int.tryParse(v ?? '') == null) ? 'Invalide' : null,
+                          decoration: InputDecoration(labelText: tr('Semaine ISO')),
+                          validator: (v) => (int.tryParse(v ?? '') == null) ? tr('Invalide') : null,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -161,14 +161,14 @@ class _BarometerScreenState extends State<BarometerScreen> {
                         child: TextFormField(
                           controller: _year,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Année'),
-                          validator: (v) => (int.tryParse(v ?? '') == null) ? 'Invalide' : null,
+                          decoration: InputDecoration(labelText: tr('Année')),
+                          validator: (v) => (int.tryParse(v ?? '') == null) ? tr('Invalide') : null,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  BnPrimaryButton(label: "Publier l'indice", icon: Icons.publish, busy: _busy, onPressed: _publish),
+                  BnPrimaryButton(label: tr("Publier l'indice"), icon: Icons.publish, busy: _busy, onPressed: _publish),
                 ],
               ),
             ),
@@ -180,7 +180,7 @@ class _BarometerScreenState extends State<BarometerScreen> {
             future: _current,
             builder: (context, snapshot) {
               final items = snapshot.data ?? const <Map<String, dynamic>>[];
-              if (items.isEmpty) return const BnCard(child: BnEmpty(message: 'Aucun indice publié cette semaine.'));
+              if (items.isEmpty) return BnCard(child: BnEmpty(message: tr('Aucun indice publié cette semaine.')));
               return Column(
                 children: [
                   for (final item in items)

@@ -1,5 +1,6 @@
 import 'format.dart';
 import 'package:intl/intl.dart';
+import '../i18n/lang.dart';
 
 /// Une ligne du détail du devis : libellé, précision facultative et montant.
 class QuoteLine {
@@ -22,7 +23,7 @@ const _truckHints = {
 final NumberFormat _kmFormat = NumberFormat('#,##0.#', 'fr_FR');
 
 /// Distance au format français : « 25,9 km ».
-String formatKm(num km) => '${_kmFormat.format(km)} km';
+String formatKm(num km) => tr('${_kmFormat.format(km)} km');
 
 /// Détail du prix renvoyé par le serveur, ligne par ligne, pour que la somme donne le total affiché.
 List<QuoteLine> quoteLines(Map<String, dynamic> breakdown, {double? distanceKm, double? pricePerKm}) {
@@ -44,7 +45,7 @@ List<QuoteLine> quoteLines(Map<String, dynamic> breakdown, {double? distanceKm, 
       final rotations = parseNum(breakdown['rotations']).round();
       // Le forfait est compté à chaque rotation ; le transport l'est déjà dans distance_cost
       final pickupFee = parseNum(breakdown['base_pickup_fee']);
-      add(rotations > 1 ? 'Forfait prise en charge : $rotations × ${formatFcfa(pickupFee)}' : 'Forfait prise en charge',
+      add(rotations > 1 ? tr('Forfait prise en charge : $rotations × ${formatFcfa(pickupFee)}') : tr('Forfait prise en charge'),
           pickupFee * (rotations < 1 ? 1 : rotations));
       add(
         'Transport vers la décharge : ${formatKm(km)} × ${formatFcfa(parseNum(breakdown['price_per_km']))}/km',

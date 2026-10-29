@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -101,9 +101,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Future<void> _confirmReception(Order order) async {
     final question = switch (order.orderType) {
-      'RENTAL' => "Valider que l'engin a bien travaillé pour la durée convenue ? Le paiement sera libéré au chauffeur.",
-      'EVACUATION' => 'Valider que votre chantier est propre et les gravats évacués ? Le paiement sera libéré au chauffeur.',
-      _ => 'Confirmer la réception des matériaux ? Le paiement sera libéré au chauffeur.',
+      'RENTAL' => tr("Valider que l'engin a bien travaillé pour la durée convenue ? Le paiement sera libéré au chauffeur."),
+      'EVACUATION' => tr('Valider que votre chantier est propre et les gravats évacués ? Le paiement sera libéré au chauffeur.'),
+      _ => tr('Confirmer la réception des matériaux ? Le paiement sera libéré au chauffeur.'),
     };
     if (!await _confirm(question)) return;
     await _act(() => _repo.confirmReception(order), success: 'Réception confirmée');
@@ -142,12 +142,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final unread = order == null ? 0 : context.watch<ChatCenter>().unreadFor(order.id);
     return Scaffold(
       appBar: AppBar(
-        title: Text(order?.orderNumber ?? 'Commande'),
+        title: Text(order?.orderNumber ?? tr('Commande')),
         actions: [
           // Discussion avec le chauffeur, tant que la commande est en cours
           if (order != null && order.hasChat)
             IconButton(
-              tooltip: 'Écrire au chauffeur',
+              tooltip: tr('Écrire au chauffeur'),
               onPressed: () => openChat(context, order),
               icon: Badge(
                 isLabelVisible: unread > 0,
@@ -193,9 +193,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            _Address(label: 'Chargement', address: order.pickupAddress, icon: Icons.trip_origin),
+            _Address(label: tr('Chargement'), address: order.pickupAddress, icon: Icons.trip_origin),
             const SizedBox(height: 10),
-            _Address(label: 'Livraison', address: order.deliveryAddress, icon: Icons.place_outlined),
+            _Address(label: tr('Livraison'), address: order.deliveryAddress, icon: Icons.place_outlined),
             const Divider(height: 28, color: BnColors.border),
             Text(formatFcfa(order.amountDue), style: const TextStyle(color: BnColors.brand, fontSize: 24, fontWeight: FontWeight.w800)),
             if (order.discountAmount > 0)
@@ -214,7 +214,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (order.isDisputeOpen) {
       widgets
         ..add(const SizedBox(height: 12))
-        ..add(const BnBanner(message: 'Litige ouvert : BenneGo examine la commande.', tone: BnTone.danger, icon: Icons.gavel_outlined));
+        ..add(BnBanner(message: tr('Litige ouvert : BenneGo examine la commande.'), tone: BnTone.danger, icon: Icons.gavel_outlined));
     }
 
     if (actions.showTracking) {
@@ -244,11 +244,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const BnSectionHead(title: 'Actions'),
                 const SizedBox(height: 12),
                 if (actions.canPay)
-                  BnPrimaryButton(label: 'Payer en séquestre', icon: Icons.lock_outline, busy: _busy, onPressed: _pay),
+                  BnPrimaryButton(label: tr('Payer en séquestre'), icon: Icons.lock_outline, busy: _busy, onPressed: _pay),
                 if (actions.canConfirmReception) ...[
                   const SizedBox(height: 10),
                   BnPrimaryButton(
-                    label: 'Confirmer la réception',
+                    label: tr('Confirmer la réception'),
                     icon: Icons.check_circle_outline,
                     busy: _busy,
                     onPressed: () => _confirmReception(order),
@@ -292,9 +292,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   String _typeLabel(String type) => switch (type) {
-        'RENTAL' => "Location d'engin",
-        'EVACUATION' => 'Évacuation',
-        _ => 'Matériaux',
+        'RENTAL' => tr("Location d'engin"),
+        'EVACUATION' => tr('Évacuation'),
+        _ => tr('Matériaux'),
       };
 }
 
@@ -314,7 +314,7 @@ class _TimelineCard extends StatelessWidget {
           const BnSectionHead(title: 'Suivi'),
           const SizedBox(height: 12),
           if (cancelled)
-            const BnPill(label: 'Commande annulée', tone: BnTone.danger)
+            BnPill(label: tr('Commande annulée'), tone: BnTone.danger)
           else
             for (var i = 0; i < _stageLabels.length; i++)
               _StageRow(label: _stageLabels[i], done: i < current, current: i == current),
@@ -482,12 +482,12 @@ class _DisputeSheetState extends State<_DisputeSheet> {
             controller: _reason,
             maxLines: 4,
             maxLength: 1000,
-            decoration: const InputDecoration(labelText: 'Motif', alignLabelWithHint: true),
+            decoration: InputDecoration(labelText: tr('Motif'), alignLabelWithHint: true),
           ),
           OutlinedButton.icon(
             onPressed: _pick,
             icon: const Icon(Icons.photo_camera_outlined),
-            label: Text(_photos.isEmpty ? 'Ajouter des photos' : '${_photos.length} photo(s)'),
+            label: Text(_photos.isEmpty ? tr('Ajouter des photos') : tr('${_photos.length} photo(s)')),
           ),
           if (_error != null)
             Padding(
@@ -495,7 +495,7 @@ class _DisputeSheetState extends State<_DisputeSheet> {
               child: Text(_error!, style: const TextStyle(color: BnColors.danger, fontSize: 12)),
             ),
           const SizedBox(height: 16),
-          BnPrimaryButton(label: 'Envoyer le litige', icon: Icons.send_outlined, onPressed: _submit),
+          BnPrimaryButton(label: tr('Envoyer le litige'), icon: Icons.send_outlined, onPressed: _submit),
         ],
       ),
     );
@@ -555,11 +555,11 @@ class _ReviewSheetState extends State<_ReviewSheet> {
             controller: _comment,
             maxLines: 3,
             maxLength: 1000,
-            decoration: const InputDecoration(labelText: 'Commentaire (facultatif)', alignLabelWithHint: true),
+            decoration: InputDecoration(labelText: tr('Commentaire (facultatif)'), alignLabelWithHint: true),
           ),
           const SizedBox(height: 12),
           BnPrimaryButton(
-            label: 'Envoyer ma note',
+            label: tr('Envoyer ma note'),
             onPressed: _rating == 0 ? null : () => Navigator.of(context).pop(_ReviewInput(_rating, _comment.text.trim())),
           ),
         ],

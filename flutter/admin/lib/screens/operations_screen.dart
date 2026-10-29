@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -17,11 +17,11 @@ class OperationsScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Opérations'),
-          bottom: const TabBar(
+          bottom: TabBar(
             indicatorColor: BnColors.brand,
             labelColor: BnColors.textStrong,
             unselectedLabelColor: BnColors.text3,
-            tabs: [Tab(text: 'Litiges'), Tab(text: 'Reversements'), Tab(text: 'Commandes')],
+            tabs: [Tab(text: tr('Litiges')), Tab(text: tr('Reversements')), Tab(text: tr('Commandes'))],
           ),
         ),
         body: const TabBarView(children: [_DisputesTab(), _PayoutsTab(), _OrdersTab()]),
@@ -77,7 +77,7 @@ class _AsyncList<T> extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             children: [
               if (snapshot.hasError)
-                const BnBanner(message: 'Impossible de charger cette liste.', tone: BnTone.danger)
+                BnBanner(message: tr('Impossible de charger cette liste.'), tone: BnTone.danger)
               else if (items.isEmpty)
                 BnCard(child: BnEmpty(message: empty))
               else
@@ -115,12 +115,12 @@ class _DisputesTabState extends State<_DisputesTab> {
     final repo = context.read<AdminRepository>();
     final refund = decision == 'refund';
     final question = refund
-        ? 'Rembourser le client pour la commande ${dispute.orderNumber} ?'
-        : 'Libérer le paiement au chauffeur pour la commande ${dispute.orderNumber} ?';
+        ? tr('Rembourser le client pour la commande ${dispute.orderNumber} ?')
+        : tr('Libérer le paiement au chauffeur pour la commande ${dispute.orderNumber} ?');
     if (!await _confirm(context, question)) return;
     try {
       await repo.resolveDispute(dispute.orderId, decision: decision);
-      if (mounted) _toast(context, refund ? 'Client remboursé' : 'Paiement libéré au chauffeur');
+      if (mounted) _toast(context, refund ? tr('Client remboursé') : tr('Paiement libéré au chauffeur'));
       await _reload();
     } on ApiException catch (error) {
       if (mounted) _toast(context, error.message);
@@ -211,7 +211,7 @@ class _PayoutsTabState extends State<_PayoutsTab> {
         title: const Text('Référence du virement'),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(labelText: 'Référence Mobile Money'),
+          decoration: InputDecoration(labelText: tr('Référence Mobile Money')),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Annuler')),
@@ -336,7 +336,7 @@ class _OrdersTabState extends State<_OrdersTab> {
               style: const TextStyle(color: BnColors.text2, fontSize: 12),
             ),
             Text(
-              '${order['client_name'] ?? '—'} → ${order['driver_name'] ?? 'chauffeur non assigné'}',
+              '${order['client_name'] ?? '—'} → ${order['driver_name'] ?? tr('chauffeur non assigné')}',
               style: const TextStyle(color: BnColors.text3, fontSize: 12),
             ),
           ],

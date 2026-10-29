@@ -1,6 +1,6 @@
 import 'package:bennego_core/bennego_core.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -43,7 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (stats == null) {
               return ListView(
                 padding: const EdgeInsets.all(16),
-                children: const [BnBanner(message: 'Impossible de charger le tableau de bord.', tone: BnTone.danger)],
+                children: [BnBanner(message: tr('Impossible de charger le tableau de bord.'), tone: BnTone.danger)],
               );
             }
             return ListView(
@@ -60,12 +60,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisSpacing: 12,
                   childAspectRatio: 1.35,
                   children: [
-                    BnKpi(label: 'Commandes', value: '${stats.orders}', sub: '${stats.completed} terminées · ${stats.pending} en attente'),
-                    BnKpi(label: 'Volume (GMV)', value: formatFcfa(stats.gmv), sub: 'Total des transactions', icon: Icons.inventory_2_outlined, color: BnColors.info),
-                    BnKpi(label: 'Revenus plateforme', value: formatFcfa(stats.revenue), sub: 'Commission 10 %', icon: Icons.account_balance_wallet_outlined),
-                    BnKpi(label: 'Chauffeurs disponibles', value: '${stats.driversAvailable} / ${stats.driversTotal}', icon: Icons.local_shipping_outlined, color: BnColors.success),
-                    BnKpi(label: 'Clients inscrits', value: '${stats.clientsTotal}', icon: Icons.people_outline, color: BnColors.violet),
-                    BnKpi(label: 'Annulées', value: '${stats.cancelled}', icon: Icons.cancel_outlined, color: BnColors.danger),
+                    BnKpi(label: tr('Commandes'), value: '${stats.orders}', sub: '${stats.completed} terminées · ${stats.pending} en attente'),
+                    BnKpi(label: tr('Volume (GMV)'), value: formatFcfa(stats.gmv), sub: 'Total des transactions', icon: Icons.inventory_2_outlined, color: BnColors.info),
+                    BnKpi(label: tr('Revenus plateforme'), value: formatFcfa(stats.revenue), sub: 'Commission 10 %', icon: Icons.account_balance_wallet_outlined),
+                    BnKpi(label: tr('Chauffeurs disponibles'), value: '${stats.driversAvailable} / ${stats.driversTotal}', icon: Icons.local_shipping_outlined, color: BnColors.success),
+                    BnKpi(label: tr('Clients inscrits'), value: '${stats.clientsTotal}', icon: Icons.people_outline, color: BnColors.violet),
+                    BnKpi(label: tr('Annulées'), value: '${stats.cancelled}', icon: Icons.cancel_outlined, color: BnColors.danger),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -95,7 +95,7 @@ class _WeekChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (days.isEmpty) return const BnEmpty(message: 'Pas encore de données cette semaine.');
+    if (days.isEmpty) return BnEmpty(message: tr('Pas encore de données cette semaine.'));
     return BarChart(
       BarChartData(
         borderData: FlBorderData(show: false),

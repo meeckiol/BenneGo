@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -86,7 +86,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
             const SizedBox(height: 12),
             TextField(
-              decoration: const InputDecoration(hintText: 'N° de commande, client, chauffeur', prefixIcon: Icon(Icons.search)),
+              decoration: InputDecoration(hintText: tr('N° de commande, client, chauffeur'), prefixIcon: Icon(Icons.search)),
               onChanged: (value) {
                 _query = value;
                 _debounce?.cancel();
@@ -118,7 +118,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             if (list == null)
               const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator(color: BnColors.brand)))
             else if (list.isEmpty)
-              const BnCard(child: BnEmpty(message: 'Aucune discussion.'))
+              BnCard(child: BnEmpty(message: tr('Aucune discussion.')))
             else
               for (final c in list) ...[
                 BnCard(
@@ -139,7 +139,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           style: const TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 2),
                       Text(
-                        c.lastMessage == null ? 'Aucun message' : '${_who[c.lastSenderRole] ?? ''} : ${c.lastMessage}',
+                        c.lastMessage == null ? tr('Aucun message') : '${_who[c.lastSenderRole] ?? ''} : ${c.lastMessage}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(color: BnColors.text2, fontSize: 13),
@@ -150,8 +150,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         runSpacing: 6,
                         children: [
                           StatusPill(status: c.status),
-                          if (c.disputeOpen) const BnPill(label: 'Litige', tone: BnTone.danger),
-                          BnPill(label: '${c.messageCount} message(s)'),
+                          if (c.disputeOpen) BnPill(label: tr('Litige'), tone: BnTone.danger),
+                          BnPill(label: tr('${c.messageCount} message(s)')),
                         ],
                       ),
                     ],
@@ -281,12 +281,12 @@ class _ConversationScreenState extends State<_ConversationScreen> {
                       minLines: 1,
                       maxLines: 4,
                       maxLength: 1000,
-                      decoration: const InputDecoration(hintText: "Écrire en tant qu'Assistance BenneGo…", counterText: ''),
+                      decoration: InputDecoration(hintText: tr("Écrire en tant qu'Assistance BenneGo…"), counterText: ''),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    tooltip: 'Envoyer',
+                    tooltip: tr('Envoyer'),
                     onPressed: _sending ? null : _send,
                     style: IconButton.styleFrom(backgroundColor: BnColors.brand, foregroundColor: const Color(0xFF0B0B10)),
                     icon: const Icon(Icons.send_rounded),

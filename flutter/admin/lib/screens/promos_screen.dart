@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -96,7 +96,7 @@ class _PromosScreenState extends State<PromosScreen> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
-                if (promos.isEmpty) const BnCard(child: BnEmpty(message: 'Aucun code promo pour le moment.')),
+                if (promos.isEmpty) BnCard(child: BnEmpty(message: tr('Aucun code promo pour le moment.'))),
                 for (final promo in promos) ...[
                   BnCard(
                     child: Row(
@@ -114,9 +114,9 @@ class _PromosScreenState extends State<PromosScreen> {
                             ],
                           ),
                         ),
-                        BnPill(label: promo.isActive ? 'Actif' : 'Inactif', tone: promo.isActive ? BnTone.success : BnTone.neutral),
+                        BnPill(label: promo.isActive ? tr('Actif') : tr('Inactif'), tone: promo.isActive ? BnTone.success : BnTone.neutral),
                         IconButton(
-                          tooltip: 'Supprimer',
+                          tooltip: tr('Supprimer'),
                           onPressed: () => _delete(promo),
                           icon: const Icon(Icons.delete_outline, color: BnColors.danger),
                         ),
@@ -186,8 +186,8 @@ class _PromoSheetState extends State<_PromoSheet> {
             TextFormField(
               controller: _code,
               textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(labelText: 'Code', hintText: 'ex. BTP2026'),
-              validator: (v) => (v == null || v.trim().length < 3) ? '3 caractères minimum' : null,
+              decoration: InputDecoration(labelText: tr('Code'), hintText: tr('ex. BTP2026')),
+              validator: (v) => (v == null || v.trim().length < 3) ? tr('3 caractères minimum') : null,
             ),
             const SizedBox(height: 12),
             SegmentedButton<String>(
@@ -202,11 +202,11 @@ class _PromoSheetState extends State<_PromoSheet> {
             TextFormField(
               controller: _value,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: _type == 'percentage' ? 'Remise (%)' : 'Remise (FCFA)'),
+              decoration: InputDecoration(labelText: _type == 'percentage' ? tr('Remise (%)') : tr('Remise (FCFA)')),
               validator: (v) {
                 final value = double.tryParse((v ?? '').trim().replaceAll(',', '.'));
-                if (value == null || value <= 0) return 'Valeur invalide';
-                if (_type == 'percentage' && value > 100) return 'Au maximum 100 %';
+                if (value == null || value <= 0) return tr('Valeur invalide');
+                if (_type == 'percentage' && value > 100) return tr('Au maximum 100 %');
                 return null;
               },
             ),
@@ -214,11 +214,11 @@ class _PromoSheetState extends State<_PromoSheet> {
             TextFormField(
               controller: _usage,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Nombre d'utilisations"),
-              validator: (v) => ((int.tryParse(v ?? '') ?? 0) < 1) ? 'Au moins 1' : null,
+              decoration: InputDecoration(labelText: tr("Nombre d'utilisations")),
+              validator: (v) => ((int.tryParse(v ?? '') ?? 0) < 1) ? tr('Au moins 1') : null,
             ),
             const SizedBox(height: 20),
-            BnPrimaryButton(label: 'Créer le code', icon: Icons.check, onPressed: _submit),
+            BnPrimaryButton(label: tr('Créer le code'), icon: Icons.check, onPressed: _submit),
           ],
         ),
       ),

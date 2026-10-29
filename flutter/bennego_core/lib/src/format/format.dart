@@ -1,5 +1,6 @@
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import '../i18n/lang.dart';
 
 /// Charge les formats français (dates). À appeler une fois au démarrage de chaque application.
 Future<void> initFrenchFormats() => initializeDateFormatting('fr_FR');
@@ -8,7 +9,7 @@ final NumberFormat _amountFormat = NumberFormat('#,##0', 'fr_FR');
 final DateFormat _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm', 'fr_FR');
 
 /// Montant en FCFA, par exemple `45 000 FCFA`.
-String formatFcfa(num amount) => '${_amountFormat.format(amount)} FCFA';
+String formatFcfa(num amount) => tr('${_amountFormat.format(amount)} FCFA');
 
 /// Date et heure locales, par exemple `24/10/2026 14:30`.
 String formatDateTime(DateTime? value) => value == null ? '—' : _dateTimeFormat.format(value.toLocal());

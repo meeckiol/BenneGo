@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import 'emblem_paths.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Splash animé par tracé (même chronologie que le splash web du camionneur) : sur fond sombre quadrillé,
 /// le contour de l'emblème se dessine en traits fins avec ses points d'ancrage, se remplit de sable doré,
@@ -50,7 +52,7 @@ class _TraceSplashState extends State<TraceSplash> with SingleTickerProviderStat
     return Material(
       type: MaterialType.transparency,
       child: Semantics(
-        label: 'BenneGo ${widget.tag}, chargement',
+        label: tr('BenneGo ${widget.tag}, chargement'),
         button: true,
         child: GestureDetector(
           onTap: widget.onDone,
@@ -151,7 +153,7 @@ class _Word extends StatelessWidget {
             gradient: const LinearGradient(colors: [Color(0xFFE8C38A), Color(0xFFD9A55B)]),
           ),
           child: Text(
-            tag.toUpperCase(),
+            tr(tag).toUpperCase(),
             style: const TextStyle(
               color: Color(0xFF0B0B10),
               fontSize: 12,

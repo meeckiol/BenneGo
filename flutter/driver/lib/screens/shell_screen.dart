@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../controllers/driver_controller.dart';
@@ -75,11 +75,11 @@ class _ShellScreenState extends State<ShellScreen> {
           selectedIndex: _index,
           onDestinationSelected: (index) => setState(() => _index = index),
           destinations: [
-            const NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Accueil'),
-            const NavigationDestination(
+            NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: tr('Accueil')),
+            NavigationDestination(
               icon: Icon(Icons.receipt_long_outlined),
               selectedIcon: Icon(Icons.receipt_long),
-              label: 'Courses',
+              label: tr('Courses'),
             ),
             NavigationDestination(
               icon: Badge(
@@ -92,9 +92,9 @@ class _ShellScreenState extends State<ShellScreen> {
                 label: Text(unread > 9 ? '9+' : '$unread'),
                 child: const Icon(Icons.chat_bubble),
               ),
-              label: 'Messages',
+              label: tr('Messages'),
             ),
-            const NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
+            NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: tr('Profil')),
           ],
         ),
       ),

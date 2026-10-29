@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   BnPrimaryButton(
-                    label: 'Nouvelle commande',
+                    label: tr('Nouvelle commande'),
                     icon: Icons.add_circle_outline,
                     onPressed: () => _newOrder('MATERIAL'),
                   ),

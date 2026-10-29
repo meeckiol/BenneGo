@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -8,6 +8,8 @@ import '../api/api_client.dart';
 import '../api/api_exception.dart';
 import '../format/format.dart';
 import '../theme/bn_theme.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Primes du parrain lues dans `GET /referrals/me` (`rewards`), avec les valeurs par défaut des règles.
 ({double same, double cross, double welcome}) referralRewards(Map<String, dynamic>? data) {
@@ -25,16 +27,16 @@ import '../theme/bn_theme.dart';
 String referralRewardLine(String role, Map<String, dynamic>? data) {
   final r = referralRewards(data);
   return role == 'driver'
-      ? 'Chaque camionneur qui livre sa 1re course vous rapporte ${formatFcfa(r.same)} (${formatFcfa(r.cross)} pour un client qui fait sa 1re commande). Votre filleul camionneur reçoit ${formatFcfa(r.welcome)} de bonus.'
-      : 'Chaque ami qui fait sa 1re commande vous rapporte ${formatFcfa(r.same)} (${formatFcfa(r.cross)} pour un camionneur qui livre sa 1re course). Votre ami client reçoit ${formatFcfa(r.welcome)} de réduction.';
+      ? tr('Chaque camionneur qui livre sa 1re course vous rapporte ${formatFcfa(r.same)} (${formatFcfa(r.cross)} pour un client qui fait sa 1re commande). Votre filleul camionneur reçoit ${formatFcfa(r.welcome)} de bonus.')
+      : tr('Chaque ami qui fait sa 1re commande vous rapporte ${formatFcfa(r.same)} (${formatFcfa(r.cross)} pour un camionneur qui livre sa 1re course). Votre ami client reçoit ${formatFcfa(r.welcome)} de réduction.');
 }
 
 /// Texte de partage du code : le filleul du même type reçoit sa prime de bienvenue.
 String referralShareText(String role, String code, Map<String, dynamic>? data) {
   final welcome = formatFcfa(referralRewards(data).welcome);
   return role == 'driver'
-      ? 'Rejoins BenneGo comme camionneur avec mon code $code : des courses de sable et de gravier près de chez toi, payées sur Mobile Money, et $welcome de bonus à ta première course livrée.'
-      : 'Rejoins BenneGo pour tes livraisons de matériaux avec mon code $code et reçois $welcome de réduction sur ta première commande !';
+      ? tr('Rejoins BenneGo comme camionneur avec mon code $code : des courses de sable et de gravier près de chez toi, payées sur Mobile Money, et $welcome de bonus à ta première course livrée.')
+      : tr('Rejoins BenneGo pour tes livraisons de matériaux avec mon code $code et reçois $welcome de réduction sur ta première commande !');
 }
 
 const _roleLabels = {'client': 'Client', 'driver': 'Camionneur'};
@@ -45,7 +47,7 @@ String _day(Object? value) {
   return date == null ? '' : DateFormat('d MMM', 'fr_FR').format(date.toLocal());
 }
 
-String _firstStep(String? role) => role == 'driver' ? 'sa 1re course livrée' : 'sa 1re commande livrée';
+String _firstStep(String? role) => role == 'driver' ? tr('sa 1re course livrée') : tr('sa 1re commande livrée');
 
 /// « Mes filleuls » (client et chauffeur) : crédit BenneGo (versement Mobile Money pour le chauffeur),
 /// règles des primes, code à partager, avantage reçu, saisie d'un code et état de chaque filleul.
@@ -128,7 +130,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
     if (ok != true) return;
     await _run(() async {
       final res = await widget.api.post('/referrals/credit/payout') as Map<String, dynamic>;
-      _snack(res['message'] as String? ?? 'Demande envoyée');
+      _snack(res['message'] as String? ?? tr('Demande envoyée'));
     });
   }
 
@@ -190,8 +192,8 @@ class _ReferralScreenState extends State<ReferralScreen> {
                   Text(formatFcfa(credit), style: const TextStyle(color: BnColors.textStrong, fontSize: 26, fontWeight: FontWeight.w800)),
                   Text(
                     _driver
-                        ? 'Versé sur votre Mobile Money à la demande (dès ${formatFcfa(minPayout)}).'
-                        : 'À utiliser quand vous voulez : activez « Utiliser mon crédit » au moment du prix.',
+                        ? tr('Versé sur votre Mobile Money à la demande (dès ${formatFcfa(minPayout)}).')
+                        : tr('À utiliser quand vous voulez : activez « Utiliser mon crédit » au moment du prix.'),
                     style: const TextStyle(color: BnColors.text2, fontSize: 13),
                   ),
                 ],
@@ -299,10 +301,10 @@ class _ReferralScreenState extends State<ReferralScreen> {
             const Text('Comment ça marche', style: TextStyle(color: BnColors.textStrong, fontSize: 16, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
             _Rule(
-              '${_driver ? 'Un camionneur' : 'Un client'} : ${formatFcfa(r.same)} pour vous quand il fait ${_firstStep(widget.role)}. '
-              'Il reçoit aussi ${formatFcfa(r.welcome)} ${_driver ? 'de bonus' : 'de réduction sur sa 1re commande'}.',
+              '${_driver ? 'Un camionneur' : tr('Un client')} : ${formatFcfa(r.same)} pour vous quand il fait ${_firstStep(widget.role)}. '
+              'Il reçoit aussi ${formatFcfa(r.welcome)} ${_driver ? 'de bonus' : tr('de réduction sur sa 1re commande')}.',
             ),
-            _Rule('${_driver ? 'Un client' : 'Un camionneur'} : ${formatFcfa(r.cross)} pour vous quand il fait ${_firstStep(other)}.'),
+            _Rule('${_driver ? 'Un client' : tr('Un camionneur')} : ${formatFcfa(r.cross)} pour vous quand il fait ${_firstStep(other)}.'),
             const _Rule('Votre filleul saisit votre code à son inscription, avant sa 1re commande ou course.'),
           ],
         ),
@@ -325,7 +327,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
           controller: _code,
           textCapitalization: TextCapitalization.characters,
           maxLength: 30,
-          decoration: const InputDecoration(labelText: 'Vous avez un code parrain ?', counterText: ''),
+          decoration: InputDecoration(labelText: tr('Vous avez un code parrain ?'), counterText: ''),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
@@ -336,7 +338,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                     if (code.isEmpty) return;
                     final res = await widget.api.post('/referrals', body: {'referral_code': code}) as Map<String, dynamic>;
                     _code.clear();
-                    _snack(res['message'] as String? ?? 'Code parrain enregistré');
+                    _snack(res['message'] as String? ?? tr('Code parrain enregistré'));
                   }),
           child: const Text('Valider le code'),
         ),
@@ -399,7 +401,7 @@ class _RefereeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final won = referee['status'] == 'rewarded';
-    final name = referee['name'] as String? ?? 'Filleul';
+    final name = referee['name'] as String? ?? tr('Filleul');
     final role = referee['role'] as String?;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

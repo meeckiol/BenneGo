@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -85,12 +85,12 @@ class _ReliefsScreenState extends State<ReliefsScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 BnBanner(
-                  message: '${candidates.length} chauffeur(s) disponible(s) avec Mobile Money, sans course en cours.',
+                  message: tr('${candidates.length} chauffeur(s) disponible(s) avec Mobile Money, sans course en cours.'),
                   tone: BnTone.info,
                   icon: Icons.groups_outlined,
                 ),
                 const SizedBox(height: 12),
-                if (requests.isEmpty) const BnCard(child: BnEmpty(message: 'Aucune panne à reprendre.')),
+                if (requests.isEmpty) BnCard(child: BnEmpty(message: tr('Aucune panne à reprendre.'))),
                 for (final request in requests) ...[
                   BnCard(
                     child: Column(

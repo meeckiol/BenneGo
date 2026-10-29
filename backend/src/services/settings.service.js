@@ -33,8 +33,9 @@ const defaultsFor = (role) => ({
     quiet_hours: { enabled: false, start: '22:00', end: '06:00' },
   },
   privacy: Object.fromEntries((PRIVACY[role] || []).map((k) => [k, k === 'show_photo'])),
-  // Langue des applications et des notifications push
-  language: 'fr',
+  // Langue des applications et des notifications push ; null tant qu'elle n'a pas été choisie
+  // (chaque appareil garde alors la sienne, et les notifications restent en français)
+  language: null,
 });
 
 const merge = (role, stored = {}) => {

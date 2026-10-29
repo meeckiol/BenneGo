@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,7 +41,7 @@ class MissionScreen extends StatelessWidget {
         actions: [
           // Discussion avec le client, en plein écran, avec ses messages non lus
           IconButton(
-            tooltip: 'Messages',
+            tooltip: tr('Messages'),
             onPressed: () => openChat(context, order),
             icon: Badge(
               isLabelVisible: unread > 0,
@@ -70,16 +70,16 @@ class MissionScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  _Address(label: 'Chargement', address: order.pickupAddress, icon: Icons.trip_origin),
+                  _Address(label: tr('Chargement'), address: order.pickupAddress, icon: Icons.trip_origin),
                   const SizedBox(height: 10),
-                  _Address(label: 'Livraison', address: order.deliveryAddress, icon: Icons.place_outlined),
+                  _Address(label: tr('Livraison'), address: order.deliveryAddress, icon: Icons.place_outlined),
                   const Divider(height: 28, color: BnColors.border),
-                  _Fact(label: 'Gain chauffeur', value: formatFcfa(order.driverAmount)),
-                  _Fact(label: 'Volume commandé', value: '${order.quantityM3} m³'),
-                  if (order.distanceKm != null) _Fact(label: 'Distance', value: '${order.distanceKm!.toStringAsFixed(1)} km'),
+                  _Fact(label: tr('Gain chauffeur'), value: formatFcfa(order.driverAmount)),
+                  _Fact(label: tr('Volume commandé'), value: '${order.quantityM3} m³'),
+                  if (order.distanceKm != null) _Fact(label: tr('Distance'), value: '${order.distanceKm!.toStringAsFixed(1)} km'),
                   if (order.isLoadingRecorded)
                     _Fact(
-                      label: 'Chargement déclaré',
+                      label: tr('Chargement déclaré'),
                       value: '${order.loadingVolumeM3} m³${order.weighbridgeNetKg == null ? '' : ' · ${order.weighbridgeNetKg!.round()} kg'}',
                     ),
                 ],
@@ -227,9 +227,9 @@ class MissionScreen extends StatelessWidget {
   }
 
   String _typeLabel(String type) => switch (type) {
-        'RENTAL' => 'Location d\'engin',
-        'EVACUATION' => 'Évacuation',
-        _ => 'Matériaux',
+        'RENTAL' => tr('Location d\'engin'),
+        'EVACUATION' => tr('Évacuation'),
+        _ => tr('Matériaux'),
       };
 }
 

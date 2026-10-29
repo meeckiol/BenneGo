@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -47,12 +47,12 @@ class _ReviewsScreenState extends State<ReviewsScreen> {
               children: [
                 BnSectionHead(title: 'Avis sur la plateforme (${platform.length})'),
                 const SizedBox(height: 8),
-                if (platform.isEmpty) const BnCard(child: BnEmpty(message: "Aucun avis pour l'instant.")),
+                if (platform.isEmpty) BnCard(child: BnEmpty(message: tr("Aucun avis pour l'instant."))),
                 for (final review in platform) _ReviewCard(review: review, who: '${review['client_name'] ?? ''}'),
                 const SizedBox(height: 16),
                 BnSectionHead(title: 'Avis sur les chauffeurs (${drivers.length})'),
                 const SizedBox(height: 8),
-                if (drivers.isEmpty) const BnCard(child: BnEmpty(message: "Aucun avis pour l'instant.")),
+                if (drivers.isEmpty) BnCard(child: BnEmpty(message: tr("Aucun avis pour l'instant."))),
                 for (final review in drivers)
                   _ReviewCard(
                     review: review,

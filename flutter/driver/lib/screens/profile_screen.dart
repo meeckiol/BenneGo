@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bennego_core/bennego_core.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -91,7 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final user = context.watch<Session>().user;
     final summary = context.watch<DriverController>().summary;
-    final truck = _truckLabels[summary?.truckType] ?? 'Camion';
+    final truck = _truckLabels[summary?.truckType] ?? tr('Camion');
     final photo = _me?['profile_photo_url'] as String?;
     final credit = parseNum(_referral?['credit_balance']);
 
@@ -106,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Center(
               child: Semantics(
                 button: true,
-                label: 'Changer la photo de profil',
+                label: tr('Changer la photo de profil'),
                 child: GestureDetector(
                   onTap: _uploading ? null : _changePhoto,
                   child: Stack(
@@ -153,13 +153,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: const TextStyle(color: BnColors.textStrong, fontSize: 22, fontWeight: FontWeight.w800)),
             Text(user?.phone ?? '', textAlign: TextAlign.center, style: const TextStyle(color: BnColors.text3)),
             const SizedBox(height: 8),
-            Center(child: BnPill(label: _uploading ? 'Envoi de la photo…' : 'Camionneur · $truck', tone: BnTone.brand)),
+            Center(child: BnPill(label: _uploading ? tr('Envoi de la photo…') : tr('Camionneur · $truck'), tone: BnTone.brand)),
             const SizedBox(height: 18),
             ReferralCard(
               title: 'Parrainage',
               text: referralRewardLine('driver', _referral),
               code: _referral?['referral_code'] as String?,
-              rewards: credit > 0 ? 'Crédit : ${formatFcfa(credit)}' : null,
+              rewards: credit > 0 ? tr('Crédit : ${formatFcfa(credit)}') : null,
               onShare: _share,
               secondary: OutlinedButton(
                 onPressed: () async {
@@ -204,11 +204,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: Row(
                 children: [
-                  _Stat(value: '${summary?.totalTrips ?? '…'}', label: 'Courses'),
-                  _Stat(value: summary == null ? '…' : formatFcfa(summary.thisMonth).replaceAll(' FCFA', ''), label: 'FCFA ce mois'),
+                  _Stat(value: '${summary?.totalTrips ?? '…'}', label: tr('Courses')),
+                  _Stat(value: summary == null ? '…' : formatFcfa(summary.thisMonth).replaceAll(' FCFA', ''), label: tr('FCFA ce mois')),
                   _Stat(
                     value: summary?.rating == null ? '—' : summary!.rating!.toStringAsFixed(1),
-                    label: summary?.ratingCount == null || summary!.ratingCount == 0 ? 'Note' : 'Note · ${summary.ratingCount} avis',
+                    label: summary?.ratingCount == null || summary!.ratingCount == 0 ? tr('Note') : tr('Note · ${summary.ratingCount} avis'),
                   ),
                 ],
               ),
@@ -290,7 +290,7 @@ class _VehicleScreen extends StatelessWidget {
       ('Type de camion', _truckLabels[me?['truck_type'] ?? summary?.truckType] ?? '—'),
       ('Capacité', capacity == null ? '—' : '${capacity.toStringAsFixed(capacity % 1 == 0 ? 0 : 1)} m³'),
       ('Immatriculation', (me?['truck_plate'] ?? summary?.truckPlate ?? '—').toString()),
-      ('Paiement des courses', provider == null ? '—' : '${provider == 'mtn' ? 'MTN MoMo' : provider == 'moov' ? 'Moov Money' : provider} · $masked'),
+      ('Paiement des courses', provider == null ? '—' : '${provider == 'mtn' ? tr('MTN MoMo') : provider == 'moov' ? tr('Moov Money') : provider} · $masked'),
     ];
     return Scaffold(
       appBar: AppBar(title: const Text('Véhicule')),
@@ -320,7 +320,7 @@ class _VehicleScreen extends StatelessWidget {
           if (onSupport != null) ...[
             const SizedBox(height: 16),
             BnPrimaryButton(
-              label: 'Demander une modification',
+              label: tr('Demander une modification'),
               icon: Icons.chat_outlined,
               onPressed: () => onSupport!('Bonjour BenneGo, je souhaite modifier les informations de mon véhicule.'),
             ),

@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../controllers/driver_controller.dart';
@@ -84,8 +84,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 const SizedBox(height: 14),
                 TextField(
                   onChanged: (value) => setState(() => _query = value),
-                  decoration: const InputDecoration(
-                    hintText: 'Rechercher une course',
+                  decoration: InputDecoration(
+                    hintText: tr('Rechercher une course'),
                     prefixIcon: Icon(Icons.search),
                   ),
                 ),
@@ -116,8 +116,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   BnCard(
                     child: BnEmpty(
                       message: orders.isEmpty
-                          ? "Aucune course pour le moment. Passez en ligne depuis l'accueil pour recevoir vos premières courses."
-                          : 'Aucune course dans ce filtre.',
+                          ? tr("Aucune course pour le moment. Passez en ligne depuis l'accueil pour recevoir vos premières courses.")
+                          : tr('Aucune course dans ce filtre.'),
                     ),
                   )
                 else
@@ -140,11 +140,11 @@ class _CourseCard extends StatelessWidget {
   final Order order;
 
   String get _payLabel {
-    if (order.status == 'cancelled') return 'Annulée';
-    if (order.paymentStatus == 'released') return 'Versé';
-    if (order.status == 'validated' || order.status == 'completed') return 'Versement en cours';
-    if (order.status == 'delivered') return 'Attente confirmation client';
-    return 'Votre part';
+    if (order.status == 'cancelled') return tr('Annulée');
+    if (order.paymentStatus == 'released') return tr('Versé');
+    if (order.status == 'validated' || order.status == 'completed') return tr('Versement en cours');
+    if (order.status == 'delivered') return tr('Attente confirmation client');
+    return tr('Votre part');
   }
 
   @override

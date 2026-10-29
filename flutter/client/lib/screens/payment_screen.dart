@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -93,7 +93,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               padding: const EdgeInsets.all(24),
               child: Center(
                 child: BnBanner(
-                  message: error is ApiException ? error.message : 'Paiement indisponible pour le moment.',
+                  message: error is ApiException ? error.message : tr('Paiement indisponible pour le moment.'),
                   tone: BnTone.danger,
                 ),
               ),

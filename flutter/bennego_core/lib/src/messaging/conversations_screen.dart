@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:intl/intl.dart';
 
 import '../api/api_client.dart';
@@ -10,6 +10,8 @@ import '../models/order.dart';
 import '../theme/bn_theme.dart';
 import 'chat_center.dart';
 import 'chat_message.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Onglet « Messages » : une conversation par commande en cours avec chauffeur (design A du web).
 /// Les discussions disparaissent une fois la commande terminée.
@@ -160,8 +162,8 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                   const SizedBox(height: 6),
                   Text(
                     _iAmClient
-                        ? "Une discussion s'ouvre avec le chauffeur dès qu'il accepte une commande."
-                        : "Une discussion s'ouvre avec le client dès que vous acceptez une course.",
+                        ? tr("Une discussion s'ouvre avec le chauffeur dès qu'il accepte une commande.")
+                        : tr("Une discussion s'ouvre avec le client dès que vous acceptez une course."),
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: BnColors.text2),
                   ),
@@ -205,16 +207,16 @@ class _ThreadRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final order = thread.order;
     final last = thread.last;
-    final name = (iAmClient ? order.driverName : order.clientName) ?? (iAmClient ? 'Chauffeur' : 'Client');
+    final name = (iAmClient ? order.driverName : order.clientName) ?? (iAmClient ? tr('Chauffeur') : tr('Client'));
     final prefix = last == null
         ? ''
         : last.isFromTeam
-        ? 'BenneGo : '
+        ? tr('BenneGo : ')
         : last.senderId == myId
-        ? 'Vous : '
+        ? tr('Vous : ')
         : '';
     final preview = last == null
-        ? (iAmClient ? 'Écrivez au chauffeur' : 'Écrivez au client')
+        ? (iAmClient ? tr('Écrivez au chauffeur') : tr('Écrivez au client'))
         : '$prefix${last.message}';
     return InkWell(
       onTap: onTap,
@@ -307,7 +309,7 @@ class UnreadBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '$count message(s) non lu(s)',
+      label: tr('$count message(s) non lu(s)'),
       child: Container(
         constraints: const BoxConstraints(minWidth: 20),
         height: 20,

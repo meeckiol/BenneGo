@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 
 import '../models/order_status.dart';
 import '../theme/bn_theme.dart';
+import '../i18n/text.dart';
 
 /// Carte sombre à bords arrondis, cliquable quand [onTap] est fourni.
 class BnCard extends StatelessWidget {

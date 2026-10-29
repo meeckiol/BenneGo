@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../controllers/driver_controller.dart';
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
                         style: const TextStyle(color: BnColors.textStrong, fontSize: 20, fontWeight: FontWeight.w800),
                       ),
                       Text(
-                        summary?.truckPlate == null ? 'Espace chauffeur' : 'Camion ${summary!.truckPlate}',
+                        summary?.truckPlate == null ? tr('Espace chauffeur') : tr('Camion ${summary!.truckPlate}'),
                         style: const TextStyle(color: BnColors.text2),
                       ),
                     ],
@@ -51,20 +51,20 @@ class HomeScreen extends StatelessWidget {
             ),
             if (!driver.isConnected) ...[
               const SizedBox(height: 12),
-              const BnBanner(message: 'Connexion temps réel interrompue : reconnexion en cours.'),
+              BnBanner(message: tr('Connexion temps réel interrompue : reconnexion en cours.')),
             ],
             if (driver.locationDenied) ...[
               const SizedBox(height: 12),
-              const BnBanner(
-                message: "Localisation refusée : BenneGo ne peut pas suivre votre position. Autorisez-la dans les réglages du téléphone.",
+              BnBanner(
+                message: tr("Localisation refusée : BenneGo ne peut pas suivre votre position. Autorisez-la dans les réglages du téléphone."),
                 tone: BnTone.danger,
                 icon: Icons.location_off_outlined,
               ),
             ],
             if (driver.backgroundLimited) ...[
               const SizedBox(height: 12),
-              const BnBanner(
-                message: "Localisation limitée à l'utilisation de l'application : votre position n'est plus suivie écran verrouillé. Choisissez « Toujours » dans les réglages du téléphone.",
+              BnBanner(
+                message: tr("Localisation limitée à l'utilisation de l'application : votre position n'est plus suivie écran verrouillé. Choisissez « Toujours » dans les réglages du téléphone."),
                 tone: BnTone.warning,
                 icon: Icons.location_on_outlined,
               ),
@@ -75,8 +75,8 @@ class HomeScreen extends StatelessWidget {
             else if (driver.activeOrder != null)
               _ActiveMissionCard(order: driver.activeOrder!)
             else if (!driver.loading)
-              const BnCard(
-                child: BnEmpty(message: 'Aucune mission en cours. Passez en ligne pour recevoir des courses.'),
+              BnCard(
+                child: BnEmpty(message: tr('Aucune mission en cours. Passez en ligne pour recevoir des courses.')),
               ),
             const SizedBox(height: 16),
             if (summary != null)
@@ -89,15 +89,15 @@ class HomeScreen extends StatelessWidget {
                 childAspectRatio: 1.5,
                 children: [
                   BnKpi(
-                    label: 'Ce mois',
+                    label: tr('Ce mois'),
                     value: formatFcfa(summary.thisMonth),
                     sub: '${summary.tripsThisMonth} course(s) validée(s)',
                     icon: Icons.account_balance_wallet_outlined,
                   ),
-                  BnKpi(label: 'Reversement en cours', value: formatFcfa(summary.pendingPayout), icon: Icons.sync, color: BnColors.info),
-                  BnKpi(label: 'En attente de confirmation', value: formatFcfa(summary.awaitingConfirmation), icon: Icons.hourglass_empty, color: BnColors.warning),
+                  BnKpi(label: tr('Reversement en cours'), value: formatFcfa(summary.pendingPayout), icon: Icons.sync, color: BnColors.info),
+                  BnKpi(label: tr('En attente de confirmation'), value: formatFcfa(summary.awaitingConfirmation), icon: Icons.hourglass_empty, color: BnColors.warning),
                   BnKpi(
-                    label: 'Note',
+                    label: tr('Note'),
                     value: summary.rating == null ? '—' : '${summary.rating!.toStringAsFixed(1)} / 5',
                     sub: '${summary.totalTrips} courses · ${summary.ratingCount} avis',
                     icon: Icons.star_outline,
@@ -129,7 +129,7 @@ class _AvailabilityCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  available ? 'En ligne' : 'Hors ligne',
+                  available ? tr('En ligne') : tr('Hors ligne'),
                   style: TextStyle(
                     color: available ? BnColors.success : BnColors.textStrong,
                     fontSize: 18,
@@ -138,7 +138,7 @@ class _AvailabilityCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  available ? 'Vous recevez les nouvelles commandes.' : 'Passez en ligne pour recevoir des courses.',
+                  available ? tr('Vous recevez les nouvelles commandes.') : tr('Passez en ligne pour recevoir des courses.'),
                   style: const TextStyle(color: BnColors.text2, fontSize: 13),
                 ),
               ],
@@ -167,7 +167,7 @@ class _OfferCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const BnPill(label: 'Nouvelle commande', tone: BnTone.brand, icon: Icons.notifications_active_outlined),
+              BnPill(label: tr('Nouvelle commande'), tone: BnTone.brand, icon: Icons.notifications_active_outlined),
               const Spacer(),
               Text(offer.orderNumber, style: const TextStyle(color: BnColors.text2, fontSize: 12)),
             ],
@@ -180,9 +180,9 @@ class _OfferCard extends StatelessWidget {
           if (offer.distanceKm != null)
             Text('${offer.distanceKm!.toStringAsFixed(1)} km', style: const TextStyle(color: BnColors.text2)),
           const SizedBox(height: 12),
-          _RouteLine(label: 'Chargement', address: offer.pickupAddress),
+          _RouteLine(label: tr('Chargement'), address: offer.pickupAddress),
           const SizedBox(height: 8),
-          _RouteLine(label: 'Livraison', address: offer.deliveryAddress),
+          _RouteLine(label: tr('Livraison'), address: offer.deliveryAddress),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -191,7 +191,7 @@ class _OfferCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: BnPrimaryButton(label: 'Accepter', icon: Icons.check, busy: busy, onPressed: driver.acceptOffer),
+                child: BnPrimaryButton(label: tr('Accepter'), icon: Icons.check, busy: busy, onPressed: driver.acceptOffer),
               ),
             ],
           ),
@@ -221,9 +221,9 @@ class _ActiveMissionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _RouteLine(label: 'Chargement', address: order.pickupAddress),
+          _RouteLine(label: tr('Chargement'), address: order.pickupAddress),
           const SizedBox(height: 8),
-          _RouteLine(label: 'Livraison', address: order.deliveryAddress),
+          _RouteLine(label: tr('Livraison'), address: order.deliveryAddress),
           const SizedBox(height: 12),
           Row(
             children: [

@@ -1,5 +1,6 @@
 import '../format/format.dart';
 import 'order_status.dart';
+import '../i18n/lang.dart';
 
 /// Photo rattachée à une commande : chargement, pesée, litige ou livraison.
 class OrderPhoto {
@@ -135,9 +136,9 @@ class Order {
 
   /// Ce qui est livré, par exemple « Sable · 12 m³ ».
   String get summary {
-    if (orderType == 'RENTAL') return "Location d'engin";
-    if (orderType == 'EVACUATION') return 'Évacuation de gravats';
-    final what = (materialName ?? '').isEmpty ? 'Matériaux' : materialName!;
+    if (orderType == 'RENTAL') return tr("Location d'engin");
+    if (orderType == 'EVACUATION') return tr('Évacuation de gravats');
+    final what = (materialName ?? '').isEmpty ? tr('Matériaux') : materialName!;
     return quantityM3 > 0 ? '$what · ${_m3(quantityM3)} m³' : what;
   }
 

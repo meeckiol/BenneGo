@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 /// Connexion du chauffeur par numéro de téléphone et mot de passe.
@@ -83,11 +83,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _phone,
                       keyboardType: TextInputType.phone,
                       autofillHints: const [AutofillHints.telephoneNumber],
-                      decoration: const InputDecoration(
-                        labelText: 'Numéro de téléphone',
-                        hintText: '+229 XX XX XX XX',
+                      decoration: InputDecoration(
+                        labelText: tr('Numéro de téléphone'),
+                        hintText: tr('+229 XX XX XX XX'),
                       ),
-                      validator: (value) => (value == null || value.trim().length < 8) ? 'Numéro invalide' : null,
+                      validator: (value) => (value == null || value.trim().length < 8) ? tr('Numéro invalide') : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -95,14 +95,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: _obscure,
                       autofillHints: const [AutofillHints.password],
                       decoration: InputDecoration(
-                        labelText: 'Mot de passe',
+                        labelText: tr('Mot de passe'),
                         suffixIcon: IconButton(
-                          tooltip: _obscure ? 'Afficher' : 'Masquer',
+                          tooltip: _obscure ? tr('Afficher') : tr('Masquer'),
                           icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
-                      validator: (value) => (value == null || value.isEmpty) ? 'Saisissez votre mot de passe' : null,
+                      validator: (value) => (value == null || value.isEmpty) ? tr('Saisissez votre mot de passe') : null,
                       onFieldSubmitted: (_) => _submit(),
                     ),
                     if (_error != null) ...[
@@ -110,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       BnBanner(message: _error!, tone: BnTone.danger, icon: Icons.error_outline),
                     ],
                     const SizedBox(height: 20),
-                    BnPrimaryButton(label: 'Se connecter', icon: Icons.login, busy: _busy, onPressed: _submit),
+                    BnPrimaryButton(label: tr('Se connecter'), icon: Icons.login, busy: _busy, onPressed: _submit),
                     const SizedBox(height: 16),
                     const Text(
                       "Pas encore inscrit ? Contactez BenneGo pour l'ouverture de votre compte chauffeur.",

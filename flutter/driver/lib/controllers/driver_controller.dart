@@ -116,7 +116,7 @@ class DriverController extends ChangeNotifier {
       realtime.on(event, (_) => unawaited(refresh()));
     }
     realtime.on('error_message', (data) {
-      _notify(_asMap(data)['error'] as String? ?? 'Une erreur est survenue');
+      _notify(_asMap(data)['error'] as String? ?? tr('Une erreur est survenue'));
       unawaited(refresh());
     });
   }

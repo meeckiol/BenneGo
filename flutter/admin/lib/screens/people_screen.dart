@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -15,11 +15,11 @@ class PeopleScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Utilisateurs'),
-          bottom: const TabBar(
+          bottom: TabBar(
             indicatorColor: BnColors.brand,
             labelColor: BnColors.textStrong,
             unselectedLabelColor: BnColors.text3,
-            tabs: [Tab(text: 'Chauffeurs'), Tab(text: 'Clients')],
+            tabs: [Tab(text: tr('Chauffeurs')), Tab(text: tr('Clients'))],
           ),
         ),
         body: const TabBarView(children: [_DriversTab(), _ClientsTab()]),
@@ -74,7 +74,7 @@ class _DriversTabState extends State<_DriversTab> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             children: [
-              if (drivers.isEmpty) const BnCard(child: BnEmpty(message: 'Aucun chauffeur inscrit.')),
+              if (drivers.isEmpty) BnCard(child: BnEmpty(message: tr('Aucun chauffeur inscrit.'))),
               for (final driver in drivers) ...[
                 BnCard(
                   child: Row(
@@ -158,7 +158,7 @@ class _ClientsTabState extends State<_ClientsTab> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(16),
             children: [
-              if (clients.isEmpty) const BnCard(child: BnEmpty(message: 'Aucun client inscrit.')),
+              if (clients.isEmpty) BnCard(child: BnEmpty(message: tr('Aucun client inscrit.'))),
               for (final client in clients) ...[
                 BnCard(
                   child: Row(

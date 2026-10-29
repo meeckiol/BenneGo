@@ -4,6 +4,7 @@ import 'dashboard_screen.dart';
 import 'more_screen.dart';
 import 'operations_screen.dart';
 import 'people_screen.dart';
+import 'package:bennego_core/bennego_core.dart';
 
 /// Espace administrateur : tableau de bord, opérations, utilisateurs et outils.
 class ShellScreen extends StatefulWidget {
@@ -26,11 +27,11 @@ class _ShellScreenState extends State<ShellScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (index) => setState(() => _index = index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: 'Bord'),
-          NavigationDestination(icon: Icon(Icons.account_balance_outlined), selectedIcon: Icon(Icons.account_balance), label: 'Opérations'),
-          NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: 'Utilisateurs'),
-          NavigationDestination(icon: Icon(Icons.apps_outlined), selectedIcon: Icon(Icons.apps), label: 'Outils'),
+        destinations: [
+          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard), label: tr('Bord')),
+          NavigationDestination(icon: Icon(Icons.account_balance_outlined), selectedIcon: Icon(Icons.account_balance), label: tr('Opérations')),
+          NavigationDestination(icon: Icon(Icons.people_outline), selectedIcon: Icon(Icons.people), label: tr('Utilisateurs')),
+          NavigationDestination(icon: Icon(Icons.apps_outlined), selectedIcon: Icon(Icons.apps), label: tr('Outils')),
         ],
       ),
     );

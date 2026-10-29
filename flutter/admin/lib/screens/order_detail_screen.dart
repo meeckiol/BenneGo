@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
@@ -68,7 +68,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final canRelease = order['status'] == 'validated' && order['payment_status'] == 'escrow_held';
 
     return Scaffold(
-      appBar: AppBar(title: Text('${order['order_number'] ?? 'Commande'}')),
+      appBar: AppBar(title: Text('${order['order_number'] ?? tr('Commande')}')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -90,17 +90,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           BnCard(
             child: Column(
               children: [
-                _InfoRow(icon: Icons.person_outline, label: 'Client', value: '${order['client_name'] ?? '—'}'),
+                _InfoRow(icon: Icons.person_outline, label: tr('Client'), value: '${order['client_name'] ?? '—'}'),
                 _InfoRow(
                     icon: Icons.local_shipping_outlined,
-                    label: 'Chauffeur',
-                    value: '${order['driver_name'] ?? 'Non assigné'}'),
-                _InfoRow(icon: Icons.trip_origin, label: 'Départ', value: '${order['pickup_address'] ?? '—'}'),
-                _InfoRow(icon: Icons.place_outlined, label: 'Arrivée', value: '${order['delivery_address'] ?? '—'}'),
+                    label: tr('Chauffeur'),
+                    value: '${order['driver_name'] ?? tr('Non assigné')}'),
+                _InfoRow(icon: Icons.trip_origin, label: tr('Départ'), value: '${order['pickup_address'] ?? '—'}'),
+                _InfoRow(icon: Icons.place_outlined, label: tr('Arrivée'), value: '${order['delivery_address'] ?? '—'}'),
                 if (order['material_description'] != null)
                   _InfoRow(
                       icon: Icons.inventory_2_outlined,
-                      label: 'Chargement',
+                      label: tr('Chargement'),
                       value: '${order['material_description']} · ${formatKm(parseNum(order['quantity_m3'])).replaceAll(' km', ' m³')}'),
               ],
             ),
@@ -214,7 +214,7 @@ class _PriceCard extends StatelessWidget {
         children: [
           const Text('Détail du prix', style: TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
-          if (distance > 0) _Line(label: "Distance de l'itinéraire", value: formatKm(distance), muted: true),
+          if (distance > 0) _Line(label: tr("Distance de l'itinéraire"), value: formatKm(distance), muted: true),
           if (lines.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 4),
@@ -224,17 +224,17 @@ class _PriceCard extends StatelessWidget {
           else
             for (final line in lines) _Line(label: line.label, hint: line.hint, value: formatFcfa(line.amount)),
           const Divider(height: 18, color: BnColors.border),
-          _Line(label: 'Prix de la course', value: formatFcfa(total), strong: true),
-          if (referral > 0) _Line(label: 'Réduction parrainage (1re commande)', value: '− ${formatFcfa(referral)}', good: true),
-          if (credit > 0) _Line(label: 'Crédit BenneGo utilisé', value: '− ${formatFcfa(credit)}', good: true),
-          if (discount > 0) _Line(label: 'Payé par le client', value: formatFcfa(total - discount < 0 ? 0 : total - discount), strong: true),
+          _Line(label: tr('Prix de la course'), value: formatFcfa(total), strong: true),
+          if (referral > 0) _Line(label: tr('Réduction parrainage (1re commande)'), value: '− ${formatFcfa(referral)}', good: true),
+          if (credit > 0) _Line(label: tr('Crédit BenneGo utilisé'), value: '− ${formatFcfa(credit)}', good: true),
+          if (discount > 0) _Line(label: tr('Payé par le client'), value: formatFcfa(total - discount < 0 ? 0 : total - discount), strong: true),
           const Divider(height: 18, color: BnColors.border),
-          _Line(label: 'Part du chauffeur', value: formatFcfa(parseNum(order['driver_amount']))),
+          _Line(label: tr('Part du chauffeur'), value: formatFcfa(parseNum(order['driver_amount']))),
           _Line(
-            label: 'Commission BenneGo${rate != null ? ' ($rate${breakdown?['is_b2b'] == true ? ' · B2B' : ''})' : ''}',
+            label: 'Commission BenneGo${rate != null ? ' ($rate${breakdown?['is_b2b'] == true ? tr(' · B2B') : ''})' : ''}',
             value: formatFcfa(commission),
           ),
-          if (discount > 0) _Line(label: 'Net BenneGo après réductions', value: formatFcfa(commission - discount), strong: true),
+          if (discount > 0) _Line(label: tr('Net BenneGo après réductions'), value: formatFcfa(commission - discount), strong: true),
         ],
       ),
     );

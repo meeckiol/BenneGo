@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../theme/bn_theme.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Code PIN (empreinte salée, jamais le code lui-même) et choix de l'empreinte, dans le trousseau du téléphone.
 class AppLockStore {
@@ -239,7 +241,7 @@ class _LockScreenState extends State<LockScreen> {
             const Text('BenneGo est verrouillé',
                 style: TextStyle(color: BnColors.textStrong, fontSize: 22, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            Text(_error ?? 'Saisissez votre code PIN',
+            Text(_error ?? tr('Saisissez votre code PIN'),
                 style: TextStyle(color: _error == null ? BnColors.text2 : BnColors.danger)),
             const SizedBox(height: 22),
             PinDots(length: _pin.length),
@@ -251,7 +253,7 @@ class _LockScreenState extends State<LockScreen> {
                   ? IconButton(
                       onPressed: _tryBiometric,
                       icon: const Icon(Icons.fingerprint, color: BnColors.brand, size: 34),
-                      tooltip: 'Empreinte',
+                      tooltip: tr('Empreinte'),
                     )
                   : null,
             ),
@@ -324,7 +326,7 @@ class PinPad extends StatelessWidget {
             child: IconButton(
               onPressed: onBackspace,
               icon: const Icon(Icons.backspace_outlined, color: BnColors.text2),
-              tooltip: 'Effacer',
+              tooltip: tr('Effacer'),
             ),
           ),
         ]),
@@ -384,10 +386,10 @@ class _PinSetupScreenState extends State<_PinSetupScreen> {
         child: Column(
           children: [
             const Spacer(),
-            Text(_first == null ? 'Choisissez un code à 4 chiffres' : 'Confirmez votre code',
+            Text(_first == null ? tr('Choisissez un code à 4 chiffres') : tr('Confirmez votre code'),
                 style: const TextStyle(color: BnColors.textStrong, fontSize: 20, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
-            Text(_error ?? 'Il vous sera demandé à l\'ouverture de BenneGo',
+            Text(_error ?? tr('Il vous sera demandé à l\'ouverture de BenneGo'),
                 style: TextStyle(color: _error == null ? BnColors.text2 : BnColors.danger)),
             const SizedBox(height: 22),
             PinDots(length: _pin.length),

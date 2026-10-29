@@ -3,19 +3,20 @@ import 'package:flutter/foundation.dart';
 
 import '../config/app_config.dart';
 import 'api_exception.dart';
+import '../i18n/lang.dart';
 
 /// Libellé de l'appareil pour la liste des appareils connectés (ex. « Application BenneGo · Android »).
 String deviceLabel() {
   final os = kIsWeb
-      ? 'Navigateur'
+      ? tr('Navigateur')
       : switch (defaultTargetPlatform) {
-          TargetPlatform.android => 'Android',
+          TargetPlatform.android => tr('Android'),
           TargetPlatform.iOS => 'iPhone',
-          TargetPlatform.macOS => 'Mac',
-          TargetPlatform.windows => 'Windows',
-          _ => 'Linux',
+          TargetPlatform.macOS => tr('Mac'),
+          TargetPlatform.windows => tr('Windows'),
+          _ => tr('Linux'),
         };
-  return 'Application BenneGo · $os';
+  return tr('Application BenneGo · $os');
 }
 
 /// Client HTTP de l'API : joint le jeton de session et convertit les erreurs en [ApiException].
@@ -97,9 +98,9 @@ class ApiClient {
       DioExceptionType.connectionTimeout ||
       DioExceptionType.receiveTimeout ||
       DioExceptionType.sendTimeout =>
-        'Le serveur met trop de temps à répondre.',
-      DioExceptionType.connectionError => 'Connexion impossible. Vérifiez votre réseau.',
-      _ => 'Une erreur est survenue. Réessayez.',
+        tr('Le serveur met trop de temps à répondre.'),
+      DioExceptionType.connectionError => tr('Connexion impossible. Vérifiez votre réseau.'),
+      _ => tr('Une erreur est survenue. Réessayez.'),
     };
     return ApiException(
       message,

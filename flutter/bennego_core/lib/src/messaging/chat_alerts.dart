@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:flutter/services.dart';
 
 import '../format/format.dart';
 import '../settings/account_prefs.dart';
 import 'chat_center.dart';
 import 'chat_message.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 /// Bandeau « nouveau message » en haut de l'écran, avec son et vibration, où qu'on soit dans l'application.
 /// Un appui ouvre la discussion. À placer autour du contenu de l'espace connecté.
@@ -100,7 +102,7 @@ class _Banner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = message.senderName.isEmpty ? 'Nouveau message' : message.senderName;
+    final name = message.senderName.isEmpty ? tr('Nouveau message') : message.senderName;
     return Material(
       color: const Color(0xFF050508),
       elevation: 10,

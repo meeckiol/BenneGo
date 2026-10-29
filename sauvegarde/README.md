@@ -226,3 +226,14 @@ commission, net après réductions), colonne `orders.price_breakdown` et détail
 cp sauvegarde/admin-devis-avant-detail/OrdersPage.jsx frontend-admin/src/pages/
 ```
 La colonne `price_breakdown` peut rester en base : l'ancienne fiche l'ignore.
+
+## flutter-avant-traduction (29 octobre 2026)
+
+Avant : passage des applications Flutter à la traduction (widget Text de bennego_core qui traduit, libellés
+enveloppés dans tr() par scripts/i18n-flutter-codemod.py, écran Langue, dictionnaires dans assets/i18n).
+La transformation touche une cinquantaine de fichiers : la version précédente se remet en place depuis git,
+au commit d1e66097 (main avant cette étape).
+
+```bash
+git checkout d1e66097 -- flutter/
+```

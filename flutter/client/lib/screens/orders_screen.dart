@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 import '../data/client_repository.dart';
@@ -51,7 +51,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             if (snapshot.hasError) {
               return ListView(
                 padding: const EdgeInsets.all(16),
-                children: const [BnBanner(message: 'Impossible de charger vos commandes.', tone: BnTone.danger)],
+                children: [BnBanner(message: tr('Impossible de charger vos commandes.'), tone: BnTone.danger)],
               );
             }
             final orders = (snapshot.data ?? const <Order>[]).where(_matches).toList();
@@ -72,7 +72,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ),
                 const SizedBox(height: 16),
                 if (orders.isEmpty)
-                  const BnCard(child: BnEmpty(message: 'Aucune commande dans cette catégorie.'))
+                  BnCard(child: BnEmpty(message: tr('Aucune commande dans cette catégorie.')))
                 else
                   for (final order in orders) ...[
                     BnCard(

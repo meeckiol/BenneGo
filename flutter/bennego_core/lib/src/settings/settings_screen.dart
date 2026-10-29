@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
+import 'package:flutter/material.dart' as material show Text;
 
 import '../api/api_client.dart';
 import '../api/api_exception.dart';
@@ -9,6 +10,8 @@ import '../theme/bn_theme.dart';
 import 'account_prefs.dart';
 import 'app_lock.dart';
 import '../auth/session.dart';
+import '../i18n/text.dart';
+import '../i18n/lang.dart';
 
 const _categoryText = {
   'order_updates': ('Suivi de mes commandes', 'Acceptée, en route, livrée'),
@@ -101,7 +104,7 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-enum _Page { home, notifications, privacy, security, delete }
+enum _Page { home, language, notifications, privacy, security, delete }
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late final AppLockStore _lock = widget.lockStore ?? AppLockStore();
@@ -121,7 +124,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _load() async {
     try {
       final data = await widget.api.get('/account/settings') as Map<String, dynamic>;
-      final settings = Map<String, dynamic>.from(data['settings'] as Map);
+      // La langue affichée est celle de ce téléphone
+      final settings = Map<String, dynamic>.from(data['settings'] as Map)..['language'] = Lang.instance.code;
       setState(() {
         _saved = settings;
         _draft = _copy(settings);
@@ -151,6 +155,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final data = await widget.api.patch('/account/settings', body: settingsPatch(_changes)) as Map<String, dynamic>;
       final settings = Map<String, dynamic>.from(data['settings'] as Map);
       AccountPrefs.instance.settings = settings;
+      // Nouvelle langue : toute l'application est traduite tout de suite
+      final language = settings['language'] as String?;
+      if (language != null && language != Lang.instance.code) await Lang.instance.set(language);
       if (!mounted) return;
       setState(() {
         _saved = settings;
@@ -216,6 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: EdgeInsets.fromLTRB(16, 0, 16, changes.isEmpty ? 24 : 100),
                     children: switch (_page) {
                       _Page.home => _home(draft),
+                      _Page.language => _language(draft),
                       _Page.notifications => _notifications(draft),
                       _Page.privacy => _privacy(draft),
                       _Page.security => [
@@ -256,13 +264,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final privacy = draft['privacy'] as Map<String, dynamic>;
     return [
       const _Title('Réglages', 'Comment BenneGo vous prévient et protège votre compte.'),
+      _Group(title: 'Préférences', children: [
+        _Row(
+          icon: Icons.translate,
+          title: 'Langue',
+          subtitle: appLanguages
+              .firstWhere((l) => l.code == draft['language'], orElse: () => appLanguages.first)
+              .name,
+          onTap: () => setState(() => _page = _Page.language),
+        ),
+      ]),
       _Group(title: 'Alertes', children: [
         _Row(
           icon: Icons.notifications_none,
           title: 'Notifications',
           subtitle: n['push'] == false
-              ? 'En pause'
-              : '$on/${_categories.length} types${quiet['enabled'] == true ? ' · calme ${quiet['start']}–${quiet['end']}' : ''}',
+              ? tr('En pause')
+              : [
+                  '$on/${_categories.length} types',
+                  if (quiet['enabled'] == true) 'calme ${quiet['start']}–${quiet['end']}',
+                ].join(' · '),
           onTap: () => setState(() => _page = _Page.notifications),
         ),
       ]),
@@ -271,8 +292,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _Row(
             icon: Icons.visibility_outlined,
             title: 'Confidentialité',
-            subtitle: '${privacy['show_photo'] == true ? 'Photo visible' : 'Photo masquée'} · '
-                '${privacy['hide_phone'] == true ? 'numéro masqué' : 'numéro pendant la course'}',
+            subtitle: '${privacy['show_photo'] == true ? tr('Photo visible') : tr('Photo masquée')} · '
+                '${privacy['hide_phone'] == true ? tr('numéro masqué') : tr('numéro pendant la course')}',
             onTap: () => setState(() => _page = _Page.privacy),
           ),
         _Row(
@@ -292,6 +313,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => setState(() => _page = _Page.delete),
           ),
         ]),
+    ];
+  }
+
+  /// Langue : aperçu « Bonjour / Hello » puis toutes les langues (nom dans la langue et en anglais).
+  List<Widget> _language(Map<String, dynamic> draft) {
+    final chosen = appLanguages.firstWhere((l) => l.code == draft['language'], orElse: () => appLanguages.first);
+    return [
+      const _Title('Langue', "Choisissez la langue de l'application."),
+      Container(
+        padding: const EdgeInsets.symmetric(vertical: 26),
+        decoration: BoxDecoration(
+          color: BnColors.surface2,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: BnColors.border),
+        ),
+        child: Column(
+          children: [
+            // Noms de langues : jamais traduits (widget Text de Flutter)
+            material.Text(chosen.hello,
+                style: const TextStyle(color: BnColors.brand, fontSize: 30, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            material.Text(chosen.name, style: const TextStyle(color: BnColors.text3, fontSize: 13)),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      _Group(title: 'Toutes les langues', children: [
+        for (final l in appLanguages)
+          InkWell(
+            onTap: () => _set(['language'], l.code),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        material.Text(l.name,
+                            style: TextStyle(
+                                color: l.code == chosen.code ? BnColors.brand : BnColors.textStrong,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700)),
+                        material.Text(l.english, style: const TextStyle(color: BnColors.text3, fontSize: 12.5)),
+                      ],
+                    ),
+                  ),
+                  if (l.code == chosen.code) const Icon(Icons.check, color: BnColors.brand),
+                ],
+              ),
+            ),
+          ),
+      ]),
+      const _Note("Les traductions autres que le français et l'anglais peuvent être approximatives."),
     ];
   }
 
@@ -322,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _Row(
           icon: Icons.notifications_active_outlined,
           title: 'Notifications push',
-          subtitle: push ? 'Activées pour votre compte' : 'En pause : aucune alerte',
+          subtitle: push ? tr('Activées pour votre compte') : tr('En pause : aucune alerte'),
           trailing: _Switch(value: push, onChanged: (v) => _set(['notifications', 'push'], v)),
         ),
       ]),
@@ -358,8 +433,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           muted: true,
           title: 'Pas de son la nuit',
           subtitle: widget.role == 'admin'
-              ? 'Alertes silencieuses, sauf pannes en cours de course'
-              : 'Alertes silencieuses, sauf pendant une course en cours',
+              ? tr('Alertes silencieuses, sauf pannes en cours de course')
+              : tr('Alertes silencieuses, sauf pendant une course en cours'),
           trailing: _Switch(
               value: quiet['enabled'] == true, onChanged: (v) => _set(['notifications', 'quiet_hours', 'enabled'], v)),
         ),
@@ -399,7 +474,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: Icons.phone_outlined,
           muted: true,
           title: texts['hide_phone']?.$1 ?? '',
-          subtitle: privacy['hide_phone'] == true ? texts['hide_phone']?.$2 : 'Numéro visible seulement pendant la course',
+          subtitle: privacy['hide_phone'] == true ? texts['hide_phone']?.$2 : tr('Numéro visible seulement pendant la course'),
           trailing: _Switch(value: privacy['hide_phone'] == true, onChanged: (v) => _set(['privacy', 'hide_phone'], v)),
         ),
       ]),
@@ -447,6 +522,7 @@ class _Group extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    LangScope.watch(context); // titre traduit puis mis en majuscules
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
       child: Column(
@@ -455,7 +531,7 @@ class _Group extends StatelessWidget {
           if (title != null)
             Padding(
               padding: const EdgeInsets.only(left: 4, bottom: 8),
-              child: Text(title!.toUpperCase(),
+              child: Text(tr(title!).toUpperCase(),
                   style: const TextStyle(color: BnColors.text3, fontSize: 11.5, fontWeight: FontWeight.w800, letterSpacing: 0.9)),
             ),
           Container(
@@ -580,9 +656,9 @@ class _Preview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sample = switch (role) {
-      'driver' => 'Nouvelle course · Carrière de Tori → Akpakpa · 40 500 FCFA',
-      'admin' => 'Nouveau litige · LT-2026-0412 : quantité contestée',
-      _ => 'Livraison en route · Votre camion arrive dans 10 min.',
+      'driver' => tr('Nouvelle course · Carrière de Tori → Akpakpa · 40 500 FCFA'),
+      'admin' => tr('Nouveau litige · LT-2026-0412 : quantité contestée'),
+      _ => tr('Livraison en route · Votre camion arrive dans 10 min.'),
     };
     final n = notifications;
     final quiet = n['quiet_hours'] as Map<String, dynamic>;
@@ -622,12 +698,12 @@ class _Preview extends StatelessWidget {
                   const Text('BenneGo  ·  maintenant',
                       style: TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w700, fontSize: 13.5)),
                   const SizedBox(height: 2),
-                  Text(muted ? 'Notifications en pause' : sample, style: const TextStyle(color: BnColors.text2, fontSize: 13)),
+                  Text(muted ? tr('Notifications en pause') : sample, style: const TextStyle(color: BnColors.text2, fontSize: 13)),
                   const SizedBox(height: 6),
                   Wrap(children: [
                     chip(n['sound'] == false ? Icons.notifications_off_outlined : Icons.volume_up_outlined,
-                        n['sound'] == false ? 'Silencieux' : 'Son'),
-                    chip(Icons.vibration, n['vibration'] == false ? 'Sans vibration' : 'Vibration'),
+                        n['sound'] == false ? tr('Silencieux') : tr('Son')),
+                    chip(Icons.vibration, n['vibration'] == false ? tr('Sans vibration') : tr('Vibration')),
                     if (quiet['enabled'] == true) chip(Icons.bedtime_outlined, '${quiet['start']}–${quiet['end']}'),
                   ]),
                 ],
@@ -871,14 +947,14 @@ class _SecurityPageState extends State<_SecurityPage> {
           _Row(
             icon: Icons.pin_outlined,
             title: 'Code PIN',
-            subtitle: _hasPin ? 'Demandé à l\'ouverture et après 30 s en arrière-plan' : 'Protéger BenneGo avec un code à 4 chiffres',
+            subtitle: _hasPin ? tr('Demandé à l\'ouverture et après 30 s en arrière-plan') : tr('Protéger BenneGo avec un code à 4 chiffres'),
             trailing: _Switch(value: _hasPin, onChanged: _togglePin),
           ),
           if (_hasPin)
             _Row(
               icon: Icons.fingerprint,
               title: 'Empreinte ou visage',
-              subtitle: _bioAvailable ? 'Déverrouiller sans taper le code' : 'Aucun capteur configuré sur ce téléphone',
+              subtitle: _bioAvailable ? tr('Déverrouiller sans taper le code') : tr('Aucun capteur configuré sur ce téléphone'),
               trailing: _Switch(value: _bioEnabled && _bioAvailable, onChanged: _bioAvailable ? _toggleBiometric : null),
             ),
         ]),
@@ -889,9 +965,9 @@ class _SecurityPageState extends State<_SecurityPage> {
             _Row(
               icon: '${s['device_label']}'.contains(RegExp('Android|iPhone|Application')) ? Icons.smartphone : Icons.laptop,
               muted: s['current'] != true,
-              title: '${s['device_label'] ?? 'Appareil'}',
+              title: '${s['device_label'] ?? tr('Appareil')}',
               subtitle: s['current'] == true
-                  ? 'Cet appareil'
+                  ? tr('Cet appareil')
                   : 'Actif le ${formatDateTime(DateTime.tryParse('${s['last_seen_at']}')?.toLocal())}',
               trailing: s['current'] == true
                   ? null
@@ -1038,14 +1114,14 @@ class _DeletePageState extends State<_DeletePage> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Text(
                 'Votre crédit de ${formatFcfa(credit)} sera perdu'
-                '${widget.role == 'driver' ? ' : demandez son versement avant de supprimer votre compte.' : '.'}',
+                '${widget.role == 'driver' ? tr(' : demandez son versement avant de supprimer votre compte.') : '.'}',
                 style: const TextStyle(color: BnColors.warning),
               ),
             ),
           DropdownButtonFormField<String>(
             initialValue: _reason,
             dropdownColor: BnColors.surface,
-            decoration: const InputDecoration(labelText: 'Pourquoi partez-vous ? (facultatif)'),
+            decoration: InputDecoration(labelText: tr('Pourquoi partez-vous ? (facultatif)')),
             items: [for (final r in _reasons) DropdownMenuItem(value: r, child: Text(r))],
             onChanged: (v) => setState(() => _reason = v),
           ),
@@ -1054,7 +1130,7 @@ class _DeletePageState extends State<_DeletePage> {
             controller: _password,
             obscureText: true,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(labelText: 'Votre mot de passe pour confirmer'),
+            decoration: InputDecoration(labelText: tr('Votre mot de passe pour confirmer')),
           ),
           const SizedBox(height: 14),
           FilledButton(
@@ -1077,7 +1153,7 @@ Future<bool> confirmAccountRestore(BuildContext context, ApiException error) asy
       backgroundColor: BnColors.surface,
       title: const Text('Compte en cours de suppression'),
       content: Text(until == null
-          ? 'Vous pouvez encore reprendre votre compte.'
+          ? tr('Vous pouvez encore reprendre votre compte.')
           : 'Vous pouvez reprendre votre compte jusqu\'au ${formatDateTime(until).split(' ').first}.'),
       actions: [
         TextButton(onPressed: () => Navigator.of(c).pop(false), child: const Text('Non')),

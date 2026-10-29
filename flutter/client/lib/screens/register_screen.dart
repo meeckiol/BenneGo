@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -116,16 +116,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _prenom,
-                          decoration: const InputDecoration(labelText: 'Prénom'),
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Requis' : null,
+                          decoration: InputDecoration(labelText: tr('Prénom')),
+                          validator: (v) => (v == null || v.trim().isEmpty) ? tr('Requis') : null,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: TextFormField(
                           controller: _nom,
-                          decoration: const InputDecoration(labelText: 'Nom'),
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Requis' : null,
+                          decoration: InputDecoration(labelText: tr('Nom')),
+                          validator: (v) => (v == null || v.trim().isEmpty) ? tr('Requis') : null,
                         ),
                       ),
                     ],
@@ -135,8 +135,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _phone,
                     enabled: !_verified,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(labelText: 'Téléphone (+229...)'),
-                    validator: (v) => (v == null || _cleanPhone.length < 8) ? 'Numéro invalide' : null,
+                    decoration: InputDecoration(labelText: tr('Téléphone (+229...)')),
+                    validator: (v) => (v == null || _cleanPhone.length < 8) ? tr('Numéro invalide') : null,
                   ),
                   const SizedBox(height: 12),
                   if (!_verified) ...[
@@ -153,7 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               controller: _code,
                               keyboardType: TextInputType.number,
                               maxLength: 6,
-                              decoration: const InputDecoration(labelText: 'Code à 6 chiffres', counterText: ''),
+                              decoration: InputDecoration(labelText: tr('Code à 6 chiffres'), counterText: ''),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -172,35 +172,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   OutlinedButton.icon(
                     onPressed: _pickBirthDate,
                     icon: const Icon(Icons.cake_outlined),
-                    label: Text(_birthDate == null ? 'Date de naissance' : DateFormat('dd/MM/yyyy').format(_birthDate!)),
+                    label: Text(_birthDate == null ? tr('Date de naissance') : DateFormat('dd/MM/yyyy').format(_birthDate!)),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _adresse,
-                    decoration: const InputDecoration(labelText: 'Adresse'),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Requis' : null,
+                    decoration: InputDecoration(labelText: tr('Adresse')),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? tr('Requis') : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _email,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(labelText: 'Email (facultatif)'),
+                    decoration: InputDecoration(labelText: tr('Email (facultatif)')),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _password,
                     obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Mot de passe (8 caractères minimum)'),
-                    validator: (v) => (v == null || v.length < 8) ? '8 caractères minimum' : null,
+                    decoration: InputDecoration(labelText: tr('Mot de passe (8 caractères minimum)')),
+                    validator: (v) => (v == null || v.length < 8) ? tr('8 caractères minimum') : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _referral,
                     textCapitalization: TextCapitalization.characters,
                     maxLength: 30,
-                    decoration: const InputDecoration(
-                      labelText: 'Code parrain (facultatif)',
-                      helperText: '1 500 FCFA de réduction sur votre première commande',
+                    decoration: InputDecoration(
+                      labelText: tr('Code parrain (facultatif)'),
+                      helperText: tr('1 500 FCFA de réduction sur votre première commande'),
                       counterText: '',
                     ),
                   ),
@@ -210,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                   const SizedBox(height: 20),
                   BnPrimaryButton(
-                    label: 'Créer mon compte',
+                    label: tr('Créer mon compte'),
                     icon: Icons.person_add_alt,
                     busy: _busy,
                     onPressed: _verified ? _create : null,

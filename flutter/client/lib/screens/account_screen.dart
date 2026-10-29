@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -70,13 +70,13 @@ class _AccountScreenState extends State<AccountScreen> {
                 style: const TextStyle(color: BnColors.textStrong, fontSize: 22, fontWeight: FontWeight.w800)),
             Text(user?.phone ?? '', textAlign: TextAlign.center, style: const TextStyle(color: BnColors.text3)),
             const SizedBox(height: 8),
-            const Center(child: BnPill(label: 'Compte client', tone: BnTone.brand)),
+            Center(child: BnPill(label: tr('Compte client'), tone: BnTone.brand)),
             const SizedBox(height: 18),
             ReferralCard(
               title: 'Affiliation',
               text: referralRewardLine('client', _referral),
               code: _referral?['referral_code'] as String?,
-              rewards: credit > 0 ? 'Crédit : ${formatFcfa(credit)}' : null,
+              rewards: credit > 0 ? tr('Crédit : ${formatFcfa(credit)}') : null,
               onShare: _share,
               secondary: OutlinedButton(
                 onPressed: () async {
@@ -111,8 +111,8 @@ class _AccountScreenState extends State<AccountScreen> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               child: Row(
                 children: [
-                  _Stat(value: orders == null ? '…' : '${orders.length}', label: 'Commandes'),
-                  _Stat(value: delivered == null ? '…' : '$delivered', label: 'Livrées'),
+                  _Stat(value: orders == null ? '…' : '${orders.length}', label: tr('Commandes')),
+                  _Stat(value: delivered == null ? '…' : '$delivered', label: tr('Livrées')),
                   _Stat(value: '${_referral?['total_referrals'] ?? '…'}', label: 'Filleuls'),
                 ],
               ),

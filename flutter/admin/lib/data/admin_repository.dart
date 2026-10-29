@@ -225,7 +225,7 @@ class ReliefCandidate {
   factory ReliefCandidate.fromJson(Map<String, dynamic> json) => ReliefCandidate(
         id: json['id'] as String,
         fullName: json['full_name'] as String? ?? '',
-        truckPlate: json['truck_plate'] as String? ?? 'sans plaque',
+        truckPlate: json['truck_plate'] as String? ?? tr('sans plaque'),
         truckType: json['truck_type'] as String? ?? '',
       );
 
@@ -290,7 +290,7 @@ class Conversation {
         orderNumber: json['order_number'] as String? ?? '',
         status: json['status'] as String? ?? '',
         disputeOpen: json['dispute_status'] == 'open',
-        clientName: json['client_name'] as String? ?? 'Client',
+        clientName: json['client_name'] as String? ?? tr('Client'),
         clientPhone: json['client_phone'] as String?,
         driverName: json['driver_name'] as String?,
         driverPhone: json['driver_phone'] as String?,

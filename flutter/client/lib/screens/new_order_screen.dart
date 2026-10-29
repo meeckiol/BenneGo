@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -86,16 +86,16 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   double _parse(String value) => double.parse(value.trim().replaceAll(',', '.'));
 
   String? _validateStep() {
-    if (_pickup == null || _delivery == null) return 'Placez le chargement et la livraison sur la carte.';
+    if (_pickup == null || _delivery == null) return tr('Placez le chargement et la livraison sur la carte.');
     if (_pickupAddress.text.trim().length < 3 || _deliveryAddress.text.trim().length < 3) {
-      return 'Renseignez les deux adresses.';
+      return tr('Renseignez les deux adresses.');
     }
     if (_step == 1) {
       try {
         final value = _isRental ? _parse(_hours.text) : _parse(_quantity.text);
-        if (value <= 0) return 'Quantité invalide.';
+        if (value <= 0) return tr('Quantité invalide.');
       } on FormatException {
-        return 'Quantité invalide.';
+        return tr('Quantité invalide.');
       }
     }
     return null;
@@ -209,9 +209,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                     flex: 2,
                     child: BnPrimaryButton(
                       label: switch (_step) {
-                        0 => 'Continuer',
-                        1 => 'Voir le prix',
-                        _ => 'Bloquer le paiement',
+                        0 => tr('Continuer'),
+                        1 => tr('Voir le prix'),
+                        _ => tr('Bloquer le paiement'),
                       },
                       busy: _busy,
                       onPressed: _step == 2 ? _confirm : _next,
@@ -243,12 +243,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         const SizedBox(height: 16),
         TextField(
           controller: _pickupAddress,
-          decoration: const InputDecoration(labelText: 'Adresse de chargement', hintText: 'ex. Carrière de Tori-Bossito'),
+          decoration: InputDecoration(labelText: tr('Adresse de chargement'), hintText: tr('ex. Carrière de Tori-Bossito')),
         ),
         const SizedBox(height: 10),
         TextField(
           controller: _deliveryAddress,
-          decoration: const InputDecoration(labelText: 'Adresse de livraison', hintText: 'ex. Chantier Akpakpa, Cotonou'),
+          decoration: InputDecoration(labelText: tr('Adresse de livraison'), hintText: tr('ex. Chantier Akpakpa, Cotonou')),
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -309,7 +309,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         if (_isRental) ...[
           DropdownButtonFormField<String>(
             initialValue: _machine,
-            decoration: const InputDecoration(labelText: "Type d'engin"),
+            decoration: InputDecoration(labelText: tr("Type d'engin")),
             items: [
               for (final entry in _machinery.entries) DropdownMenuItem(value: entry.key, child: Text(entry.value)),
             ],
@@ -319,13 +319,13 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           TextField(
             controller: _hours,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Durée (heures)'),
+            decoration: InputDecoration(labelText: tr('Durée (heures)')),
           ),
         ] else ...[
           TextField(
             controller: _quantity,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Volume (m³)'),
+            decoration: InputDecoration(labelText: tr('Volume (m³)')),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -373,11 +373,11 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             if (estimate != null &&
                 (estimate.breakdown.isNotEmpty || estimate.referralDiscount > 0 || estimate.creditBalance > 0)) ...[
               const Divider(height: 24, color: BnColors.border),
-              _PriceLine(label: 'Prix de la course', value: formatFcfa(estimate.totalAmount), strong: true),
+              _PriceLine(label: tr('Prix de la course'), value: formatFcfa(estimate.totalAmount), strong: true),
               if (estimate.referralDiscount > 0)
-                _PriceLine(label: 'Réduction parrainage (1re commande)', value: '− ${formatFcfa(estimate.referralDiscount)}', good: true),
+                _PriceLine(label: tr('Réduction parrainage (1re commande)'), value: '− ${formatFcfa(estimate.referralDiscount)}', good: true),
               if (estimate.creditUsed > 0)
-                _PriceLine(label: 'Crédit utilisé', value: '− ${formatFcfa(estimate.creditUsed)}', good: true),
+                _PriceLine(label: tr('Crédit utilisé'), value: '− ${formatFcfa(estimate.creditUsed)}', good: true),
             ],
             if (estimate != null && estimate.creditBalance > 0)
               SwitchListTile(
@@ -402,8 +402,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         ),
       ),
       const SizedBox(height: 16),
-      const BnBanner(
-        message: 'Le paiement est bloqué sur BenneGo et libéré au chauffeur seulement après votre confirmation de réception.',
+      BnBanner(
+        message: tr('Le paiement est bloqué sur BenneGo et libéré au chauffeur seulement après votre confirmation de réception.'),
         tone: BnTone.info,
         icon: Icons.lock_outline,
       ),

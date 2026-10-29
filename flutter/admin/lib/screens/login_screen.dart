@@ -1,5 +1,5 @@
 import 'package:bennego_core/bennego_core.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Text;
 import 'package:provider/provider.dart';
 
 /// Connexion réservée à l'équipe BenneGo.
@@ -82,22 +82,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _phone,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(labelText: 'Téléphone administrateur'),
-                      validator: (value) => (value == null || value.trim().length < 8) ? 'Numéro invalide' : null,
+                      decoration: InputDecoration(labelText: tr('Téléphone administrateur')),
+                      validator: (value) => (value == null || value.trim().length < 8) ? tr('Numéro invalide') : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _password,
                       obscureText: _obscure,
                       decoration: InputDecoration(
-                        labelText: 'Mot de passe',
+                        labelText: tr('Mot de passe'),
                         suffixIcon: IconButton(
-                          tooltip: _obscure ? 'Afficher' : 'Masquer',
+                          tooltip: _obscure ? tr('Afficher') : tr('Masquer'),
                           icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
-                      validator: (value) => (value == null || value.isEmpty) ? 'Saisissez votre mot de passe' : null,
+                      validator: (value) => (value == null || value.isEmpty) ? tr('Saisissez votre mot de passe') : null,
                       onFieldSubmitted: (_) => _submit(),
                     ),
                     if (_error != null) ...[
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                     const SizedBox(height: 20),
                     BnPrimaryButton(
-                      label: 'Accéder au tableau de bord',
+                      label: tr('Accéder au tableau de bord'),
                       icon: Icons.login,
                       busy: _busy,
                       onPressed: _submit,

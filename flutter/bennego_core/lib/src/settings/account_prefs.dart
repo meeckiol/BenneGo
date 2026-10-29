@@ -1,5 +1,6 @@
 import '../api/api_client.dart';
 import '../api/api_exception.dart';
+import '../i18n/lang.dart';
 
 /// Ce que l'application peut faire pour une alerte : rien, un bandeau sans son, ou bandeau + son + vibration.
 class AlertPolicy {
@@ -50,6 +51,11 @@ class AccountPrefs {
     try {
       final data = await api.get('/account/settings') as Map<String, dynamic>;
       settings = Map<String, dynamic>.from(data['settings'] as Map);
+      // Téléphone sans langue choisie : on reprend celle du compte
+      final language = settings?['language'] as String?;
+      if (language != null && !Lang.instance.chosen && language != Lang.instance.code) {
+        await Lang.instance.set(language, persist: false);
+      }
     } on ApiException {
       // Réglages indisponibles : les alertes gardent leur comportement par défaut
     }
