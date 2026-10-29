@@ -9,7 +9,7 @@ export default function AuthShell({ title, subtitle, tab, children }) {
       <header className="bn-login__hero">
         <p className="bn-login__brand">
           <img src="/logo-icon.png" alt="" width="36" height="36" />
-          <span>Benne<em>Go</em></span>
+          <span translate="no">Benne<em>Go</em></span>
         </p>
         <h1 className="bn-login__title">{title}</h1>
         <p className="bn-login__subtitle">{subtitle}</p>

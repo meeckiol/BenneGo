@@ -8,6 +8,10 @@ import DevicePreview from '../../shared/DevicePreview';
 // Splash propre au camionneur : animation de tracé du logo (le client garde le camion)
 import SplashGate from './components/DriverSplash';
 import './index.css';
+import { initLanguage } from '../../shared/i18n/dom';
+
+// Langue de l'appareil (réglages > langue) : les textes affichés sont traduits à la volée
+initLanguage();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -66,7 +66,7 @@ export default function PaymentsPage() {
       {/* Reversements à effectuer */}
       <div style={s.tableCard}>
         <div style={s.tableHeader}>
-          <h3 style={s.tableTitle}>Reversements chauffeurs à effectuer ({payouts.length})</h3>
+          <h3 style={s.tableTitle}>{`Reversements chauffeurs à effectuer (${payouts.length})`}</h3>
         </div>
         <div style={s.tableWrapper} tabIndex={0}>
           <table style={s.table}>

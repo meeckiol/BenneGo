@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   ArrowLeft, Bell, BellOff, ChevronRight, Eye, KeyRound, Laptop, LockKeyhole, MapPin, Moon, Phone, ShieldCheck,
-  Smartphone, Trash2, UserRound, Volume2, Vibrate,
+  Smartphone, Trash2, UserRound, Volume2, Vibrate, Languages, Check,
 } from 'lucide-react';
+import { LANGUAGES } from './i18n/engine';
+import { currentLanguage, setLanguage } from './i18n/dom';
 import { pushState, enablePush, disablePush } from './messaging';
 import { useAccountSettings } from './accountSettings';
 import './settings.css';
@@ -349,6 +351,32 @@ function SecurityPage({ api, phone, onPhone, onBack }) {
   );
 }
 
+/** Langue : aperçu « Bonjour / Hello » puis toutes les langues (nom dans la langue et en anglais). */
+function LanguagePage({ draft, set, onBack }) {
+  const chosen = LANGUAGES.find((l) => l.code === draft.language) || LANGUAGES[0];
+  return (
+    <>
+      <Head big title="Langue" subtitle="Choisissez la langue de l'application." onBack={onBack} />
+      <div className="bn-set-hello notranslate" translate="no" aria-live="polite">
+        <strong>{chosen.hello}</strong>
+        <span>{chosen.name}</span>
+      </div>
+      <Group title="Toutes les langues">
+        {LANGUAGES.map((l) => (
+          <button key={l.code} type="button" className="bn-set-row bn-set-lang" onClick={() => set(['language'], l.code)} aria-pressed={draft.language === l.code}>
+            <span className="bn-set-row__main notranslate" translate="no">
+              <strong>{l.name}</strong>
+              <small>{l.english}</small>
+            </span>
+            {draft.language === l.code && <Check size={20} className="bn-set-lang__check" aria-hidden="true" />}
+          </button>
+        ))}
+      </Group>
+      <p className="bn-set-note">Les traductions autres que le français et l'anglais peuvent être approximatives.</p>
+    </>
+  );
+}
+
 const REASONS = ["Je n'utilise plus BenneGo", "J'ai un autre compte", 'Problème avec une commande', 'Mes données personnelles', 'Autre raison'];
 
 function DeletePage({ api, role, onBack, onDeleted }) {
@@ -413,11 +441,17 @@ export default function SettingsView({ api, role, phone, onPhone, onBack, onDele
   const setStore = useAccountSettings((s) => s.setSettings);
 
   useEffect(() => {
-    api.get('/account/settings').then(({ data: d }) => { setData(d); setDraft(d.settings); }).catch(() => setData({ error: true }));
+    api.get('/account/settings').then(({ data: d }) => {
+      // La langue affichée est celle de cet appareil
+      const settings = { ...d.settings, language: currentLanguage() };
+      setData({ ...d, settings });
+      setDraft(settings);
+    }).catch(() => setData({ error: true }));
   }, []);
 
   const changes = useMemo(() => (data?.settings && draft ? diffOf(data.settings, draft) : []), [data, draft]);
   const set = (path, value) => setDraft((d) => setIn(d, path, value));
+  const languageName = (code) => LANGUAGES.find((l) => l.code === code)?.name || 'Français';
 
   const save = async () => {
     setSaving(true);
@@ -426,6 +460,8 @@ export default function SettingsView({ api, role, phone, onPhone, onBack, onDele
       setData((d) => ({ ...d, settings: res.settings }));
       setDraft(res.settings);
       setStore(res.settings);
+      // Nouvelle langue : toute l'application est traduite tout de suite
+      if (res.settings.language && res.settings.language !== currentLanguage()) await setLanguage(res.settings.language);
       toast.success('Réglages enregistrés');
     } catch { /* intercepteur */ } finally {
       setSaving(false);
@@ -450,9 +486,13 @@ export default function SettingsView({ api, role, phone, onPhone, onBack, onDele
       {page === 'home' && (
         <>
           <Head big title="Réglages" subtitle="Comment BenneGo vous prévient et protège votre compte." onBack={leave} />
+          <Group title="Préférences">
+            <Row icon={Languages} title="Langue" onClick={() => setPage('language')}
+              text={<span className="notranslate" translate="no">{languageName(draft.language)}</span>} />
+          </Group>
           <Group title="Alertes">
             <Row icon={Bell} title="Notifications" onClick={() => setPage('notifications')}
-              text={!n.push ? 'En pause' : `${onCount}/${data.categories.length} types${n.quiet_hours.enabled ? ` · calme ${n.quiet_hours.start}–${n.quiet_hours.end}` : ''}`} />
+              text={!n.push ? 'En pause' : [`${onCount}/${data.categories.length} types`, n.quiet_hours.enabled && `calme ${n.quiet_hours.start}–${n.quiet_hours.end}`].filter(Boolean).join(' · ')} />
           </Group>
           <Group title="Confidentialité & sécurité">
             {role !== 'admin' && (
@@ -469,6 +509,7 @@ export default function SettingsView({ api, role, phone, onPhone, onBack, onDele
         </>
       )}
       {page === 'notifications' && <NotificationsPage api={api} role={role} categories={data.categories} draft={draft} set={set} onBack={back} />}
+      {page === 'language' && <LanguagePage draft={draft} set={set} onBack={back} />}
       {page === 'privacy' && <PrivacyPage role={role} draft={draft} set={set} onBack={back} />}
       {page === 'security' && <SecurityPage api={api} phone={phone} onPhone={onPhone} onBack={back} />}
       {page === 'delete' && <DeletePage api={api} role={role} onBack={back} onDeleted={onDeleted} />}

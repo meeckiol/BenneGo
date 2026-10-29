@@ -200,3 +200,19 @@ button.bn-set-row:hover { background: var(--surface-2); }
 .bn-set-bar__discard { background: none; color: rgba(255, 255, 255, 0.75); }
 .bn-set-bar__save { background: var(--brand-grad); color: #0b0b10; }
 @keyframes bn-set-bar-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* Langue : aperçu et liste */
+.bn-set-hello {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 26px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.bn-set-hello strong { font-size: 30px; font-weight: 800; color: var(--brand-ink); }
+.bn-set-hello span { font-size: 13px; color: var(--text-3); }
+.bn-set-lang { min-height: 56px; }
+.bn-set-lang[aria-pressed='true'] strong { color: var(--brand-ink); }
+.bn-set-lang__check { flex: none; color: var(--brand); }

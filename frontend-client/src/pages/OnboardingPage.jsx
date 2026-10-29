@@ -71,7 +71,7 @@ export default function OnboardingPage() {
       <div className="bn-onboard__top">
         <span className="bn-login__brand">
           <img src="/logo-icon.png" alt="" width="32" height="32" />
-          <span>Benne<em>Go</em></span>
+          <span translate="no">Benne<em>Go</em></span>
         </span>
         <button type="button" className="bn-onboard__skip" onClick={finish}>
           Passer

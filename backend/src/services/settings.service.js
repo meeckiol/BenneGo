@@ -5,6 +5,7 @@
  */
 const { query } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
+const { LANGUAGES } = require('./i18n.service');
 
 // Types de notifications proposés à chaque rôle (l'ordre est celui de l'écran)
 const CATEGORIES = {
@@ -32,6 +33,8 @@ const defaultsFor = (role) => ({
     quiet_hours: { enabled: false, start: '22:00', end: '06:00' },
   },
   privacy: Object.fromEntries((PRIVACY[role] || []).map((k) => [k, k === 'show_photo'])),
+  // Langue des applications et des notifications push
+  language: 'fr',
 });
 
 const merge = (role, stored = {}) => {
@@ -47,6 +50,7 @@ const merge = (role, stored = {}) => {
       ...d.privacy,
       ...Object.fromEntries(Object.keys(d.privacy).filter((k) => typeof stored.privacy?.[k] === 'boolean').map((k) => [k, stored.privacy[k]])),
     },
+    language: LANGUAGES.includes(stored.language) ? stored.language : d.language,
   };
 };
 
@@ -89,6 +93,10 @@ const validatePatch = (role, patch) => {
       out.privacy[key] = value;
     }
   }
+  if (patch.language !== undefined) {
+    if (!LANGUAGES.includes(patch.language)) throw new AppError('Langue non prise en charge', 400);
+    out.language = patch.language;
+  }
   return out;
 };
 
@@ -109,6 +117,7 @@ const updateSettings = async (userId, role, patch) => {
       quiet_hours: { ...(stored.notifications?.quiet_hours || {}), ...(clean.notifications?.quiet_hours || {}) },
     },
     privacy: { ...(stored.privacy || {}), ...(clean.privacy || {}) },
+    language: clean.language || stored.language,
   };
   await query('UPDATE users SET settings = $2, updated_at = NOW() WHERE id = $1', [userId, JSON.stringify(next)]);
   return merge(role, next);
@@ -143,5 +152,5 @@ const pushDecision = (settings, category, { urgent = false, now } = {}) => {
 };
 
 module.exports = {
-  CATEGORIES, PRIVACY, defaultsFor, merge, validatePatch, getSettings, updateSettings, inQuietHours, pushDecision,
+  LANGUAGES, CATEGORIES, PRIVACY, defaultsFor, merge, validatePatch, getSettings, updateSettings, inQuietHours, pushDecision,
 };

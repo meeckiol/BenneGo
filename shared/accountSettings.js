@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { hasSavedLanguage, setLanguage } from './i18n/dom';
 
 /*
  * Réglages du compte chargés une fois après la connexion, pour que les alertes dans l'application
@@ -6,7 +7,11 @@ import { create } from 'zustand';
  */
 export const useAccountSettings = create((set) => ({
   settings: null,
-  load: (api) => api.get('/account/settings').then(({ data }) => set({ settings: data.settings })).catch(() => {}),
+  load: (api) => api.get('/account/settings').then(({ data }) => {
+    set({ settings: data.settings });
+    // Nouvel appareil : on reprend la langue choisie sur le compte
+    if (data.settings.language && !hasSavedLanguage()) setLanguage(data.settings.language);
+  }).catch(() => {}),
   setSettings: (settings) => set({ settings }),
 }));
 

@@ -8,6 +8,10 @@ import ErrorBoundary from './components/ErrorBoundary';
 import DevicePreview from '../../shared/DevicePreview';
 import SplashGate from '../../shared/SplashScreen';
 import './index.css';
+import { initLanguage } from '../../shared/i18n/dom';
+
+// Langue de l'appareil (réglages > langue) : les textes affichés sont traduits à la volée
+initLanguage();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

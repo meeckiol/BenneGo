@@ -3,6 +3,7 @@ const path = require('path');
 const webpush = require('web-push');
 const { query } = require('../config/database');
 const settings = require('./settings.service');
+const i18n = require('./i18n.service');
 
 /**
  * Notifications push (Web Push, VAPID) : elles arrivent même application fermée.
@@ -56,7 +57,15 @@ const sendToUser = async (userId, payload, { category, urgent = false } = {}) =>
   if (!users.length || users[0].deletion_requested_at) return;
   const decision = settings.pushDecision(settings.merge(users[0].role, users[0].settings), category, { urgent });
   if (!decision) return;
-  payload = { ...payload, silent: decision.silent, vibrate: decision.vibrate };
+  const prefs = settings.merge(users[0].role, users[0].settings);
+  payload = {
+    ...payload,
+    // Titre et texte dans la langue de l'utilisateur
+    title: i18n.translate(payload.title, prefs.language),
+    body: i18n.translate(payload.body, prefs.language),
+    silent: decision.silent,
+    vibrate: decision.vibrate,
+  };
   const { rows } = await query('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = $1', [userId]);
   await Promise.all(rows.map((row) => webpush
     .sendNotification({ endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } }, JSON.stringify(payload), { TTL: 3600 })

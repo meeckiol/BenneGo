@@ -22,3 +22,4 @@ uploads/
 test-results/
 playwright-report/
 backend/.vapid-keys.json
+__pycache__/

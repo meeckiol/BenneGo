@@ -41,7 +41,7 @@ function CreditPayouts() {
   const open = (payouts || []).filter((p) => p.status === 'requested');
   return (
     <div style={{ ...s.tableWrapper, padding: 16 }}>
-      <h3 style={{ margin: '0 0 10px', fontSize: 16 }}>Versements du crédit ({open.length} à traiter)</h3>
+      <h3 style={{ margin: '0 0 10px', fontSize: 16 }}>{`Versements du crédit (${open.length} à traiter)`}</h3>
       {payouts === null && <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Chargement…</div>}
       {payouts && payouts.length === 0 && <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Aucune demande de versement.</div>}
       {(payouts || []).slice(0, 20).map((p) => (

@@ -130,11 +130,13 @@ export default function ReferralView({ api, role, onBack }) {
             <h2>Comment ça marche</h2>
             <ul>
               <li>
-                <b>{role === 'driver' ? 'Un camionneur' : 'Un client'} :</b> {fcfa(same?.referrer ?? 1500)} pour vous quand il fait {firstStep(role)}.
-                Il reçoit aussi {fcfa(same?.referee ?? 1500)} {role === 'driver' ? 'de bonus' : 'de réduction sur sa 1re commande'}.
+                <b>{role === 'driver' ? 'Un camionneur' : 'Un client'} :</b>{' '}
+                {/* Phrase d'un seul tenant : traduite en entier dans les autres langues */}
+                {`${fcfa(same?.referrer ?? 1500)} pour vous quand il fait ${firstStep(role)}. Il reçoit aussi ${fcfa(same?.referee ?? 1500)} ${role === 'driver' ? 'de bonus' : 'de réduction sur sa 1re commande'}.`}
               </li>
               <li>
-                <b>{role === 'driver' ? 'Un client' : 'Un camionneur'} :</b> {fcfa(cross?.referrer ?? 1000)} pour vous quand il fait {firstStep(role === 'driver' ? 'client' : 'driver')}.
+                <b>{role === 'driver' ? 'Un client' : 'Un camionneur'} :</b>{' '}
+                {`${fcfa(cross?.referrer ?? 1000)} pour vous quand il fait ${firstStep(role === 'driver' ? 'client' : 'driver')}.`}
               </li>
               <li>Votre filleul saisit votre code à son inscription, avant sa 1re commande ou course.</li>
             </ul>
