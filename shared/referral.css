@@ -1,0 +1,88 @@
+/* « Mes filleuls » : crédit, règles des primes et liste des filleuls (client et camionneur). */
+
+.bn-referral2 { display: grid; gap: 16px; padding-bottom: 120px; }
+.bn-referral2__head { display: flex; align-items: center; gap: 12px; }
+.bn-referral2__head h1 { margin: 0; font-size: 22px; font-weight: 800; color: var(--text-strong); }
+
+.bn-referral2__back {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-strong);
+}
+
+.bn-credit {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f6ead6, var(--surface));
+}
+
+.bn-credit__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--brand-grad);
+  color: #0b0b10;
+}
+
+.bn-credit__main { display: grid; min-width: 0; }
+.bn-credit__main small { font-size: 12px; color: var(--text-3); }
+.bn-credit__main strong { font-size: 26px; font-weight: 800; color: var(--text-strong); }
+.bn-credit__main span { font-size: 13px; color: var(--text-2); }
+
+.bn-referral2__payouts { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--text-2); }
+.bn-referral2__payouts li { display: flex; justify-content: space-between; }
+.bn-referral2__payouts b.is-paid { color: var(--success); }
+.bn-referral2__payouts b.is-rejected { color: var(--danger); }
+
+.bn-rules { padding: 16px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.bn-rules h2, .bn-referees h2 { margin: 0 0 10px; font-size: 16px; color: var(--text-strong); }
+.bn-rules ul { display: grid; gap: 8px; margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.45; color: var(--text-2); }
+.bn-rules b { color: var(--text-strong); }
+
+.bn-rules__welcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #e9f9ef;
+  font-size: 14px;
+  color: #157a3c;
+}
+
+.bn-referees ul { margin: 0; padding: 0; overflow: hidden; list-style: none; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.bn-referees li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.bn-referees li:last-child { border-bottom: 0; }
+
+.bn-referees__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #0b0b10;
+  font-weight: 800;
+  color: var(--brand-2);
+}
+
+.bn-referees__main { display: grid; flex: 1; min-width: 0; }
+.bn-referees__main strong { font-size: 15px; color: var(--text-strong); }
+.bn-referees__main small { margin-left: 4px; font-size: 11px; font-weight: 700; color: var(--brand-ink); }
+.bn-referees__main span { overflow: hidden; font-size: 12px; color: var(--text-3); text-overflow: ellipsis; white-space: nowrap; }
+.bn-referees li > b { flex: none; font-size: 14px; color: var(--text-3); }
+.bn-referees li > b.is-won { color: var(--success); }

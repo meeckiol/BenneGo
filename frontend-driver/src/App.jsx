@@ -16,6 +16,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const PersonalInfoPage = lazy(() => import('./pages/PersonalInfoPage'));
 const VehiclePage = lazy(() => import('./pages/VehiclePage'));
+const ReferralPage = lazy(() => import('./pages/ReferralPage'));
 
 const DriverFallback = () => (
   <div style={{
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/profil" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
           <Route path="/profil/infos" element={<PrivateRoute><PersonalInfoPage /></PrivateRoute>} />
           <Route path="/profil/vehicule" element={<PrivateRoute><VehiclePage /></PrivateRoute>} />
+          <Route path="/profil/parrainage" element={<PrivateRoute><ReferralPage /></PrivateRoute>} />
           <Route path="/history" element={<Navigate to="/courses" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

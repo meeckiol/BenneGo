@@ -208,7 +208,7 @@ export default function OrderDetailPage() {
 
         {order.payment_status === 'escrow_held' && !confirmed && (
           <div style={styles.secure}>
-            Votre paiement de <strong>{fcfa(order.total_amount)}</strong> est bloqué en sécurité sur BenneGo.
+            Votre paiement de <strong>{fcfa(order.amount_due ?? order.total_amount)}</strong> est bloqué en sécurité sur BenneGo.
             {order.order_type === 'RENTAL' && ' Les fonds sont libérés uniquement après validation des heures de l\'engin sur le chantier.'}
             {order.order_type === 'EVACUATION' && ' Les fonds sont libérés uniquement après confirmation de la propreté de votre site.'}
             {(!order.order_type || order.order_type === 'MATERIAL') && ' Le chauffeur n\'est payé qu\'après déchargement et vérification des matériaux.'}
@@ -310,7 +310,10 @@ export default function OrderDetailPage() {
         {/* Prix */}
         <div style={styles.card}>
           <h3 style={styles.cardTitle}>Paiement & Séquestre</h3>
-          <InfoRow label="Montant payé" value={fcfa(order.total_amount)} bold />
+          {Number(order.discount_amount) > 0 && (
+            <InfoRow label="Réductions (parrainage, crédit)" value={`− ${fcfa(order.discount_amount)}`} />
+          )}
+          <InfoRow label="Montant payé" value={fcfa(order.amount_due ?? order.total_amount)} bold />
           <InfoRow label="Statut Paiement" value={PAYMENT_LABELS[order.payment_status] || order.payment_status} />
         </div>
 
@@ -329,7 +332,7 @@ export default function OrderDetailPage() {
         {/* Actions */}
         {order.status === 'awaiting_payment' && (
           <button onClick={pay} disabled={busy} style={styles.primaryBtn}>
-            {busy ? 'Ouverture du paiement…' : `Payer ${fcfa(order.total_amount)} (MTN MoMo / Moov Money)`}
+            {busy ? 'Ouverture du paiement…' : `Payer ${fcfa(order.amount_due ?? order.total_amount)} (MTN MoMo / Moov Money)`}
           </button>
         )}
 

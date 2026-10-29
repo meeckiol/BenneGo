@@ -6,14 +6,66 @@ import { Banknote, CheckCircle2, Users } from 'lucide-react';
 const STATUS_FILTER = [
   { value: '', label: 'Tous' },
   { value: 'pending', label: 'En attente' },
-  { value: 'completed', label: 'Complétés' },
+  { value: 'rewarded', label: 'Primes versées' },
 ];
 
 const STATUS_STYLES = {
   pending:   { label: 'En attente', color: 'var(--warning)' },
-  completed: { label: 'Complété',   color: 'var(--success)' },
+  rewarded:  { label: 'Prime versée', color: 'var(--success)' },
   cancelled: { label: 'Annulé',     color: 'var(--danger)' },
 };
+
+const PAYOUT_LABELS = { requested: 'À verser', paid: 'Versé', rejected: 'Refusé' };
+
+/** Demandes de versement du crédit des camionneurs (primes de parrainage) : marquer versé ou refuser. */
+function CreditPayouts() {
+  const [payouts, setPayouts] = useState(null);
+  const load = () => api.get('/referrals/admin/payouts').then(({ data }) => setPayouts(data.payouts || [])).catch(() => setPayouts([]));
+  useEffect(() => { load(); }, []);
+
+  const decide = async (payout, decision) => {
+    let reference = null;
+    if (decision === 'paid') {
+      reference = window.prompt(`Référence du transfert Mobile Money vers ${payout.full_name} (${payout.momo_number}) :`);
+      if (reference === null) return;
+    } else if (!window.confirm(`Refuser la demande de ${payout.full_name} ? Le crédit lui sera rendu.`)) {
+      return;
+    }
+    try {
+      await api.post(`/referrals/admin/payouts/${payout.id}`, { decision, reference });
+      toast.success(decision === 'paid' ? 'Versement enregistré' : 'Demande refusée, crédit rendu');
+      load();
+    } catch { /* intercepteur */ }
+  };
+
+  const open = (payouts || []).filter((p) => p.status === 'requested');
+  return (
+    <div style={{ ...s.tableWrapper, padding: 16 }}>
+      <h3 style={{ margin: '0 0 10px', fontSize: 16 }}>Versements du crédit ({open.length} à traiter)</h3>
+      {payouts === null && <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Chargement…</div>}
+      {payouts && payouts.length === 0 && <div style={{ color: 'var(--text-3)', fontSize: 13 }}>Aucune demande de versement.</div>}
+      {(payouts || []).slice(0, 20).map((p) => (
+        <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderTop: '1px solid var(--border-2)', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ fontWeight: 700 }}>{p.full_name} · {Number(p.amount).toLocaleString('fr-FR')} FCFA</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
+              {(p.momo_provider || '').toUpperCase()} {p.momo_number} · demandé le {new Date(p.requested_at).toLocaleDateString('fr-FR')}
+              {p.reference ? ` · réf. ${p.reference}` : ''}
+            </div>
+          </div>
+          {p.status === 'requested' ? (
+            <>
+              <button type="button" onClick={() => decide(p, 'rejected')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--danger)', background: 'transparent', color: 'var(--danger)', fontWeight: 700, cursor: 'pointer' }}>Refuser</button>
+              <button type="button" onClick={() => decide(p, 'paid')} style={{ padding: '8px 12px', borderRadius: 8, border: 'none', background: '#D9A55B', color: '#0b0b10', fontWeight: 700, cursor: 'pointer' }}>Marquer versé</button>
+            </>
+          ) : (
+            <span style={{ fontSize: 12, fontWeight: 700, color: p.status === 'paid' ? 'var(--success)' : 'var(--danger)' }}>{PAYOUT_LABELS[p.status]}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ReferralsAdminPage() {
   const [referrals, setReferrals] = useState([]);
@@ -37,7 +89,7 @@ export default function ReferralsAdminPage() {
 
   useEffect(() => { loadReferrals(); }, [statusFilter]);
 
-  const filtered = referrals.filter((r) =>
+  const filtered = referrals.filter((r) => (!statusFilter || r.status === statusFilter)).filter((r) =>
     search === '' ||
     r.referrer_name?.toLowerCase().includes(search.toLowerCase()) ||
     r.referee_name?.toLowerCase().includes(search.toLowerCase())
@@ -45,8 +97,9 @@ export default function ReferralsAdminPage() {
 
   // Calcul des stats
   const total = referrals.length;
-  const completed = referrals.filter((r) => r.status === 'completed').length;
-  const totalRewards = referrals.reduce((acc, r) => acc + parseFloat(r.reward_amount || 0), 0);
+  const completed = referrals.filter((r) => r.status === 'rewarded').length;
+  // Primes réellement gagnées (parrain), une fois la 1re commande ou course du filleul livrée et confirmée
+  const totalRewards = referrals.filter((r) => r.status === 'rewarded').reduce((acc, r) => acc + parseFloat(r.reward_amount || 0), 0);
 
   const STAT_CARDS = [
     { label: 'Total parrainages', value: total, icon: <Users size={22} aria-hidden="true" />, color: 'var(--info)' },
@@ -59,8 +112,13 @@ export default function ReferralsAdminPage() {
       {/* En-tête */}
       <div>
         <h2 style={s.title}>Parrainage</h2>
-        <p style={s.subtitle}>Suivi des parrainages et récompenses</p>
+        <p style={s.subtitle}>
+          Même type de compte : 1 500 FCFA au parrain et 1 500 au filleul. Croisé (client ↔ camionneur) : 1 000 FCFA au parrain.
+          Prime versée en crédit à la 1re commande ou course livrée et confirmée du filleul.
+        </p>
       </div>
+
+      <CreditPayouts />
 
       {/* Stats */}
       <div style={s.statsGrid}>

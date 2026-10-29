@@ -6,6 +6,7 @@ import api, { mediaUrl } from '../services/api';
 import { getSocket, destroySocket } from '../services/socket';
 import useDriverAuthStore from '../store/authStore';
 import PushToggle from '../../../shared/PushToggle';
+import { rewardLine, shareTextFor } from '../../../shared/ReferralView';
 import { fcfa, initialsOf, TRUCK_LABELS, WHATSAPP_URL } from '../utils/format';
 import '../../../frontend-client/src/styles/profile.css';
 
@@ -71,9 +72,7 @@ export default function ProfilePage() {
   };
 
   const code = referral?.referral_code;
-  const shareText = code
-    ? `Rejoins BenneGo comme camionneur avec mon code ${code} : des courses de sable et de gravier près de chez toi, payées sur Mobile Money.`
-    : '';
+  const shareText = code ? shareTextFor('driver', code, referral?.rewards?.same_type?.referee) : '';
 
   const copyCode = () => {
     if (!code) return;
@@ -119,9 +118,9 @@ export default function ProfilePage() {
       <section className="bn-refer" aria-label="Code parrain">
         <div className="bn-refer__top">
           <strong>Parrainage</strong>
-          {referral?.total_rewards > 0 && <span>{fcfa(referral.total_rewards)} gagnés</span>}
+          {referral?.credit_balance > 0 && <span>Crédit : {fcfa(referral.credit_balance)}</span>}
         </div>
-        <p>Invitez un autre camionneur : vous gagnez 2 500 FCFA chacun.</p>
+        <p>{rewardLine('driver', referral?.rewards)}</p>
         <button type="button" className="bn-refer__code" onClick={copyCode} disabled={!code} aria-label="Copier le code parrain">
           <span>{code || (referral ? '—' : '…')}</span>
           <Copy size={18} aria-hidden="true" />
@@ -130,7 +129,7 @@ export default function ProfilePage() {
           <button type="button" className="bn-refer__share" onClick={shareCode} disabled={!code}>
             <Share2 size={16} aria-hidden="true" /> Partager
           </button>
-          <span className="bn-refer__more">{referral?.total_referrals ?? 0} filleul(s)</span>
+          <Link to="/profil/parrainage" className="bn-refer__more">Mes filleuls ({referral?.total_referrals ?? 0})</Link>
         </div>
       </section>
 

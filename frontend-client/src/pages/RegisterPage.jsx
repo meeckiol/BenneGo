@@ -16,6 +16,8 @@ export default function RegisterPage() {
     email: '',
     password: '',
     role: 'client',
+    // Code parrain : se saisit à l'inscription (le lien partagé peut le pré-remplir avec ?code=)
+    referral_code: new URLSearchParams(window.location.search).get('code') || '',
   });
   const [otpSent, setOtpSent] = useState(false);
   const [code, setCode] = useState('');
@@ -174,6 +176,14 @@ export default function RegisterPage() {
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
           required
+        />
+        <input
+          className="bn-input"
+          placeholder="Code parrain (facultatif) : 1 500 FCFA de réduction"
+          value={form.referral_code}
+          onChange={(e) => setForm({ ...form, referral_code: e.target.value.toUpperCase() })}
+          maxLength={30}
+          aria-label="Code parrain (facultatif)"
         />
         <button type="submit" className="bn-btn bn-btn--primary bn-btn--block bn-login__submit" disabled={loading || !verified}>
           {loading ? 'Création...' : 'Créer mon compte'}

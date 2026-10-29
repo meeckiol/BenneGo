@@ -15,7 +15,7 @@ const APPS = {
   driver: {
     dir: 'frontend-driver', port: 4175,
     storageKey: 'bennego-driver-auth', role: 'driver', fullName: 'Chauffeur Test',
-    routes: ['/', '/courses', '/messages', '/profil', '/profil/infos', '/profil/vehicule'],
+    routes: ['/', '/courses', '/messages', '/profil', '/profil/infos', '/profil/vehicule', '/profil/parrainage'],
   },
 };
 

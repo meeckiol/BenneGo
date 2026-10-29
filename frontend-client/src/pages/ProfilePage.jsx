@@ -6,6 +6,7 @@ import api, { mediaUrl } from '../services/api';
 import useAuthStore, { selectAccountType } from '../store/authStore';
 import { WHATSAPP_URL } from '../constants/contact';
 import PushToggle from '../../../shared/PushToggle';
+import { rewardLine, shareTextFor } from '../../../shared/ReferralView';
 import '../styles/profile.css';
 
 const ACCOUNT_LABELS = { particulier: 'Compte client', entreprise: 'Compte entreprise' };
@@ -78,9 +79,7 @@ export default function ProfilePage() {
   };
 
   const code = referral?.referral_code;
-  const shareText = code
-    ? `Rejoins BenneGo pour tes transports de matériaux et locations d'engins avec mon code ${code} et reçois 2500 FCFA de réduction sur ta première commande !`
-    : '';
+  const shareText = code ? shareTextFor('client', code, referral?.rewards?.same_type?.referee) : '';
 
   const copyCode = () => {
     if (!code) return;
@@ -121,9 +120,9 @@ export default function ProfilePage() {
       <section className="bn-refer" aria-label="Code parrain">
         <div className="bn-refer__top">
           <strong>Affiliation</strong>
-          {referral?.total_rewards > 0 && <span>{fcfa(referral.total_rewards)} gagnés</span>}
+          {referral?.credit_balance > 0 && <span>Crédit : {fcfa(referral.credit_balance)}</span>}
         </div>
-        <p>Chaque ami inscrit avec votre code vous rapporte 2 500 FCFA.</p>
+        <p>{rewardLine('client', referral?.rewards)}</p>
         <button type="button" className="bn-refer__code" onClick={copyCode} disabled={!code} aria-label="Copier le code parrain">
           <span>{code || (referral ? '—' : '…')}</span>
           <Copy size={18} aria-hidden="true" />

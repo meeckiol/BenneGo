@@ -121,6 +121,8 @@ export default function NewOrderPage() {
   });
 
   const [estimate, setEstimate] = useState(null);
+  // Crédit BenneGo (primes de parrainage) : le client choisit de l'utiliser sur cette commande
+  const [useCredit, setUseCredit] = useState(false);
 
   // Livraison en cours, montrée en haut du volet comme sur la maquette
   const [current, setCurrent] = useState(null);
@@ -274,16 +276,30 @@ export default function NewOrderPage() {
         duration_hours: form.duration_hours,
         machinery_type: form.machinery_type,
         rotations: form.rotations,
+        use_credit: useCredit,
       };
 
       const { data } = await api.post('/orders/estimate', payload);
       setEstimate(data);
+      lastEstimate.current = payload;
       setStep(3);
     } catch (err) {
       // Affiché par l'intercepteur API
     } finally {
       setLoading(false);
     }
+  };
+
+  // Le devis est recalculé quand le client coche ou décoche « Utiliser mon crédit »
+  const lastEstimate = useRef(null);
+  const toggleCredit = async (checked) => {
+    setUseCredit(checked);
+    if (!lastEstimate.current) return;
+    try {
+      const { data } = await api.post('/orders/estimate', { ...lastEstimate.current, use_credit: checked });
+      lastEstimate.current = { ...lastEstimate.current, use_credit: checked };
+      setEstimate(data);
+    } catch { /* affiché par l'intercepteur */ }
   };
 
   // Création et paiement séquestre
@@ -297,7 +313,8 @@ export default function NewOrderPage() {
             project_id: form.project_id || undefined,                                                                                                                                      
             vehicle_type_id: form.vehicle_type_id || undefined,                                                                                                                            
             material_type_id: form.material_type_id || undefined,                                                                                                                          
-            promo_code: promoResult?.code || undefined,                                                                                                                                    
+            promo_code: promoResult?.code || undefined,
+            use_credit: useCredit,                                                                                                                                    
             is_recurring: isRecurring,                                                                                                                                                     
             recurring_frequency: isRecurring ? recurringFrequency : undefined,                                                                                                             
           };
@@ -309,7 +326,7 @@ export default function NewOrderPage() {
       const res = await payOrder(orderId);
       if (res.ok) {
         // Étape 3 : on reste sur la carte jusqu'à ce qu'un chauffeur accepte
-        setPlaced({ id: orderId, order_number: data.order.order_number, total_amount: data.order.total_amount });
+        setPlaced({ id: orderId, order_number: data.order.order_number, total_amount: data.order.amount_due ?? data.order.total_amount });
         setStep(4);
         orderId = undefined;
       } else {
@@ -676,10 +693,33 @@ export default function NewOrderPage() {
 
                 <div style={styles.divider} />
 
+                {/* Réductions : bienvenue du filleul (d'office) et crédit BenneGo (au choix) */}
+                {(estimate.referral_discount > 0 || estimate.credit_balance > 0) && (
+                  <div style={styles.estimateRow}>
+                    <span>Prix de la course</span>
+                    <span>{estimate.total_amount?.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                )}
+                {estimate.referral_discount > 0 && (
+                  <div style={{ ...styles.estimateRow, color: 'var(--success)' }}>
+                    <span>Réduction parrainage (1re commande)</span>
+                    <strong>− {estimate.referral_discount.toLocaleString('fr-FR')} FCFA</strong>
+                  </div>
+                )}
+                {estimate.credit_balance > 0 && (
+                  <label style={{ ...styles.estimateRow, alignItems: 'center', cursor: 'pointer' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <input type="checkbox" checked={useCredit} onChange={(e) => toggleCredit(e.target.checked)} />
+                      Utiliser mon crédit ({estimate.credit_balance.toLocaleString('fr-FR')} FCFA)
+                    </span>
+                    {estimate.credit_used > 0 && <strong style={{ color: 'var(--success)' }}>− {estimate.credit_used.toLocaleString('fr-FR')} FCFA</strong>}
+                  </label>
+                )}
+
                 <div style={{ ...styles.estimateRow, ...styles.total }}>
-                  <span>TOTAL EN SÉQUESTRE</span>
+                  <span>TOTAL À PAYER</span>
                   <strong style={styles.totalAmount}>
-                    {estimate.total_amount?.toLocaleString()} FCFA
+                    {(estimate.amount_due ?? estimate.total_amount)?.toLocaleString('fr-FR')} FCFA
                   </strong>
                 </div>
 

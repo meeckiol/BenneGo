@@ -178,3 +178,16 @@ git rm -r flutter/bennego_core/lib/src/messaging flutter/bennego_core/lib/src/sp
   flutter/driver/lib/screens/{courses_screen,profile_screen,chat_route}.dart flutter/driver/lib/config \
   flutter/client/lib/screens/chat_route.dart flutter/admin/lib/screens/messages_screen.dart
 ```
+
+## parrainage-avant-regles (29 octobre 2026)
+
+Avant : nouvelles règles du parrainage (1 500 / 1 000 FCFA selon le type, réduction du filleul, crédit BenneGo),
+page « Mes filleuls » commune (`shared/ReferralView.jsx`), case « Utiliser mon crédit » au devis, code parrain à l'inscription.
+
+```bash
+B=sauvegarde/parrainage-avant-regles
+cp $B/client/*.jsx frontend-client/src/pages/
+cp $B/driver/ProfilePage.jsx frontend-driver/src/pages/
+cp $B/driver/App.jsx frontend-driver/src/
+```
+Les règles côté serveur (`backend/src/services/referral.service.js`) restent : l'ancienne interface affiche alors d'anciens textes.
