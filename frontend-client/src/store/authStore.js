@@ -29,9 +29,20 @@ const useAuthStore = create(
         return user;
       },
 
-      logout: () => {
+      logout: (options) => {
+        // Ferme la session de cet appareil côté serveur (elle disparaît des « appareils connectés »).
+        // `local` : session déjà fermée par le serveur (compte supprimé), rien à envoyer.
+        if (!options?.local) api.post('/account/logout').catch(() => {});
         delete api.defaults.headers.common['Authorization'];
         set({ user: null, token: null, isAuthenticated: false, accountType: null });
+      },
+
+      // Reprise d'un compte supprimé il y a moins de 60 jours
+      restore: async (phone, password) => {
+        const { data } = await api.post('/auth/restore', { phone, password });
+        api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
+        set({ user: data.user, token: data.token, isAuthenticated: true, accountType: DEFAULT_ACCOUNT_TYPE });
+        return data.user;
       },
 
       setToken: (token) => {

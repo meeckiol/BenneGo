@@ -20,9 +20,13 @@ const useAdminStore = create(
       },
 
       logout: () => {
+        // Ferme la session de cet appareil côté serveur (elle disparaît des « appareils connectés »)
+        api.post('/account/logout').catch(() => {});
         delete api.defaults.headers.common['Authorization'];
         set({ user: null, token: null, isAuthenticated: false });
       },
+
+      updateUser: (changes) => set((state) => ({ user: { ...state.user, ...changes } })),
     }),
     {
       name: 'bennego-admin-auth',

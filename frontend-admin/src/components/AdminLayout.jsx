@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Building2, ChevronLeft, ChevronRight, CreditCard, FileChartColumn, Gift, IdCard, LayoutDashboard,
-  LogOut, MessageCircle, Package, Scale, Star, Ticket, TrendingUp, Users, Wrench,
+  LogOut, MessageCircle, Package, Scale, Settings, Star, Ticket, TrendingUp, Users, Wrench,
 } from 'lucide-react';
 import useAdminStore from '../store/adminStore';
 
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { path: '/reliefs',   Icon: Wrench,          label: 'Pannes & relèves' },
   { path: '/barometer', Icon: TrendingUp,      label: 'Baromètre BTP' },
   { path: '/promos',    Icon: Ticket,          label: 'Codes promo' },
+  { path: '/settings',  Icon: Settings,        label: 'Réglages' },
 ];
 
 

@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Camera, ChevronRight, Copy, FileText, LogOut, MessageCircle, Share2, Tag, UserRound } from 'lucide-react';
+import { Camera, ChevronRight, Copy, FileText, LogOut, MessageCircle, Settings, Share2, Tag, UserRound } from 'lucide-react';
 import api, { mediaUrl } from '../services/api';
 import useAuthStore, { selectAccountType } from '../store/authStore';
 import { WHATSAPP_URL } from '../constants/contact';
-import PushToggle from '../../../shared/PushToggle';
 import { rewardLine, shareTextFor } from '../../../shared/ReferralView';
 import '../styles/profile.css';
 
@@ -154,7 +153,7 @@ export default function ProfilePage() {
       <section className="bn-pgroup">
         <h2>Réglages</h2>
         <div className="bn-plist">
-          <PushToggle api={api} />
+          <Row to="/profil/reglages" icon={Settings} tone="slate" title="Réglages" text="Notifications, confidentialité, sécurité, suppression" />
         </div>
       </section>
 

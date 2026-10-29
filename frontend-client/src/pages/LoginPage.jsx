@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [accountType, setAccountType] = useState('particulier');
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((s) => s.login);
+  const restore = useAuthStore((s) => s.restore);
   const navigate = useNavigate();
   const selected = ACCOUNT_TYPES.find((type) => type.key === accountType);
 
@@ -44,7 +45,18 @@ export default function LoginPage() {
       toast.success(`Bienvenue ${user.full_name} !`);
       navigate('/');
     } catch (err) {
-      // L'erreur est gérée par l'intercepteur axios
+      // Compte supprimé il y a moins de 60 jours : on propose de le reprendre (autres erreurs : intercepteur axios)
+      const data = err.response?.data;
+      if (data?.code === 'ACCOUNT_DELETION_PENDING') {
+        const until = new Date(data.restore_until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        if (window.confirm(`Votre compte est en cours de suppression. Vous pouvez le reprendre jusqu'au ${until}.\n\nReprendre mon compte ?`)) {
+          try {
+            const user = await restore(phone, password);
+            toast.success(`Bon retour ${user.full_name} ! Votre compte est rétabli.`);
+            navigate('/');
+          } catch { /* intercepteur */ }
+        }
+      }
     } finally {
       setLoading(false);
     }

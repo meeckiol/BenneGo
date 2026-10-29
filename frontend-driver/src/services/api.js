@@ -17,7 +17,7 @@ api.interceptors.response.use(
         if (error.response?.status === 401 && !isLogin) {                                                                                                                                  
           localStorage.removeItem('bennego-driver-auth');                                                                                                                                           
           window.location.href = '/login';                                                                                                                                                 
-        } else if (error.response?.status !== 404) {
+        } else if (error.response?.status !== 404 && error.response?.data?.code !== 'ACCOUNT_DELETION_PENDING') {
       toast.error(message);
     }
     return Promise.reject(error);

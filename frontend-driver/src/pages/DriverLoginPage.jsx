@@ -8,6 +8,7 @@ export default function DriverLoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const login = useDriverAuthStore((s) => s.login);
+  const restore = useDriverAuthStore((s) => s.restore);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,8 +19,21 @@ export default function DriverLoginPage() {
       toast.success(`Bienvenue ${user.full_name}`);
       navigate('/');
     } catch (err) {
+      const data = err.response?.data;
       if (err.message.includes('chauffeur')) {
         toast.error(err.message);
+      } else if (data?.code === 'ACCOUNT_DELETION_PENDING') {
+        // Compte supprimé il y a moins de 60 jours : on propose de le reprendre
+        const until = new Date(data.restore_until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        if (window.confirm(`Votre compte est en cours de suppression. Vous pouvez le reprendre jusqu'au ${until}.\n\nReprendre mon compte ?`)) {
+          try {
+            const user = await restore(phone, password);
+            toast.success(`Bon retour ${user.full_name} ! Votre compte est rétabli.`);
+            navigate('/');
+          } catch (restoreError) {
+            if (restoreError.message.includes('chauffeur')) toast.error(restoreError.message);
+          }
+        }
       }
     } finally {
       setLoading(false);

@@ -18,6 +18,7 @@ const DisputesPage = lazy(() => import('./pages/DisputesPage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const ReliefsPage = lazy(() => import('./pages/ReliefsPage'));
 const BarometerAdminPage = lazy(() => import('./pages/BarometerAdminPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 const AdminFallback = () => (
   <div style={{
@@ -67,6 +68,7 @@ export default function App() {
         <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
         <Route path="/reliefs" element={<PrivateRoute><ReliefsPage /></PrivateRoute>} />
         <Route path="/barometer" element={<PrivateRoute><BarometerAdminPage /></PrivateRoute>} />
+        <Route path="/settings"  element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

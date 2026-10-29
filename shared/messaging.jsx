@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { MessageCircle } from 'lucide-react';
+import { alertPolicy, useAccountSettings } from './accountSettings';
 import './messaging.css';
 
 /*
@@ -42,9 +43,13 @@ if (typeof window !== 'undefined') {
   window.addEventListener('pointerdown', unlockAudio, { once: true, passive: true });
 }
 
-export const playChime = () => {
+export const playChime = ({ sound = true, vibrate = true } = {}) => {
+  if (audio && sound) chime();
+  try { if (vibrate) navigator.vibrate?.([120, 60, 120]); } catch { /* vibration indisponible */ }
+};
+
+const chime = () => {
   try {
-    if (!audio) return;
     const now = audio.currentTime;
     [880, 1318.5].forEach((freq, i) => {
       const osc = audio.createOscillator();
@@ -59,7 +64,6 @@ export const playChime = () => {
       osc.stop(now + i * 0.14 + 0.32);
     });
   } catch { /* son indisponible */ }
-  try { navigator.vibrate?.([120, 60, 120]); } catch { /* vibration indisponible */ }
 };
 
 const initialsOf = (name = '') => name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'BG';
@@ -94,10 +98,14 @@ export function useChatAlerts({ api, getSocket, enabled, navigate }) {
     const socket = getSocket();
     if (!socket) return undefined;
     const refresh = () => api.get('/orders/chat/unread').then(({ data }) => load(data.unread)).catch(() => {});
+    useAccountSettings.getState().load(api);
     const onNotify = (msg) => {
       if (window.location.pathname === `/messages/${msg.order_id}` && document.visibilityState === 'visible') return;
       bump(msg.order_id);
-      playChime();
+      // Réglages : messages coupés = pastille seulement ; heures calmes ou son coupé = bandeau sans son
+      const policy = alertPolicy('messages');
+      if (!policy.show) return;
+      playChime(policy);
       toast.custom((t) => <Banner t={t} msg={msg} onOpen={() => navigate(`/messages/${msg.order_id}`)} />, {
         id: `chat-${msg.order_id}`,
         duration: 5000,

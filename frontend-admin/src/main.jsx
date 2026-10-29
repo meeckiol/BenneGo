@@ -21,3 +21,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </DevicePreview>
   </React.StrictMode>
 );
+
+// Notifications push de la console (litiges, pannes, versements) : service worker sans cache
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
