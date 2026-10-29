@@ -21,9 +21,21 @@ const CLIENT_PUSH = {
   cancelled: ['Commande annulée', 'Votre commande a été annulée.', false],
 };
 
+// Console admin : un seul signal « analyses à rafraîchir » toutes les 3 s au plus, même si plusieurs commandes bougent
+let adminTimer = null;
+const notifyAdmins = (io) => {
+  if (!io || adminTimer) return;
+  adminTimer = setTimeout(() => {
+    adminTimer = null;
+    io.to('admins').emit('analytics_changed', { reason: 'orders' });
+  }, 3000);
+  adminTimer.unref?.();
+};
+
 /** Une commande n'est proposée aux chauffeurs QU'APRÈS blocage du paiement. */
 const notifyNewOrder = (io, order) => {
   if (!io || order.payment_status !== 'escrow_held') return;
+  notifyAdmins(io);
   io.to('drivers_available').emit('new_order', {
     order_id: order.id,
     order_number: order.order_number,
@@ -47,6 +59,7 @@ const notifyNewOrder = (io, order) => {
 
 const notifyPaymentSecured = (io, order) => {
   if (!io) return;
+  notifyAdmins(io);
   io.to(`client_${order.client_id}`).emit('payment_secured', { order_id: order.id });
 };
 
@@ -56,6 +69,7 @@ const notifyOrderTaken = (io, orderId) => {
 
 const notifyStatus = (io, order, status) => {
   if (!io) return;
+  notifyAdmins(io);
   const payload = { order_id: order.id, status };
   io.to(`order_${order.id}`).emit('order_status', payload);
   io.to(`client_${order.client_id}`).emit('order_status', payload);
@@ -80,4 +94,4 @@ const notifyStatus = (io, order, status) => {
   }
 };
 
-module.exports = { notifyNewOrder, notifyPaymentSecured, notifyOrderTaken, notifyStatus };
+module.exports = { notifyNewOrder, notifyPaymentSecured, notifyOrderTaken, notifyStatus, notifyAdmins };

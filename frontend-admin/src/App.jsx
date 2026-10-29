@@ -5,6 +5,7 @@ import AdminLayout from './components/AdminLayout';
 
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const OrdersPage = lazy(() => import('./pages/OrdersPage'));
 const DriversPage = lazy(() => import('./pages/DriversPage'));
 const ClientsPage = lazy(() => import('./pages/ClientsPage'));
@@ -55,6 +56,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<AdminLoginPage />} />
         <Route path="/"        element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+        <Route path="/analytics" element={<PrivateRoute><AnalyticsPage /></PrivateRoute>} />
         <Route path="/orders"  element={<PrivateRoute><OrdersPage /></PrivateRoute>} />
         <Route path="/b2b"     element={<PrivateRoute><B2BEnterprisePage /></PrivateRoute>} />
         <Route path="/drivers" element={<PrivateRoute><DriversPage /></PrivateRoute>} />

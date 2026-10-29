@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Building2, ChevronLeft, ChevronRight, CreditCard, FileChartColumn, Gift, IdCard, LayoutDashboard,
-  LogOut, MessageCircle, Package, Scale, Settings, Star, Ticket, TrendingUp, Users, Wrench,
-} from 'lucide-react';
+  LogOut, MessageCircle, Package, Scale, Settings, Star, Ticket, TrendingUp, Users, Wrench, ChartSpline } from 'lucide-react';
 import useAdminStore from '../store/adminStore';
 
 const NAV_ITEMS = [
   { path: '/',          Icon: LayoutDashboard, label: 'Tableau de bord' },
+  { path: '/analytics', Icon: ChartSpline,     label: 'Analyses' },
   { path: '/orders',    Icon: Package,         label: 'Commandes' },
   { path: '/messages',  Icon: MessageCircle,   label: 'Messagerie' },
   { path: '/b2b',       Icon: Building2,       label: 'B2B & Séquestre' },

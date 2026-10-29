@@ -814,3 +814,15 @@ CREATE TABLE IF NOT EXISTS user_sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id) WHERE revoked_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_users_deletion ON users(deletion_requested_at) WHERE deletion_requested_at IS NOT NULL;
+
+-- =============================================
+-- Réglages de la plateforme (objectif mensuel de chiffre d'affaires de la console Analyses…)
+-- =============================================
+CREATE TABLE IF NOT EXISTS platform_settings (
+  key VARCHAR(60) PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+-- Analyses par période : commandes filtrées et regroupées par date de création
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);

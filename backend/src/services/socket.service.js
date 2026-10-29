@@ -31,6 +31,8 @@ const setupSocketIO = (io) => {
     if (socket.sessionId) socket.join(`session_${socket.sessionId}`);
     if (socket.userRole === 'client') socket.join(`client_${socket.userId}`);
     if (socket.userRole === 'driver') socket.join(`driver_${socket.userId}`);
+    // Console admin : prévenue des changements pour rafraîchir les analyses en temps réel
+    if (socket.userRole === 'admin') socket.join('admins');
 
     // Chauffeur : se mettre disponible (reçoit les nouvelles commandes payées)
     socket.on('driver_available', async () => {

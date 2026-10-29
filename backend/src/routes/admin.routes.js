@@ -4,6 +4,7 @@ const { query } = require('../config/database');
 const { param, body } = require('express-validator');
 const { validateRequest } = require('../middlewares/validate.middleware');
 const { B2B_PRICING_PLANS } = require('../services/pricing.service');
+const analytics = require('../services/analytics.service');
 
 const router = express.Router();
 router.use(authenticate, requireRole('admin'));
@@ -45,6 +46,29 @@ router.get('/stats', async (req, res, next) => {
       clients: clients.rows[0],
       weekly: weekly.rows,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/admin/analytics?days=7|30|90 - Analyses : indicateurs, projections, objectif, répartitions
+router.get('/analytics', async (req, res, next) => {
+  try {
+    res.json(await analytics.getAnalytics({ days: req.query.days }));
+  } catch (error) {
+    next(error);
+  }
+});
+
+// PUT /api/admin/analytics/objective - Objectif mensuel de chiffre d'affaires (FCFA)
+router.put('/analytics/objective', [
+  body('amount').isInt({ min: 0, max: 1e12 }).withMessage('Objectif invalide'),
+  validateRequest,
+], async (req, res, next) => {
+  try {
+    const amount = await analytics.setObjective(req.body.amount, req.user.id);
+    req.app.get('io')?.to('admins').emit('analytics_changed', { reason: 'objective' });
+    res.json({ amount });
   } catch (error) {
     next(error);
   }

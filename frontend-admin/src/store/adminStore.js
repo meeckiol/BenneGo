@@ -23,6 +23,8 @@ const useAdminStore = create(
         // Ferme la session de cet appareil côté serveur (elle disparaît des « appareils connectés »)
         api.post('/account/logout').catch(() => {});
         delete api.defaults.headers.common['Authorization'];
+        // Coupe le canal temps réel de la console (import différé : le service lit ce store)
+        import('../services/socket').then((m) => m.closeSocket());
         set({ user: null, token: null, isAuthenticated: false });
       },
 
