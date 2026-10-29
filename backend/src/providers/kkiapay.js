@@ -38,9 +38,10 @@ const verify = async (transactionId, orderId) => {
   if (isLocalBypass(transactionId)) {
     if (orderId) {
       const { query } = require('../config/database');
-      const res = await query('SELECT total_amount FROM orders WHERE id = $1', [orderId]);
+      const res = await query('SELECT total_amount, discount_amount FROM orders WHERE id = $1', [orderId]);
       if (res.rows.length) {
-        return { status: 'SUCCESS', amount: Number(res.rows[0].total_amount) };
+        const { total_amount: total, discount_amount: discount } = res.rows[0];
+        return { status: 'SUCCESS', amount: Math.max(0, Number(total) - Number(discount || 0)) };
       }
     }
     return { status: 'SUCCESS', amount: 0 };

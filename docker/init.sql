@@ -738,3 +738,50 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON push_subscriptions(user_id);
+
+-- =============================================
+-- PARRAINAGE : primes selon le type de compte, réduction du filleul, crédit BenneGo et versements
+-- Même type (client→client, camionneur→camionneur) : 1 500 FCFA au parrain et 1 500 au filleul.
+-- Croisé (client↔camionneur) : 1 000 FCFA au parrain. Prime versée à la 1re commande ou course livrée et confirmée.
+-- =============================================
+ALTER TABLE referrals ADD COLUMN IF NOT EXISTS referrer_role VARCHAR(20);
+ALTER TABLE referrals ADD COLUMN IF NOT EXISTS referee_role VARCHAR(20);
+ALTER TABLE referrals ADD COLUMN IF NOT EXISTS referee_reward DECIMAL(10,2) DEFAULT 0;
+ALTER TABLE referrals ADD COLUMN IF NOT EXISTS welcome_order_id UUID REFERENCES orders(id) ON DELETE SET NULL;
+ALTER TABLE referrals ADD COLUMN IF NOT EXISTS qualifying_order_id UUID REFERENCES orders(id) ON DELETE SET NULL;
+
+-- Montant payé par le client = total_amount - discount_amount (la part du chauffeur ne change pas)
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS referral_discount DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS credit_used DECIMAL(12,2) DEFAULT 0;
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_amount DECIMAL(12,2) DEFAULT 0;
+
+-- Demandes de versement du crédit (camionneurs), traitées par l'administration
+CREATE TABLE IF NOT EXISTS credit_payouts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount DECIMAL(12,2) NOT NULL CHECK (amount > 0),
+  momo_number VARCHAR(20),
+  momo_provider VARCHAR(20),
+  status VARCHAR(20) NOT NULL DEFAULT 'requested',
+  reference VARCHAR(100),
+  requested_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  processed_at TIMESTAMP WITH TIME ZONE,
+  processed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT credit_payouts_status_check CHECK (status IN ('requested', 'paid', 'rejected'))
+);
+CREATE INDEX IF NOT EXISTS idx_credit_payouts_user ON credit_payouts(user_id);
+
+-- Crédit BenneGo : chaque mouvement (prime gagnée, crédit utilisé, versement) ; le solde est la somme
+CREATE TABLE IF NOT EXISTS user_credits (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount DECIMAL(12,2) NOT NULL,
+  reason VARCHAR(40) NOT NULL,
+  order_id UUID REFERENCES orders(id) ON DELETE SET NULL,
+  referral_id UUID REFERENCES referrals(id) ON DELETE SET NULL,
+  payout_id UUID REFERENCES credit_payouts(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_user_credits_user ON user_credits(user_id);
+-- Une seule prime par parrainage et par bénéficiaire, même si la confirmation est rejouée
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_credits_referral ON user_credits(referral_id, user_id, reason) WHERE referral_id IS NOT NULL;

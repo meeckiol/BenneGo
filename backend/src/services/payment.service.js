@@ -17,6 +17,10 @@ const crypto = require('crypto');
 const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 const kkiapay = require('../providers/kkiapay');
+const referrals = require('./referral.service');
+
+/** Montant réellement payé par le client : prix moins les réductions (parrainage, crédit). */
+const amountDue = (order) => Math.max(0, Number(order.total_amount) - Number(order.discount_amount || 0));
 const payout = require('./payout.service');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -60,7 +64,7 @@ const getCheckoutConfig = async (orderId, user) => {
   return {
     order_id: order.id,
     order_number: order.order_number,
-    amount: Number(order.total_amount),
+    amount: amountDue(order),
     // En sandbox, champ vide : le testeur saisit un numéro de test KKiaPay (le numéro du compte échouerait).
     // En réel : numéro local sans indicatif, comme l'attend le widget (+22997000000 → 97000000)
     phone: widget.sandbox ? undefined : localPhone(user.phone),
@@ -109,14 +113,14 @@ const confirmEscrow = async (orderId, transactionId, { clientId } = {}) => {
     if (order.payment_status !== 'unpaid' || order.status !== 'awaiting_payment') {
       throw new AppError('Cette commande ne peut plus être payée', 409);
     }
-    if (Number(result.amount) !== Number(order.total_amount)) {
+    if (Number(result.amount) !== amountDue(order)) {
       throw new AppError('Le montant payé ne correspond pas au montant de la commande', 402);
     }
 
     await db.query(
       `INSERT INTO transactions (order_id, type, amount, provider, provider_reference, status, metadata)
        VALUES ($1, 'escrow_hold', $2, 'kkiapay', $3, 'success', $4)`,
-      [order.id, order.total_amount, transactionId, JSON.stringify({ source: clientId ? 'client' : 'webhook' })]
+      [order.id, amountDue(order), transactionId, JSON.stringify({ source: clientId ? 'client' : 'webhook' })]
     );
     const updated = await db.query(
       `UPDATE orders SET payment_status = 'escrow_held', payment_reference = $1, payment_at = NOW(),
@@ -185,11 +189,12 @@ const confirmDelivery = async (orderId, clientId, { adminOverride = false } = {}
                 updated_at = NOW() WHERE id = $1`,
         [order.id]
       );
-      // 10 % : prélevés par la plateforme
+      // 10 % : prélevés par la plateforme, moins les réductions accordées au client (prises sur la commission)
+      const discount = Number(order.discount_amount || 0);
       await db.query(
-        `INSERT INTO transactions (order_id, type, amount, provider, status)
-         VALUES ($1, 'platform_fee', $2, 'kkiapay', 'success')`,
-        [order.id, commission]
+        `INSERT INTO transactions (order_id, type, amount, provider, status, metadata)
+         VALUES ($1, 'platform_fee', $2, 'kkiapay', 'success', $3)`,
+        [order.id, commission - discount, JSON.stringify({ commission, discount })]
       );
       // 90 % : à reverser au chauffeur
       await db.query(
@@ -201,6 +206,8 @@ const confirmDelivery = async (orderId, clientId, { adminOverride = false } = {}
         'UPDATE driver_profiles SET total_trips = total_trips + 1, updated_at = NOW() WHERE user_id = $1',
         [order.driver_id]
       );
+      // 1re commande du filleul client ou 1re course du filleul camionneur : prime du parrain
+      await referrals.onOrderValidated(db, order);
     }
     await db.query('COMMIT');
   } catch (error) {
@@ -347,7 +354,7 @@ const refundEscrow = async (orderId, { actor, reason }) => {
     await db.query(
       `INSERT INTO transactions (order_id, type, amount, provider, provider_reference, status, metadata)
        VALUES ($1, 'refund', $2, 'kkiapay', $3, 'success', $4)`,
-      [order.id, order.total_amount, order.payment_reference, JSON.stringify({ by: actor.role, reason: reason || null })]
+      [order.id, amountDue(order), order.payment_reference, JSON.stringify({ by: actor.role, reason: reason || null })]
     );
     await db.query(
       `UPDATE orders SET payment_status = 'refunded', status = 'cancelled', cancelled_at = NOW(),
@@ -357,6 +364,8 @@ const refundEscrow = async (orderId, { actor, reason }) => {
               updated_at = NOW() WHERE id = $1`,
       [order.id, reason || null]
     );
+    // Le crédit utilisé revient au client, la réduction de bienvenue redevient disponible
+    await referrals.releaseForOrder(db, order);
     await db.query('COMMIT');
     return { order };
   } catch (error) {

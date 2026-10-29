@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 const otp = require('../services/otp.service');
+const referrals = require('../services/referral.service');
 const { saveImage } = require('../services/photo.service');
 
 /**
@@ -44,6 +45,7 @@ const register = async (req, res, next) => {
       email,
       password,
       role = 'client',
+      referral_code,
     } = req.body;
 
     // Validation du rôle (on ne peut pas s'inscrire comme admin)
@@ -78,8 +80,12 @@ const register = async (req, res, next) => {
          RETURNING id, phone, full_name, prenom, nom, date_naissance, adresse, email, role, created_at`,
         [phone, full_name, prenom.trim(), nom.trim(), date_naissance || null, adresse || null, email || null, role, password_hash]
       );
-      await db.query('COMMIT');
       user = result.rows[0];
+      // Code parrain saisi à l'inscription : un code invalide annule l'inscription avec un message clair
+      if (referral_code && String(referral_code).trim()) {
+        await referrals.applyCode(user, referral_code, db);
+      }
+      await db.query('COMMIT');
     } catch (error) {
       await db.query('ROLLBACK');
       throw error;

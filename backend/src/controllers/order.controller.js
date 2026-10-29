@@ -3,6 +3,7 @@ const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 const { calculateRoute, calculatePrice } = require('../services/pricing.service');
 const payments = require('../services/payment.service');
+const referrals = require('../services/referral.service');
 const events = require('../services/order-events');
 const { generateReceiptPDF } = require('../services/receipt.service');
 const photos = require('../services/photo.service');
@@ -31,6 +32,10 @@ const withClientContactFor = (order, user) => {
 // réservés au chauffeur et à l'administration.
 const SPLIT_FIELDS = ['driver_amount', 'commission_amount'];
 const hideSplitFor = (data, user) => {
+  // Montant réellement payé par le client : prix moins les réductions (parrainage, crédit)
+  if (data && data.total_amount !== undefined && data.amount_due === undefined) {
+    data = { ...data, amount_due: Math.max(0, Number(data.total_amount) - Number(data.discount_amount || 0)) };
+  }
   if (!data || user?.role !== 'client') return data;
   const copy = { ...data };
   SPLIT_FIELDS.forEach((field) => delete copy[field]);
@@ -113,6 +118,7 @@ const estimatePrice = async (req, res, next) => {
       machinery_type,
       rotations = 1,
       vehicle_type_id,
+      use_credit = false,
     } = req.body;
 
     const b2bStatus = req.user ? await checkUserB2BStatus(req.user.id) : { isB2b: false };
@@ -156,12 +162,24 @@ const estimatePrice = async (req, res, next) => {
       km_rate: vehicleInfo?.km_rate,
     });
 
+    // Client : réduction de bienvenue (filleul) et crédit disponible, pour l'afficher au devis
+    let discounts = { referralDiscount: 0, creditUsed: 0, creditBalance: 0 };
+    if (req.user?.role === 'client') {
+      discounts = await referrals.orderDiscounts({ query }, req.user, {
+        total: pricing.total_amount, commission: pricing.commission_amount, useCredit: !!use_credit,
+      });
+    }
+    const discount = discounts.referralDiscount + discounts.creditUsed;
+
     res.json({
       order_type,
       distance_km: route.distance_km,
       duration_min: route.duration_min,
       route_coordinates: route.coordinates,
-      ...hideSplitFor(pricing, req.user),
+      ...hideSplitFor({ ...pricing, discount_amount: discount }, req.user),
+      referral_discount: discounts.referralDiscount,
+      credit_balance: discounts.creditBalance,
+      credit_used: discounts.creditUsed,
     });
   } catch (error) {
     next(error);
@@ -191,6 +209,7 @@ const createOrder = async (req, res, next) => {
       evacuation_debris_type,
       evacuation_photo_url,
       notes,
+      use_credit = false,
     } = req.body;
 
     const b2bStatus = await checkUserB2BStatus(req.user.id);
@@ -233,6 +252,11 @@ const createOrder = async (req, res, next) => {
 
     const orderNumber = generateOrderNumber(order_type === 'RENTAL' ? 'ENG' : order_type === 'EVACUATION' ? 'EVAC' : 'LT');
 
+    // Réductions du client (bienvenue du filleul, crédit s'il le demande) : la part du chauffeur reste entière
+    const discounts = await referrals.orderDiscounts(client, req.user, {
+      total: pricing.total_amount, commission: pricing.commission_amount, useCredit: !!use_credit, release: true,
+    });
+
     const result = await client.query(
       `INSERT INTO orders (
         order_number, client_id, project_id, order_type, vehicle_type_id,
@@ -268,8 +292,15 @@ const createOrder = async (req, res, next) => {
         notes || null,
       ]
     );
-    // Le type de camion demandé est enregistré avec la commande (même transaction)
-    await client.query('UPDATE orders SET truck_type = $2 WHERE id = $1', [result.rows[0].id, truck_type]);
+    // Le type de camion demandé et les réductions sont enregistrés avec la commande (même transaction)
+    const discountRes = await client.query(
+      `UPDATE orders SET truck_type = $2, referral_discount = $3, credit_used = $4, discount_amount = $5
+       WHERE id = $1 RETURNING *`,
+      [result.rows[0].id, truck_type, discounts.referralDiscount, discounts.creditUsed,
+        discounts.referralDiscount + discounts.creditUsed]
+    );
+    result.rows[0] = discountRes.rows[0];
+    await referrals.reserveForOrder(client, result.rows[0].id, req.user.id, discounts);
 
     await client.query('COMMIT');
     const order = result.rows[0];
@@ -824,6 +855,8 @@ const cancelOrder = async (req, res, next) => {
         [order.id, req.body.reason || null]
       );
       if (!upd.rowCount) throw new AppError('Annulation impossible', 409);
+      // Le crédit utilisé revient au client, la réduction de bienvenue redevient disponible
+      await referrals.releaseForOrder({ query }, order);
       return res.json({ message: 'Commande annulée', refunded: false });
     }
 

@@ -22,6 +22,8 @@ router.post('/register', [
   body('email').optional({ nullable: true, checkFalsy: true }).isEmail().withMessage('Email invalide'),
   body('password').isLength({ min: 8 }).withMessage('Mot de passe: 8 caractères minimum'),
   body('role').optional().isIn(['client', 'driver']).withMessage('Rôle invalide'),
+  body('referral_code').optional({ nullable: true, checkFalsy: true }).isString().trim()
+    .isLength({ max: 30 }).withMessage('Code parrain invalide'),
 ], validateRequest, register);
 
 // POST /api/auth/login
