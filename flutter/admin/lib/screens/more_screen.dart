@@ -2,11 +2,12 @@ import 'package:bennego_core/bennego_core.dart';
 import 'package:flutter/material.dart';
 
 import 'barometer_screen.dart';
+import 'messages_screen.dart';
 import 'promos_screen.dart';
 import 'reliefs_screen.dart';
 import 'reviews_screen.dart';
 
-/// Outils : pannes et relèves, baromètre BTP, codes promo et avis.
+/// Outils : messagerie, pannes et relèves, baromètre BTP, codes promo et avis.
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
@@ -18,6 +19,12 @@ class MoreScreen extends StatelessWidget {
         children: [
           const Text('Outils', style: TextStyle(color: BnColors.textStrong, fontSize: 22, fontWeight: FontWeight.w800)),
           const SizedBox(height: 12),
+          const _Tile(
+            icon: Icons.chat_bubble_outline,
+            title: 'Messagerie',
+            subtitle: 'Discussions clients ↔ chauffeurs, message de l\'assistance',
+            page: MessagesScreen(),
+          ),
           _Tile(
             icon: Icons.build_outlined,
             title: 'Pannes & relèves',

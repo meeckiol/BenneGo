@@ -19,6 +19,10 @@ class DriverSummary {
     required this.awaitingConfirmation,
     required this.truckPlate,
     required this.truckType,
+    this.thisMonth = 0,
+    this.tripsThisMonth = 0,
+    this.truckCapacityM3,
+    this.momoProvider,
   });
 
   factory DriverSummary.fromJson(Map<String, dynamic> json) {
@@ -33,6 +37,10 @@ class DriverSummary {
       awaitingConfirmation: parseNum(earnings['awaiting_confirmation']),
       truckPlate: json['truck_plate'] as String?,
       truckType: json['truck_type'] as String?,
+      thisMonth: parseNum(earnings['this_month']),
+      tripsThisMonth: (json['trips_this_month'] as num?)?.toInt() ?? 0,
+      truckCapacityM3: parseNumOrNull(json['truck_capacity_m3']),
+      momoProvider: json['momo_provider'] as String?,
     );
   }
 
@@ -45,6 +53,12 @@ class DriverSummary {
   final double awaitingConfirmation;
   final String? truckPlate;
   final String? truckType;
+
+  /// Gains et courses validées depuis le début du mois.
+  final double thisMonth;
+  final int tripsThisMonth;
+  final double? truckCapacityM3;
+  final String? momoProvider;
 }
 
 /// Commande proposée au chauffeur (événement temps réel `new_order`).
@@ -170,11 +184,11 @@ class DriverController extends ChangeNotifier {
     _changed();
   }
 
-  /// Historique : courses terminées ou clôturées par ce chauffeur.
-  Future<List<Order>> history() async {
+  /// Toutes les courses de ce chauffeur (en cours et terminées), pour l'onglet Courses.
+  Future<List<Order>> courses() async {
     final orders = _ordersFrom(await api.get('/orders', query: {'limit': 100}));
     final me = session.user?.id;
-    return orders.where((o) => o.driverId == me && o.isFinal).toList();
+    return orders.where((o) => o.driverId == me).toList();
   }
 
   void setAvailable(bool value) {

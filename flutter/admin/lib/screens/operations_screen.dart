@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
+import 'messages_screen.dart';
 
 /// Opérations : litiges à trancher, reversements aux chauffeurs et commandes récentes.
 class OperationsScreen extends StatelessWidget {
@@ -151,7 +152,15 @@ class _DisputesTabState extends State<_DisputesTab> {
                 padding: const EdgeInsets.only(top: 6),
                 child: Text('${dispute.photos.length} photo(s) jointes', style: const TextStyle(color: BnColors.text3, fontSize: 12)),
               ),
-            const SizedBox(height: 12),
+            // La discussion client ↔ chauffeur aide à trancher (horaires, accès, quantité annoncée…)
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => MessagesScreen(initialScope: 'dispute', openOrderId: dispute.orderId),
+              )),
+              icon: const Icon(Icons.chat_bubble_outline, size: 18),
+              label: const Text('Voir la discussion client ↔ chauffeur'),
+            ),
+            const SizedBox(height: 4),
             Row(
               children: [
                 Expanded(

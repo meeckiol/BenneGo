@@ -5,9 +5,16 @@ import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/shell_screen.dart';
 
-/// Application chauffeur : affiche la connexion ou l'espace chauffeur selon la session.
-class DriverApp extends StatelessWidget {
+/// Application chauffeur : splash animé par tracé du logo, puis connexion ou espace chauffeur selon la session.
+class DriverApp extends StatefulWidget {
   const DriverApp({super.key});
+
+  @override
+  State<DriverApp> createState() => _DriverAppState();
+}
+
+class _DriverAppState extends State<DriverApp> {
+  bool _splash = true;
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +23,16 @@ class DriverApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: bennegoTheme(),
       home: const _AuthGate(),
+      builder: (context, child) {
+        // Animations réduites dans les réglages du téléphone : pas de splash
+        final show = _splash && !MediaQuery.disableAnimationsOf(context);
+        return Stack(
+          children: [
+            child ?? const SizedBox.shrink(),
+            if (show) Positioned.fill(child: TraceSplash(onDone: () => setState(() => _splash = false))),
+          ],
+        );
+      },
     );
   }
 }

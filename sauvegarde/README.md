@@ -164,3 +164,17 @@ import SplashGate from '../../shared/SplashScreen';
 ```
 
 L'ancien écran de lancement Android avait le fond `#0F172A` (`frontend-driver/public/manifest.json`).
+
+## flutter-avant-messagerie (29 octobre 2026)
+
+Avant : messagerie client ↔ chauffeur dans les apps Flutter (onglet Messages, discussion, pastilles, bandeau),
+camionneur en 4 onglets (Accueil, Courses, Messages, Profil) avec splash par tracé du logo, profil client
+avec parrainage, section Messagerie de l'admin, écrans de lancement natifs noirs sans image.
+
+```bash
+B=sauvegarde/flutter-avant-messagerie
+for f in $(cd $B && find . -type f); do cp "$B/$f" "flutter/$f"; done
+git rm -r flutter/bennego_core/lib/src/messaging flutter/bennego_core/lib/src/splash flutter/bennego_core/lib/src/profile \
+  flutter/driver/lib/screens/{courses_screen,profile_screen,chat_route}.dart flutter/driver/lib/config \
+  flutter/client/lib/screens/chat_route.dart flutter/admin/lib/screens/messages_screen.dart
+```

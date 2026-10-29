@@ -105,3 +105,13 @@ Le chauffeur envoie sa position pendant qu'il est disponible ou en mission, écr
 - **Paiement** : le widget KKiaPay s'ouvre dans une WebView. À tester avec de vraies clés en mode bac à sable avant la production.
 - **Test sur appareil** : rien n'a encore été installé sur un téléphone réel. Les compilations sont vérifiées par le workflow CI.
 - **Application Expo** : `mobile-driver/` reste dans le dépôt tant que l'application Flutter conducteur n'est pas validée sur appareil. Elle sera alors retirée.
+
+## Messagerie et splash
+
+- **Messagerie** (`bennego_core/lib/src/messaging`) : onglet Messages (client et chauffeur), discussion par commande
+  en cours, pastilles de non lus, bandeau « nouveau message » avec son et vibration, messages de l'assistance BenneGo.
+  Mêmes routes que le web : `GET /orders/chat/unread`, `POST /orders/:id/chat/read`, temps réel `chat_message` et `chat_notify`.
+- **Admin** : Outils → Messagerie (discussions en cours, litiges ou toutes ; message de l'assistance).
+- **Chauffeur** : splash animé par tracé du logo (`TraceSplash`), onglets Accueil, Courses, Messages, Profil.
+- **Écrans de lancement natifs** : fond noir uni, sans image, pour enchaîner sans flash.
+- Les notifications quand l'application est fermée demandent Firebase Cloud Messaging (non configuré).

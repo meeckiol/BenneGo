@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../controllers/driver_controller.dart';
 import '../domain/mission_steps.dart';
 import '../widgets/forms.dart';
+import 'chat_route.dart';
 
 /// Mission en cours : étape suivante, formulaires de chargement et de livraison, panne et itinéraire.
 class MissionScreen extends StatelessWidget {
@@ -33,8 +34,23 @@ class MissionScreen extends StatelessWidget {
 
     final step = nextMissionStep(order);
     final api = context.read<ApiClient>();
+    final unread = context.watch<ChatCenter>().unreadFor(order.id);
     return Scaffold(
-      appBar: AppBar(title: Text(order.orderNumber)),
+      appBar: AppBar(
+        title: Text(order.orderNumber),
+        actions: [
+          // Discussion avec le client, en plein écran, avec ses messages non lus
+          IconButton(
+            tooltip: 'Messages',
+            onPressed: () => openChat(context, order),
+            icon: Badge(
+              isLabelVisible: unread > 0,
+              label: Text(unread > 9 ? '9+' : '$unread'),
+              child: const Icon(Icons.chat_bubble_outline),
+            ),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         color: BnColors.brand,
         onRefresh: driver.refresh,

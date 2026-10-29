@@ -44,6 +44,11 @@ class Order {
     required this.clientRating,
     required this.podPhotos,
     required this.photos,
+    this.clientName,
+    this.clientPhone,
+    this.driverName,
+    this.driverPhone,
+    this.materialName,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
@@ -72,6 +77,11 @@ class Order {
         clientRating: (json['client_rating'] as num?)?.toInt(),
         podPhotos: _photoPaths(json['pod_photos']),
         photos: _orderPhotos(json['photos']),
+        clientName: json['client_name'] as String?,
+        clientPhone: json['client_phone'] as String?,
+        driverName: json['driver_name'] as String?,
+        driverPhone: json['driver_phone'] as String?,
+        materialName: json['material_name'] as String? ?? json['material_description'] as String?,
       );
 
   final String id;
@@ -100,11 +110,44 @@ class Order {
   final List<String> podPhotos;
   final List<OrderPhoto> photos;
 
+  /// Coordonnées de l'autre personne : le client les voit pour son chauffeur, le chauffeur assigné pour son client.
+  final String? clientName;
+  final String? clientPhone;
+  final String? driverName;
+  final String? driverPhone;
+  final String? materialName;
+
   bool get isFinal => finalOrderStatuses.contains(status);
   bool get isDisputeOpen => disputeStatus == 'open';
   bool get isLoadingRecorded => loadingVolumeM3 != null;
   String get statusLabel => statusInfo(status).label;
+
+  /// Discussion client ↔ chauffeur : ouverte dès qu'un chauffeur est assigné, fermée une fois la commande terminée.
+  bool get hasChat => driverId != null && !isFinal;
+
+  /// Ce qui est livré, par exemple « Sable · 12 m³ ».
+  String get summary {
+    if (orderType == 'RENTAL') return "Location d'engin";
+    if (orderType == 'EVACUATION') return 'Évacuation de gravats';
+    final what = (materialName ?? '').isEmpty ? 'Matériaux' : materialName!;
+    return quantityM3 > 0 ? '$what · ${_m3(quantityM3)} m³' : what;
+  }
+
+  /// Avancement de la livraison, de 0 (commandée) à 1 (livrée), pour les barres de progression.
+  double get progress => orderProgress(status);
 }
+
+/// Avancement d'un statut, de 0 (commandée) à 1 (livrée).
+double orderProgress(String status) => switch (status) {
+      'accepted' => 0.25,
+      'driver_en_route_pickup' => 0.35,
+      'loading' || 'machine_operating' => 0.55,
+      'driver_en_route_delivery' => 0.75,
+      'delivered' || 'validated' || 'completed' => 1,
+      _ => 0.08,
+    };
+
+String _m3(double value) => value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
 
 List<String> _photoPaths(Object? value) {
   if (value is! List) return const [];

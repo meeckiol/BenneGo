@@ -14,6 +14,7 @@ Future<void> main() async {
   final api = ApiClient();
   final session = Session(api: api, store: TokenStore());
   final realtime = RealtimeClient(baseUrl: api.baseUrl);
+  final chats = ChatCenter(api: api, realtime: realtime);
 
   runApp(
     MultiProvider(
@@ -22,6 +23,7 @@ Future<void> main() async {
         Provider.value(value: realtime),
         Provider(create: (_) => ClientRepository(api)),
         ChangeNotifierProvider.value(value: session),
+        ChangeNotifierProvider.value(value: chats),
       ],
       child: const ClientApp(),
     ),

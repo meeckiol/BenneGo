@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../data/client_repository.dart';
 import '../domain/order_flow.dart';
+import 'chat_route.dart';
 import 'payment_screen.dart';
 import 'tracking_map.dart';
 
@@ -138,8 +139,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final order = _order;
+    final unread = order == null ? 0 : context.watch<ChatCenter>().unreadFor(order.id);
     return Scaffold(
-      appBar: AppBar(title: Text(order?.orderNumber ?? 'Commande')),
+      appBar: AppBar(
+        title: Text(order?.orderNumber ?? 'Commande'),
+        actions: [
+          // Discussion avec le chauffeur, tant que la commande est en cours
+          if (order != null && order.hasChat)
+            IconButton(
+              tooltip: 'Écrire au chauffeur',
+              onPressed: () => openChat(context, order),
+              icon: Badge(
+                isLabelVisible: unread > 0,
+                label: Text(unread > 9 ? '9+' : '$unread'),
+                child: const Icon(Icons.chat_bubble_outline),
+              ),
+            ),
+        ],
+      ),
       body: order == null
           ? Center(
               child: _loadError == null

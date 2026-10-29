@@ -88,7 +88,12 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 12,
                 childAspectRatio: 1.5,
                 children: [
-                  BnKpi(label: 'Gains encaissés', value: formatFcfa(summary.paid), icon: Icons.account_balance_wallet_outlined),
+                  BnKpi(
+                    label: 'Ce mois',
+                    value: formatFcfa(summary.thisMonth),
+                    sub: '${summary.tripsThisMonth} course(s) validée(s)',
+                    icon: Icons.account_balance_wallet_outlined,
+                  ),
                   BnKpi(label: 'Reversement en cours', value: formatFcfa(summary.pendingPayout), icon: Icons.sync, color: BnColors.info),
                   BnKpi(label: 'En attente de confirmation', value: formatFcfa(summary.awaitingConfirmation), icon: Icons.hourglass_empty, color: BnColors.warning),
                   BnKpi(

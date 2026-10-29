@@ -1,42 +1,162 @@
+import 'dart:async';
+
 import 'package:bennego_core/bennego_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Profil du client et déconnexion.
-class AccountScreen extends StatelessWidget {
+import '../config/client_config.dart';
+import '../data/client_repository.dart';
+import 'referral_screen.dart';
+
+/// Profil du client (comme le profil web) : en-tête, carte du code parrain, informations personnelles,
+/// chiffres, aide et déconnexion. Le parrainage n'a plus d'onglet : il est ici.
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  Map<String, dynamic>? _referral;
+  List<Order>? _orders;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_load());
+  }
+
+  Future<void> _load() async {
+    final repo = context.read<ClientRepository>();
+    try {
+      final results = await Future.wait<dynamic>([repo.referral(), repo.orders(limit: 100)]);
+      if (!mounted) return;
+      setState(() {
+        _referral = results[0] as Map<String, dynamic>;
+        _orders = results[1] as List<Order>;
+      });
+    } on ApiException catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
+
+  void _share() {
+    final code = _referral?['referral_code'];
+    if (code == null) return;
+    final text =
+        "Rejoins BenneGo pour tes transports de matériaux et locations d'engins avec mon code $code et reçois 2500 FCFA de réduction sur ta première commande !";
+    unawaited(launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}'), mode: LaunchMode.externalApplication));
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<Session>().user;
+    final orders = _orders;
+    final delivered = orders?.where((o) => o.status == 'validated' || o.status == 'completed').length;
+    final rewards = parseNum(_referral?['total_rewards']);
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Row(
-            children: [
-              BnAvatar(initials: user?.initials ?? 'B', size: 56),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user?.fullName ?? '',
-                      style: const TextStyle(color: BnColors.textStrong, fontSize: 18, fontWeight: FontWeight.w800),
-                    ),
-                    Text(user?.phone ?? '', style: const TextStyle(color: BnColors.text2)),
-                  ],
+      child: RefreshIndicator(
+        color: BnColors.brand,
+        onRefresh: _load,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          children: [
+            Center(child: BnAvatar(initials: user?.initials ?? 'B', size: 88)),
+            const SizedBox(height: 12),
+            Text(user?.fullName ?? '',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: BnColors.textStrong, fontSize: 22, fontWeight: FontWeight.w800)),
+            Text(user?.phone ?? '', textAlign: TextAlign.center, style: const TextStyle(color: BnColors.text3)),
+            const SizedBox(height: 8),
+            const Center(child: BnPill(label: 'Compte client', tone: BnTone.brand)),
+            const SizedBox(height: 18),
+            ReferralCard(
+              title: 'Affiliation',
+              text: 'Chaque ami inscrit avec votre code vous rapporte 2 500 FCFA.',
+              code: _referral?['referral_code'] as String?,
+              rewards: rewards > 0 ? '${formatFcfa(rewards)} gagnés' : null,
+              onShare: _share,
+              secondary: OutlinedButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => Scaffold(appBar: AppBar(title: const Text('Mes filleuls')), body: const ReferralScreen()),
+                )),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(44),
+                  foregroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFF33343C)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
+                child: const Text('Mes filleuls'),
               ),
+            ),
+            const SizedBox(height: 16),
+            ProfileGroup(children: [
+              ProfileRow(
+                icon: Icons.person_outline,
+                color: const Color(0xFF94A3B8),
+                title: 'Informations personnelles',
+                subtitle: 'Nom, adresse, e-mail',
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (_) => PersonalInfoScreen(api: context.read<ApiClient>()),
+                )),
+              ),
+            ]),
+            const SizedBox(height: 16),
+            BnCard(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              child: Row(
+                children: [
+                  _Stat(value: orders == null ? '…' : '${orders.length}', label: 'Commandes'),
+                  _Stat(value: delivered == null ? '…' : '$delivered', label: 'Livrées'),
+                  _Stat(value: '${_referral?['total_referrals'] ?? '…'}', label: 'Filleuls'),
+                ],
+              ),
+            ),
+            if (supportWhatsApp.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              ProfileGroup(title: 'Aide', children: [
+                ProfileRow(
+                  icon: Icons.chat_outlined,
+                  color: BnColors.success,
+                  title: 'Assistance WhatsApp',
+                  subtitle: 'Une question sur une commande',
+                  onTap: () => launchUrl(Uri.parse('https://wa.me/$supportWhatsApp'), mode: LaunchMode.externalApplication),
+                ),
+              ]),
             ],
-          ),
-          const SizedBox(height: 24),
-          OutlinedButton.icon(
-            onPressed: () => context.read<Session>().logout(),
-            icon: const Icon(Icons.logout),
-            label: const Text('Se déconnecter'),
-          ),
+            const SizedBox(height: 16),
+            ProfileGroup(children: [
+              ProfileRow(
+                icon: Icons.logout,
+                color: BnColors.danger,
+                title: 'Se déconnecter',
+                danger: true,
+                onTap: () => context.read<Session>().logout(),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(value, style: const TextStyle(color: BnColors.textStrong, fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(label, style: const TextStyle(color: BnColors.text3, fontSize: 11)),
         ],
       ),
     );

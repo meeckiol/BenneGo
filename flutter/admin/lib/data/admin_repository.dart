@@ -268,6 +268,52 @@ class Promo {
   String get discountLabel => discountType == 'percentage' ? '${discountValue.round()} %' : formatFcfa(discountValue);
 }
 
+/// Discussion client ↔ chauffeur d'une commande (`GET /admin/conversations`).
+class Conversation {
+  const Conversation({
+    required this.orderId,
+    required this.orderNumber,
+    required this.status,
+    required this.disputeOpen,
+    required this.clientName,
+    required this.clientPhone,
+    required this.driverName,
+    required this.driverPhone,
+    required this.messageCount,
+    required this.lastMessage,
+    required this.lastSenderRole,
+    required this.lastAt,
+  });
+
+  factory Conversation.fromJson(Map<String, dynamic> json) => Conversation(
+        orderId: json['id'] as String,
+        orderNumber: json['order_number'] as String? ?? '',
+        status: json['status'] as String? ?? '',
+        disputeOpen: json['dispute_status'] == 'open',
+        clientName: json['client_name'] as String? ?? 'Client',
+        clientPhone: json['client_phone'] as String?,
+        driverName: json['driver_name'] as String?,
+        driverPhone: json['driver_phone'] as String?,
+        messageCount: _int(json['message_count']),
+        lastMessage: json['last_message'] as String?,
+        lastSenderRole: json['last_sender_role'] as String?,
+        lastAt: DateTime.tryParse(json['last_at'] as String? ?? '')?.toLocal(),
+      );
+
+  final String orderId;
+  final String orderNumber;
+  final String status;
+  final bool disputeOpen;
+  final String clientName;
+  final String? clientPhone;
+  final String? driverName;
+  final String? driverPhone;
+  final int messageCount;
+  final String? lastMessage;
+  final String? lastSenderRole;
+  final DateTime? lastAt;
+}
+
 /// Accès à l'API de l'espace administrateur.
 class AdminRepository {
   AdminRepository(this.api);
@@ -277,6 +323,27 @@ class AdminRepository {
   Future<AdminStats> stats() async {
     final data = await api.get('/admin/stats') as Map<String, dynamic>;
     return AdminStats.fromJson(data);
+  }
+
+  /// Discussions : `active` (en cours), `dispute` (litiges ouverts) ou `all` (toutes, y compris terminées).
+  Future<List<Conversation>> conversations({String scope = 'active', String? query}) async {
+    final data = await api.get('/admin/conversations', query: {
+      'scope': scope,
+      if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+    }) as Map<String, dynamic>;
+    return (data['conversations'] as List? ?? const [])
+        .map((e) => Conversation.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<ChatMessage>> chat(String orderId) async {
+    final data = await api.get('/orders/$orderId/chat') as Map<String, dynamic>;
+    return (data['messages'] as List? ?? const []).map((e) => ChatMessage.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  /// Message de l'assistance BenneGo : le client et le chauffeur sont prévenus.
+  Future<void> sendTeamMessage(String orderId, String message) async {
+    await api.post('/admin/orders/$orderId/chat', body: {'message': message});
   }
 
   Future<List<Dispute>> disputes() async {
