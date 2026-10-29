@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart' hide Text;
-import '../i18n/text.dart';
 import '../i18n/lang.dart';
 
 /// Splash du client (même scène que le web, `shared/SplashScreen.jsx`) : vue de dessus, le camion-benne suit
@@ -191,12 +190,15 @@ class _TruckSplashState extends State<TruckSplash> with SingleTickerProviderStat
                           opacity: word,
                           child: Transform.translate(
                             offset: Offset(0, (1 - word) * 12),
-                            child: Text.rich(
-                              TextSpan(children: [
-                                TextSpan(text: tr('Benne'), style: TextStyle(color: Color(0xFF111827))),
-                                TextSpan(text: tr('Go'), style: TextStyle(color: Color(0xFFD9A55B))),
-                              ]),
-                              style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.7),
+                            // Nom de marque : RichText (et non Text) pour qu'il ne soit jamais traduit
+                            child: RichText(
+                              text: const TextSpan(
+                                style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.7),
+                                children: [
+                                  TextSpan(text: 'Benne', style: TextStyle(color: Color(0xFF111827))),
+                                  TextSpan(text: 'Go', style: TextStyle(color: Color(0xFFD9A55B))),
+                                ],
+                              ),
                             ),
                           ),
                         ),

@@ -261,7 +261,7 @@ function SplashScreen({ onDone }) {
           </g>
         </g>
       </svg>
-      <p ref={set('word')} className="bn-splash__word" style={{ opacity: 0 }}>
+      <p ref={set('word')} className="bn-splash__word" translate="no" style={{ opacity: 0 }}>
         Benne<span>Go</span>
       </p>
     </div>
