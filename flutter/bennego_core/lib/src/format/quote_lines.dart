@@ -1,4 +1,4 @@
-import 'package:bennego_core/bennego_core.dart';
+import 'format.dart';
 import 'package:intl/intl.dart';
 
 /// Une ligne du détail du devis : libellé, précision facultative et montant.

@@ -8,6 +8,7 @@ export 'src/auth/session.dart';
 export 'src/auth/token_store.dart';
 export 'src/config/app_config.dart';
 export 'src/format/format.dart';
+export 'src/format/quote_lines.dart';
 export 'src/messaging/chat_alerts.dart';
 export 'src/messaging/chat_center.dart';
 export 'src/messaging/chat_message.dart';

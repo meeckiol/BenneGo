@@ -1,4 +1,3 @@
-import 'package:bennego_client/domain/quote_lines.dart';
 import 'package:bennego_core/bennego_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 

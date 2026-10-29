@@ -5,7 +5,6 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../data/client_repository.dart';
-import '../domain/quote_lines.dart';
 import 'order_detail_screen.dart';
 import 'payment_screen.dart';
 

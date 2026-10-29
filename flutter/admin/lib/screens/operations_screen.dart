@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../data/admin_repository.dart';
 import 'messages_screen.dart';
+import 'order_detail_screen.dart';
 
 /// Opérations : litiges à trancher, reversements aux chauffeurs et commandes récentes.
 class OperationsScreen extends StatelessWidget {
@@ -314,6 +315,10 @@ class _OrdersTabState extends State<_OrdersTab> {
       onRefresh: _reload,
       empty: 'Aucune commande.',
       itemBuilder: (order) => BnCard(
+        onTap: () async {
+          await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => OrderDetailScreen(order: order)));
+          if (mounted) await _reload();
+        },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -329,6 +334,10 @@ class _OrdersTabState extends State<_OrdersTab> {
             Text(
               '${formatFcfa(parseNum(order['total_amount']))} · ${formatDateTime(DateTime.tryParse(order['created_at'] as String? ?? ''))}',
               style: const TextStyle(color: BnColors.text2, fontSize: 12),
+            ),
+            Text(
+              '${order['client_name'] ?? '—'} → ${order['driver_name'] ?? 'chauffeur non assigné'}',
+              style: const TextStyle(color: BnColors.text3, fontSize: 12),
             ),
           ],
         ),
