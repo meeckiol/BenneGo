@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
 const { query } = require('../config/database');
 const { recordPosition, broadcastPosition } = require('./tracking.service');
 const { notifyRecipient } = require('./chat.service');
+const { verifyToken } = require('./session.service');
 
 /**
  * Socket.IO : suivi temps réel des camions.
@@ -13,20 +13,22 @@ const setupSocketIO = (io) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Token requis'));
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
-      const { rows } = await query('SELECT id, full_name, role, is_active FROM users WHERE id = $1', [decoded.userId]);
-      if (!rows.length || !rows[0].is_active) return next(new Error('Compte inactif'));
-      socket.userId = rows[0].id;
-      socket.userName = rows[0].full_name;
-      socket.userRole = rows[0].role;
+      // Mêmes contrôles que l'API : compte actif, suppression non demandée, appareil non déconnecté
+      const user = await verifyToken(token);
+      socket.userId = user.id;
+      socket.userName = user.full_name;
+      socket.userRole = user.role;
+      socket.sessionId = user.sessionId;
       next();
     } catch (err) {
-      next(new Error('Token invalide'));
+      next(new Error(err.status === 401 ? err.message : 'Token invalide'));
     }
   });
 
   io.on('connection', (socket) => {
     socket.join(`user_${socket.userId}`);
+    // Appareil déconnecté depuis les réglages : ses connexions temps réel sont coupées via cette room
+    if (socket.sessionId) socket.join(`session_${socket.sessionId}`);
     if (socket.userRole === 'client') socket.join(`client_${socket.userId}`);
     if (socket.userRole === 'driver') socket.join(`driver_${socket.userId}`);
 

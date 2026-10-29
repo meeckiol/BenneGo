@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const webpush = require('web-push');
 const { query } = require('../config/database');
+const settings = require('./settings.service');
 
 /**
  * Notifications push (Web Push, VAPID) : elles arrivent même application fermée.
@@ -45,9 +46,17 @@ const removeSubscription = (userId, endpoint) => query(
   [userId, endpoint]
 );
 
-/** Envoie une notification à tous les appareils d'un utilisateur. Les abonnements expirés sont supprimés. */
-const sendToUser = async (userId, payload) => {
+/**
+ * Envoie une notification à tous les appareils d'un utilisateur, selon ses réglages : type coupé = rien,
+ * heures calmes ou son coupé = notification silencieuse (sauf `urgent`). Les abonnements expirés sont supprimés.
+ */
+const sendToUser = async (userId, payload, { category, urgent = false } = {}) => {
   if (!loadKeys()) return;
+  const { rows: users } = await query('SELECT role, settings, deletion_requested_at FROM users WHERE id = $1', [userId]);
+  if (!users.length || users[0].deletion_requested_at) return;
+  const decision = settings.pushDecision(settings.merge(users[0].role, users[0].settings), category, { urgent });
+  if (!decision) return;
+  payload = { ...payload, silent: decision.silent, vibrate: decision.vibrate };
   const { rows } = await query('SELECT endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = $1', [userId]);
   await Promise.all(rows.map((row) => webpush
     .sendNotification({ endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } }, JSON.stringify(payload), { TTL: 3600 })
@@ -59,4 +68,10 @@ const sendToUser = async (userId, payload) => {
     })));
 };
 
-module.exports = { publicKey, saveSubscription, removeSubscription, sendToUser };
+/** Prévient tous les administrateurs actifs (litiges, relèves, versements, messages) selon leurs réglages. */
+const sendToAdmins = async (payload, options) => {
+  const { rows } = await query("SELECT id FROM users WHERE role = 'admin' AND is_active = true");
+  await Promise.all(rows.map((row) => sendToUser(row.id, payload, options).catch(() => null)));
+};
+
+module.exports = { publicKey, saveSubscription, removeSubscription, sendToUser, sendToAdmins };

@@ -1,8 +1,10 @@
 /**
- * Entretien quotidien de la base : suppression des codes SMS expirés depuis plus de 24 h.
+ * Entretien quotidien de la base : suppression des codes SMS expirés depuis plus de 24 h,
+ * fermeture définitive des comptes supprimés depuis 60 jours et effacement de leurs données à 6 mois.
  * Lancé avec le serveur ; désactivé en test.
  */
 const { query } = require('../config/database');
+const { purgeDeletedAccounts } = require('./account.service');
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -15,9 +17,12 @@ const purgeExpiredOtps = async () => {
 
 const startMaintenanceWorker = () => {
   if (process.env.NODE_ENV === 'test') return null;
-  const timer = setInterval(() => {
+  const run = () => {
     purgeExpiredOtps().catch((error) => console.error('Entretien base :', error.message));
-  }, DAY_MS);
+    purgeDeletedAccounts().catch((error) => console.error('Comptes supprimés :', error.message));
+  };
+  setTimeout(run, 60 * 1000).unref();
+  const timer = setInterval(run, DAY_MS);
   timer.unref();
   return timer;
 };

@@ -1,41 +1,24 @@
-const jwt = require('jsonwebtoken');
-const { query } = require('../config/database');
+const { verifyToken } = require('../services/session.service');
 
 /**
  * Middleware d'authentification JWT
  */
 const authenticate = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token d\'authentification requis' });
+  }
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token d\'authentification requis' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
-
-    // Vérifier que l'utilisateur existe toujours et est actif
-    const result = await query(
-      'SELECT id, phone, full_name, role, is_active FROM users WHERE id = $1',
-      [decoded.userId]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Utilisateur introuvable' });
-    }
-
-    const user = result.rows[0];
-    if (!user.is_active) {
-      return res.status(401).json({ error: 'Compte désactivé' });
-    }
-
-    req.user = user;
+    // Signature, compte actif, suppression non demandée, appareil non déconnecté
+    req.user = await verifyToken(authHeader.split(' ')[1]);
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Session expirée, reconnectez-vous' });
     }
-    return res.status(401).json({ error: 'Token invalide' });
+    if (error.status === 401) return res.status(401).json({ error: error.message });
+    if (error.name === 'JsonWebTokenError') return res.status(401).json({ error: 'Token invalide' });
+    next(error);
   }
 };
 

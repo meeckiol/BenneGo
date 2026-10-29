@@ -1,11 +1,12 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { query, getClient } = require('../config/database');
 const { AppError } = require('../middlewares/error.middleware');
 const otp = require('../services/otp.service');
 const referrals = require('../services/referral.service');
 const { saveImage } = require('../services/photo.service');
+const sessions = require('../services/session.service');
+const account = require('../services/account.service');
 
 /**
  * Génère un numéro de commande unique
@@ -15,17 +16,6 @@ const generateOrderNumber = () => {
   const year = date.getFullYear();
   const random = Math.floor(Math.random() * 999999).toString().padStart(6, '0');
   return `LT-${year}-${random}`;
-};
-
-/**
- * Génère un token JWT
- */
-const generateToken = (userId, role) => {
-  return jwt.sign(
-    { userId, role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-  );
 };
 
 /**
@@ -92,7 +82,7 @@ const register = async (req, res, next) => {
     } finally {
       db.release();
     }
-    const token = generateToken(user.id, user.role);
+    const token = await sessions.issueToken(req, user);
 
     res.status(201).json({
       message: 'Compte créé avec succès',
@@ -171,7 +161,20 @@ const login = async (req, res, next) => {
       throw new AppError('Numéro ou mot de passe incorrect', 401);
     }
 
-    const token = generateToken(user.id, user.role);
+    // Suppression demandée : le compte reste récupérable pendant 60 jours
+    if (user.deletion_requested_at) {
+      const restoreUntil = account.restoreDeadline(user.deletion_requested_at);
+      if (restoreUntil > new Date()) {
+        return res.status(403).json({
+          error: 'Ce compte est en cours de suppression. Vous pouvez encore le reprendre.',
+          code: 'ACCOUNT_DELETION_PENDING',
+          restore_until: restoreUntil,
+        });
+      }
+      throw new AppError('Numéro ou mot de passe incorrect', 401);
+    }
+
+    const token = await sessions.issueToken(req, user);
 
     res.json({
       message: 'Connexion réussie',

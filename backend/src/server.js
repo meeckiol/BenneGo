@@ -9,6 +9,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
 const authRoutes = require('./routes/auth.routes');
+const accountRoutes = require('./routes/account.routes');
 const otpRoutes = require('./routes/otp.routes');
 const orderRoutes = require('./routes/order.routes');
 const adminOpsRoutes = require('./routes/admin-ops.routes');
@@ -148,7 +149,9 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth/otp', otpLimiter, otpRoutes);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', registerLimiter);
+app.use('/api/auth/restore', authLimiter);
 app.use('/api/auth', authRoutes);
+app.use('/api/account', accountRoutes);
 app.use('/api/barometer', barometerRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/promo', promoRoutes);

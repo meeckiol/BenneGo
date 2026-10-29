@@ -31,10 +31,15 @@ const recordPosition = async (driverId, { lat, lng, order_id: orderId }) => {
   const latitude = toCoord(lat, -90, 90, 'Latitude');
   const longitude = toCoord(lng, -180, 180, 'Longitude');
 
+  // Position enregistrée seulement quand le camionneur est en ligne ou en course (jamais hors ligne)
   await query(
     `UPDATE driver_profiles SET current_lat = $1, current_lng = $2,
-            last_position_at = NOW(), updated_at = NOW() WHERE user_id = $3`,
-    [latitude, longitude, driverId]
+            last_position_at = NOW(), updated_at = NOW()
+     WHERE user_id = $3 AND (
+       is_available = true
+       OR EXISTS (SELECT 1 FROM orders WHERE driver_id = $3 AND status = ANY($4::text[]))
+     )`,
+    [latitude, longitude, driverId, ACTIVE_STATUSES]
   );
   if (!orderId) return null;
 

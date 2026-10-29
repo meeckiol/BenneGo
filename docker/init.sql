@@ -788,3 +788,29 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_user_credits_referral ON user_credits(refer
 
 -- Détail du prix calculé à la commande (prise en charge, transport, chargement, arrondi…) pour la console admin
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS price_breakdown JSONB;
+
+-- =============================================
+-- Réglages du compte : préférences, appareils connectés, suppression différée
+-- =============================================
+-- Préférences (notifications par type, heures calmes, confidentialité), fusionnées avec les valeurs par défaut du rôle
+ALTER TABLE users ADD COLUMN IF NOT EXISTS settings JSONB NOT NULL DEFAULT '{}'::jsonb;
+-- Jetons émis avant cette date sans appareil enregistré : refusés (« déconnecter les autres appareils »)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sessions_revoked_before TIMESTAMP WITH TIME ZONE;
+-- Suppression demandée : récupérable 60 jours ; à 60 jours le numéro est libéré ; à 6 mois les données sont effacées
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_requested_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deletion_reason VARCHAR(300);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_phone VARCHAR(20);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS anonymized_at TIMESTAMP WITH TIME ZONE;
+
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  device_label VARCHAR(120),
+  user_agent VARCHAR(300),
+  ip VARCHAR(64),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  last_seen_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  revoked_at TIMESTAMP WITH TIME ZONE
+);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_users_deletion ON users(deletion_requested_at) WHERE deletion_requested_at IS NOT NULL;

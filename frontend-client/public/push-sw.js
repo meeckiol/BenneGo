@@ -1,5 +1,6 @@
 /*
- * Notifications push (messages) : affichées quand l'application n'est pas au premier plan.
+ * Notifications push (messages, commandes, courses…) : affichées quand l'application n'est pas au premier plan.
+ * Le serveur applique les réglages : `silent` pendant les heures calmes ou son coupé, `vibrate` selon le choix.
  * Un appui ouvre la discussion, dans la fenêtre déjà ouverte si elle existe.
  */
 self.addEventListener('push', (event) => {
@@ -12,7 +13,9 @@ self.addEventListener('push', (event) => {
     await self.registration.showNotification(data.title || 'BenneGo', {
       body: data.body || 'Nouveau message',
       tag: data.tag,
-      renotify: true,
+      renotify: !data.silent,
+      silent: !!data.silent,
+      vibrate: data.vibrate ? [200, 100, 200] : undefined,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       data: { url: data.url || '/messages' },

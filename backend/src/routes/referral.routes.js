@@ -4,6 +4,7 @@ const { authenticate, requireRole } = require('../middlewares/auth.middleware');
 const { validateRequest } = require('../middlewares/validate.middleware');
 const { query, getClient } = require('../config/database');
 const referralService = require('../services/referral.service');
+const push = require('../services/push.service');
 
 const router = express.Router();
 
@@ -110,6 +111,12 @@ router.post('/credit/payout', authenticate, requireRole('driver'), async (req, r
     await db.query('BEGIN');
     const payout = await referralService.requestPayout(db, req.user);
     await db.query('COMMIT');
+    push.sendToAdmins({
+      title: 'Demande de versement',
+      body: `${req.user.full_name} demande le versement de ${Math.round(Number(payout.amount)).toLocaleString('fr-FR')} FCFA de crédit.`,
+      tag: `credit-payout-${payout.id}`,
+      url: '/referrals',
+    }, { category: 'payouts' }).catch(() => null);
     res.status(201).json({ payout, message: 'Demande envoyée : BenneGo vous verse le montant sur votre Mobile Money.' });
   } catch (error) {
     await db.query('ROLLBACK');

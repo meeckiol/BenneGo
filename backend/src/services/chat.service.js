@@ -39,6 +39,18 @@ const notifyRecipient = async (io, order, msg) => {
   const recipients = msg.sender_role === 'admin'
     ? [order.client_id, order.driver_id]
     : [msg.sender_id === order.client_id ? order.driver_id : order.client_id];
+  // Discussion d'une commande en litige : l'équipe BenneGo est prévenue des nouveaux messages
+  if (msg.sender_role !== 'admin') {
+    const { rows } = await query("SELECT 1 FROM orders WHERE id = $1 AND dispute_status = 'open'", [order.id]);
+    if (rows.length) {
+      push.sendToAdmins({
+        title: `Litige ${order.order_number || ''} · ${msg.sender_name || 'Message'}`.trim(),
+        body: msg.message.length > 120 ? `${msg.message.slice(0, 117)}…` : msg.message,
+        tag: `chat-${msg.order_id}`,
+        url: `/messages?order=${msg.order_id}`,
+      }, { category: 'messages' }).catch(() => null);
+    }
+  }
   await Promise.all(recipients.filter(Boolean).map((recipientId) => {
     io.to(`user_${recipientId}`).emit('chat_notify', { ...msg, order_number: order.order_number });
     return push.sendToUser(recipientId, {
@@ -46,7 +58,7 @@ const notifyRecipient = async (io, order, msg) => {
       body: msg.message.length > 120 ? `${msg.message.slice(0, 117)}…` : msg.message,
       tag: `chat-${msg.order_id}`,
       url: `/messages/${msg.order_id}`,
-    });
+    }, { category: 'messages' });
   }));
 };
 

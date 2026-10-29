@@ -5,6 +5,7 @@ const { calculateRoute, calculatePrice } = require('../services/pricing.service'
 const payments = require('../services/payment.service');
 const referrals = require('../services/referral.service');
 const events = require('../services/order-events');
+const push = require('../services/push.service');
 const { generateReceiptPDF } = require('../services/receipt.service');
 const photos = require('../services/photo.service');
 const relief = require('../services/sla-quarry.service');
@@ -26,6 +27,29 @@ const withClientContactFor = (order, user) => {
   if (user.role !== 'driver' || order.driver_id === user.id) return order;
   const { client_name: _name, client_phone: _phone, ...withoutContact } = order;
   return withoutContact;
+};
+
+// Confidentialité choisie dans les réglages : photo visible ou non, numéro masqué. Sans masquage, le numéro
+// de l'autre n'est visible que pendant la course ; masqué, on passe par la messagerie de la commande.
+const PHONE_VISIBLE_STATUSES = ['accepted', 'driver_en_route_pickup', 'loading', 'machine_operating', 'driver_en_route_delivery', 'delivered'];
+const applyPrivacy = (order, user) => {
+  const {
+    client_settings: clientSettings, driver_settings: driverSettings,
+    client_photo_url: clientPhoto, driver_photo_url: driverPhoto, ...copy
+  } = order;
+  if (user?.role === 'admin') return { ...copy, client_photo_url: clientPhoto || null, driver_photo_url: driverPhoto || null };
+  const active = PHONE_VISIBLE_STATUSES.includes(copy.status);
+  if (user?.role === 'client') {
+    if (driverSettings?.privacy?.hide_phone || !active) delete copy.driver_phone;
+    copy.driver_phone_hidden = Boolean(driverSettings?.privacy?.hide_phone);
+    if (driverSettings?.privacy?.show_photo !== false && copy.driver_id) copy.driver_photo_url = driverPhoto || null;
+  }
+  if (user?.role === 'driver') {
+    if (clientSettings?.privacy?.hide_phone) delete copy.client_phone;
+    copy.client_phone_hidden = Boolean(clientSettings?.privacy?.hide_phone);
+    if (clientSettings?.privacy?.show_photo !== false && copy.driver_id === user.id) copy.client_photo_url = clientPhoto || null;
+  }
+  return copy;
 };
 
 // Le client ne voit que ce qu'il paie : la part du prestataire et les frais BenneGo restent
@@ -509,6 +533,8 @@ const getOrders = async (req, res, next) => {
       `SELECT o.*,
               u_client.full_name AS client_name, u_client.phone AS client_phone,
               u_driver.full_name AS driver_name, u_driver.phone AS driver_phone,
+              u_client.settings AS client_settings, u_driver.settings AS driver_settings,
+              u_client.profile_photo_url AS client_photo_url, u_driver.profile_photo_url AS driver_photo_url,
               mt.name AS material_name, vt.name AS vehicle_name, vt.category AS vehicle_category,
               pc.name AS project_name
        FROM orders o
@@ -524,7 +550,7 @@ const getOrders = async (req, res, next) => {
     );
 
     res.json({
-      orders: result.rows.map((order) => hideSplitFor(withClientContactFor(order, req.user), req.user)),
+      orders: result.rows.map((order) => hideSplitFor(applyPrivacy(withClientContactFor(order, req.user), req.user), req.user)),
       pagination: {
         total: parseInt(countResult.rows[0].count),
         page: parseInt(page),
@@ -547,6 +573,8 @@ const getOrder = async (req, res, next) => {
       `SELECT o.*,
               u_client.full_name AS client_name, u_client.phone AS client_phone,
               u_driver.full_name AS driver_name, u_driver.phone AS driver_phone,
+              u_client.settings AS client_settings, u_driver.settings AS driver_settings,
+              u_client.profile_photo_url AS client_photo_url, u_driver.profile_photo_url AS driver_photo_url,
               dp.truck_type, dp.truck_plate, dp.rating AS driver_rating_avg, dp.rating_count AS driver_rating_count,
               mt.name AS material_name, vt.name AS vehicle_name, vt.category AS vehicle_category,
               pc.name AS project_name, pc.address AS project_address
@@ -580,7 +608,7 @@ const getOrder = async (req, res, next) => {
       'SELECT kind, url, created_at FROM order_photos WHERE order_id = $1 ORDER BY created_at',
       [req.params.id]
     );
-    res.json({ order: { ...hideSplitFor(withClientContactFor(order, req.user), req.user), photos: photosRes.rows } });
+    res.json({ order: { ...hideSplitFor(applyPrivacy(withClientContactFor(order, req.user), req.user), req.user), photos: photosRes.rows } });
   } catch (error) {
     next(error);
   }
@@ -921,6 +949,8 @@ const fetchOrderForReceipt = async (orderId) => {
        u_c.adresse    AS client_adresse,
        u_d.full_name  AS driver_full_name,
        u_d.phone      AS driver_phone,
+       COALESCE((u_d.settings->'privacy'->>'hide_phone')::boolean, false) AS driver_hide_phone,
+       COALESCE((u_c.settings->'privacy'->>'hide_phone')::boolean, false) AS client_hide_phone,
        u_d.prenom     AS driver_prenom,
        u_d.nom        AS driver_nom,
        dp.truck_type,
@@ -957,6 +987,7 @@ const getReceiptClient = async (req, res, next) => {
       throw new AppError('Accès refusé', 403);
     }
 
+    if (req.user.role === 'client' && order.driver_hide_phone) order.driver_phone = null;
     generateReceiptPDF(res, order, 'client');
   } catch (error) {
     next(error);
@@ -978,6 +1009,7 @@ const getReceiptDriver = async (req, res, next) => {
       throw new AppError('Aucun conducteur assigné à cette commande', 400);
     }
 
+    if (req.user.role === 'driver' && order.client_hide_phone) order.client_phone = null;
     generateReceiptPDF(res, order, 'driver');
   } catch (error) {
     next(error);
@@ -1070,6 +1102,12 @@ const openDispute = async (req, res, next) => {
 
     const io = req.app.get('io');
     if (io && order.driver_id) io.to(`driver_${order.driver_id}`).emit('dispute_opened', { order_id: order.id });
+    push.sendToAdmins({
+      title: 'Nouveau litige',
+      body: `${order.order_number || 'Commande'} : ${reason.slice(0, 100)}`,
+      tag: `dispute-${order.id}`,
+      url: '/disputes',
+    }, { category: 'disputes' }).catch(() => null);
     res.status(201).json({ message: 'Litige ouvert. Le paiement reste bloqué jusqu\'à la décision de BenneGo.' });
   } catch (error) {
     await db.query('ROLLBACK');
@@ -1090,6 +1128,12 @@ const reportBreakdown = async (req, res, next) => {
       lat: Number(req.body.lat),
       lng: Number(req.body.lng),
     });
+    push.sendToAdmins({
+      title: 'Panne signalée',
+      body: `${req.user.full_name || 'Un camionneur'} demande une relève : ${String(req.body.reason || '').slice(0, 100)}`,
+      tag: `relief-${request.id}`,
+      url: '/reliefs',
+    }, { category: 'reliefs', urgent: true }).catch(() => null);
     res.status(201).json({ message: 'Panne signalée. BenneGo cherche une benne de réserve.', request });
   } catch (error) {
     next(error);

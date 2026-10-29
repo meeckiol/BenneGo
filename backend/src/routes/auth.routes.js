@@ -1,4 +1,5 @@
 const express = require('express');
+const account = require('../services/account.service');
 const { body } = require('express-validator');
 const { register, login, getMe, createDriverProfile, updateProfilePhoto, updateMe } = require('../controllers/auth.controller');
 const { uploadPhotos } = require('../services/photo.service');
@@ -34,6 +35,19 @@ router.post('/login', [
 
 // GET /api/auth/me
 router.get('/me', authenticate, getMe);
+
+// POST /api/auth/restore { phone, password } — reprendre un compte supprimé il y a moins de 60 jours
+router.post('/restore', [
+  body('phone').trim().notEmpty().withMessage('Numéro requis'),
+  body('password').isString().notEmpty().withMessage('Mot de passe requis'),
+], validateRequest, async (req, res, next) => {
+  try {
+    const result = await account.restoreAccount(req, req.body.phone, req.body.password);
+    res.json({ ...result, message: 'Bon retour ! Votre compte est rétabli.' });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // POST /api/auth/me/photo : photo de profil (champ « photo », image unique)
 router.post('/me/photo', authenticate, uploadPhotos.single('photo'), updateProfilePhoto);
