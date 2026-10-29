@@ -4,15 +4,35 @@ import 'package:image_picker/image_picker.dart';
 
 /// Estimation de prix renvoyée par `POST /orders/estimate`.
 class Estimate {
-  const Estimate({required this.totalAmount, required this.distanceKm, required this.durationMin});
+  const Estimate({
+    required this.totalAmount,
+    required this.distanceKm,
+    required this.durationMin,
+    this.amountDue,
+    this.referralDiscount = 0,
+    this.creditBalance = 0,
+    this.creditUsed = 0,
+  });
 
   factory Estimate.fromJson(Map<String, dynamic> json) => Estimate(
         totalAmount: parseNum(json['total_amount']),
         distanceKm: parseNumOrNull(json['distance_km']),
         durationMin: parseNumOrNull(json['duration_min']),
+        amountDue: parseNumOrNull(json['amount_due']),
+        referralDiscount: parseNum(json['referral_discount']),
+        creditBalance: parseNum(json['credit_balance']),
+        creditUsed: parseNum(json['credit_used']),
       );
 
   final double totalAmount;
+
+  /// Montant à payer après la réduction du filleul et le crédit utilisé.
+  final double? amountDue;
+  final double referralDiscount;
+  final double creditBalance;
+  final double creditUsed;
+
+  double get toPay => amountDue ?? totalAmount;
   final double? distanceKm;
   final double? durationMin;
 }

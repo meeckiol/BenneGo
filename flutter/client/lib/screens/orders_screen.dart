@@ -103,7 +103,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           Row(
                             children: [
                               Text(
-                                formatFcfa(order.totalAmount),
+                                formatFcfa(order.amountDue),
                                 style: const TextStyle(color: BnColors.brand, fontWeight: FontWeight.w800),
                               ),
                               const Spacer(),

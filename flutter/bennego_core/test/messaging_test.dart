@@ -54,4 +54,31 @@ void main() {
     await tester.tap(find.byType(TraceSplash));
     expect(done, isTrue);
   });
+
+  test('parrainage : textes sans « chacun », primes selon le type de compte', () {
+    final data = {
+      'rewards': {
+        'same_type': {'referrer': 1500, 'referee': 1500},
+        'cross_type': {'referrer': 1000, 'referee': 0},
+      },
+    };
+    final client = referralRewardLine('client', data);
+    // Montants au format français (espace insécable)
+    expect(client, contains(formatFcfa(1500)));
+    expect(client, contains(formatFcfa(1000)));
+    expect(client, isNot(contains('chacun')));
+    expect(referralShareText('client', 'ABC123', data), contains('réduction sur ta première commande'));
+    expect(referralShareText('driver', 'ABC123', data), contains('bonus à ta première course'));
+    expect(referralRewards(null).cross, 1000);
+  });
+
+  testWidgets('splash camion du client : se joue sans erreur puis se termine', (tester) async {
+    var done = false;
+    await tester.pumpWidget(MaterialApp(home: TruckSplash(onDone: () => done = true)));
+    for (var ms = 0; ms < 6400; ms += 400) {
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+    expect(tester.takeException(), isNull);
+    expect(done, isTrue);
+  });
 }

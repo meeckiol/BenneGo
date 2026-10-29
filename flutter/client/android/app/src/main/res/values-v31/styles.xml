@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Android 12 et plus : l'écran de démarrage système affiche l'icône de l'application par défaut.
-         Icône transparente et fond noir : il ne reste qu'un fond uni avant l'écran de l'application. -->
-    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+         Icône transparente et fond blanc : il ne reste qu'un fond uni avant l'écran de l'application. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">@color/bn_launch</item>
         <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
     </style>
-    <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@color/bn_launch</item>
     </style>
 </resources>

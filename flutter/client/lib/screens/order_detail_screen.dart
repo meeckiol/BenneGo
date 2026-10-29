@@ -197,7 +197,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const SizedBox(height: 10),
             _Address(label: 'Livraison', address: order.deliveryAddress, icon: Icons.place_outlined),
             const Divider(height: 28, color: BnColors.border),
-            Text(formatFcfa(order.totalAmount), style: const TextStyle(color: BnColors.brand, fontSize: 24, fontWeight: FontWeight.w800)),
+            Text(formatFcfa(order.amountDue), style: const TextStyle(color: BnColors.brand, fontSize: 24, fontWeight: FontWeight.w800)),
+            if (order.discountAmount > 0)
+              Text('Réductions (parrainage, crédit) : − ${formatFcfa(order.discountAmount)}',
+                  style: const TextStyle(color: BnColors.success, fontSize: 12)),
             const SizedBox(height: 4),
             Text(
               '${order.quantityM3} m³${order.distanceKm == null ? '' : ' · ${order.distanceKm!.toStringAsFixed(1)} km'} · ${formatDateTime(order.createdAt)}',

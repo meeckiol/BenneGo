@@ -49,6 +49,7 @@ class Order {
     this.driverName,
     this.driverPhone,
     this.materialName,
+    this.discountAmount = 0,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
@@ -82,6 +83,7 @@ class Order {
         driverName: json['driver_name'] as String?,
         driverPhone: json['driver_phone'] as String?,
         materialName: json['material_name'] as String? ?? json['material_description'] as String?,
+        discountAmount: parseNum(json['discount_amount']),
       );
 
   final String id;
@@ -116,6 +118,12 @@ class Order {
   final String? driverName;
   final String? driverPhone;
   final String? materialName;
+
+  /// Réductions du client (parrainage, crédit BenneGo), prises sur la commission : la part du chauffeur ne change pas.
+  final double discountAmount;
+
+  /// Montant réellement payé par le client.
+  double get amountDue => (totalAmount - discountAmount).clamp(0, double.infinity).toDouble();
 
   bool get isFinal => finalOrderStatuses.contains(status);
   bool get isDisputeOpen => disputeStatus == 'open';

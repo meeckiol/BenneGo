@@ -67,11 +67,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (mounted) setState(() => _uploading = false);
   }
 
+  void _shareText(String text) =>
+      unawaited(launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}'), mode: LaunchMode.externalApplication));
+
   void _share() {
-    final code = _referral?['referral_code'];
-    if (code == null) return;
-    final text = 'Rejoins BenneGo comme camionneur avec mon code $code : des courses de sable et de gravier près de chez toi, payées sur Mobile Money.';
-    unawaited(launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}'), mode: LaunchMode.externalApplication));
+    final code = _referral?['referral_code'] as String?;
+    if (code != null) _shareText(referralShareText('driver', code, _referral));
   }
 
   void _support([String? text]) {
@@ -92,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final summary = context.watch<DriverController>().summary;
     final truck = _truckLabels[summary?.truckType] ?? 'Camion';
     final photo = _me?['profile_photo_url'] as String?;
-    final rewards = parseNum(_referral?['total_rewards']);
+    final credit = parseNum(_referral?['credit_balance']);
 
     return SafeArea(
       child: RefreshIndicator(
@@ -156,19 +157,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 18),
             ReferralCard(
               title: 'Parrainage',
-              text: 'Invitez un autre camionneur : vous gagnez 2 500 FCFA chacun.',
+              text: referralRewardLine('driver', _referral),
               code: _referral?['referral_code'] as String?,
-              rewards: rewards > 0 ? '${formatFcfa(rewards)} gagnés' : null,
+              rewards: credit > 0 ? 'Crédit : ${formatFcfa(credit)}' : null,
               onShare: _share,
               secondary: OutlinedButton(
-                onPressed: null,
+                onPressed: () async {
+                  await Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => ReferralScreen(api: _api, role: 'driver', onShare: _shareText),
+                  ));
+                  unawaited(_load());
+                },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(44),
+                  foregroundColor: Colors.white,
                   side: const BorderSide(color: Color(0xFF33343C)),
-                  disabledForegroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text('${_referral?['total_referrals'] ?? 0} filleul(s)'),
+                child: Text('Mes filleuls (${_referral?['total_referrals'] ?? 0})'),
               ),
             ),
             const SizedBox(height: 16),

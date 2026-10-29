@@ -20,6 +20,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _code = TextEditingController();
+  // Code parrain : se saisit à l'inscription (1 500 FCFA de réduction sur la 1re commande)
+  final _referral = TextEditingController();
   DateTime? _birthDate;
   bool _codeSent = false;
   bool _verified = false;
@@ -28,7 +30,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    for (final controller in [_prenom, _nom, _phone, _adresse, _email, _password, _code]) {
+    for (final controller in [_prenom, _nom, _phone, _adresse, _email, _password, _code, _referral]) {
       controller.dispose();
     }
     super.dispose();
@@ -77,6 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (_email.text.trim().isNotEmpty) 'email': _email.text.trim(),
         'password': _password.text,
         'role': 'client',
+        if (_referral.text.trim().isNotEmpty) 'referral_code': _referral.text.trim().toUpperCase(),
       });
       await session.login(phone: _cleanPhone, password: _password.text, requiredRole: 'client');
       if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
@@ -189,6 +192,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     obscureText: true,
                     decoration: const InputDecoration(labelText: 'Mot de passe (8 caractères minimum)'),
                     validator: (v) => (v == null || v.length < 8) ? '8 caractères minimum' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _referral,
+                    textCapitalization: TextCapitalization.characters,
+                    maxLength: 30,
+                    decoration: const InputDecoration(
+                      labelText: 'Code parrain (facultatif)',
+                      helperText: '1 500 FCFA de réduction sur votre première commande',
+                      counterText: '',
+                    ),
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 12),

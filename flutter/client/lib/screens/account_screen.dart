@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/client_config.dart';
 import '../data/client_repository.dart';
-import 'referral_screen.dart';
 
 /// Profil du client (comme le profil web) : en-tête, carte du code parrain, informations personnelles,
 /// chiffres, aide et déconnexion. Le parrainage n'a plus d'onglet : il est ici.
@@ -42,12 +41,12 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  void _shareText(String text) =>
+      unawaited(launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}'), mode: LaunchMode.externalApplication));
+
   void _share() {
-    final code = _referral?['referral_code'];
-    if (code == null) return;
-    final text =
-        "Rejoins BenneGo pour tes transports de matériaux et locations d'engins avec mon code $code et reçois 2500 FCFA de réduction sur ta première commande !";
-    unawaited(launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}'), mode: LaunchMode.externalApplication));
+    final code = _referral?['referral_code'] as String?;
+    if (code != null) _shareText(referralShareText('client', code, _referral));
   }
 
   @override
@@ -55,7 +54,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final user = context.watch<Session>().user;
     final orders = _orders;
     final delivered = orders?.where((o) => o.status == 'validated' || o.status == 'completed').length;
-    final rewards = parseNum(_referral?['total_rewards']);
+    final credit = parseNum(_referral?['credit_balance']);
     return SafeArea(
       child: RefreshIndicator(
         color: BnColors.brand,
@@ -75,14 +74,17 @@ class _AccountScreenState extends State<AccountScreen> {
             const SizedBox(height: 18),
             ReferralCard(
               title: 'Affiliation',
-              text: 'Chaque ami inscrit avec votre code vous rapporte 2 500 FCFA.',
+              text: referralRewardLine('client', _referral),
               code: _referral?['referral_code'] as String?,
-              rewards: rewards > 0 ? '${formatFcfa(rewards)} gagnés' : null,
+              rewards: credit > 0 ? 'Crédit : ${formatFcfa(credit)}' : null,
               onShare: _share,
               secondary: OutlinedButton(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
-                  builder: (_) => Scaffold(appBar: AppBar(title: const Text('Mes filleuls')), body: const ReferralScreen()),
-                )),
+                onPressed: () async {
+                  await Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => ReferralScreen(api: context.read<ApiClient>(), role: 'client', onShare: _shareText),
+                  ));
+                  unawaited(_load());
+                },
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(44),
                   foregroundColor: Colors.white,

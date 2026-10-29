@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(order.orderNumber, style: const TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w700)),
                                     const SizedBox(height: 4),
                                     Text(
-                                      '${formatDateTime(order.createdAt)} · ${formatFcfa(order.totalAmount)}',
+                                      '${formatDateTime(order.createdAt)} · ${formatFcfa(order.amountDue)}',
                                       style: const TextStyle(color: BnColors.text2, fontSize: 12),
                                     ),
                                   ],

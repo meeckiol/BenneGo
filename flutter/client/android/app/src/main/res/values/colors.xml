@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Fond de lancement : même noir que l'application, sans logo, avant l'écran Flutter -->
-    <color name="bn_launch">#0B0B10</color>
+    <!-- Fond de lancement : blanc comme le début du splash animé du camion, sans logo -->
+    <color name="bn_launch">#FFFFFF</color>
 </resources>

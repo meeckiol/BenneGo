@@ -52,6 +52,8 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   String _truck = 'double_benne';
   String _machine = 'excavatrice';
   Estimate? _estimate;
+  // Crédit BenneGo (primes de parrainage) : le client choisit de l'utiliser sur cette commande
+  bool _useCredit = false;
   bool _busy = false;
   String? _error;
 
@@ -78,6 +80,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         'duration_hours': _isRental ? _parse(_hours.text) : null,
         'machinery_type': _isRental ? _machine : null,
         'truck_type': _truck,
+        'use_credit': _useCredit,
       };
 
   double _parse(String value) => double.parse(value.trim().replaceAll(',', '.'));
@@ -351,11 +354,39 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             Text(_typeLabels[_type] ?? _type, style: const TextStyle(color: BnColors.text2)),
             const SizedBox(height: 6),
             Text(
-              estimate == null ? '—' : formatFcfa(estimate.totalAmount),
+              estimate == null ? '—' : formatFcfa(estimate.toPay),
               style: const TextStyle(color: BnColors.brand, fontSize: 28, fontWeight: FontWeight.w800),
             ),
             if (estimate?.distanceKm != null)
               Text('${estimate!.distanceKm!.toStringAsFixed(1)} km', style: const TextStyle(color: BnColors.text2)),
+            // Réductions : bienvenue du filleul (d'office) et crédit BenneGo (au choix)
+            if (estimate != null && (estimate.referralDiscount > 0 || estimate.creditBalance > 0)) ...[
+              const Divider(height: 24, color: BnColors.border),
+              _PriceLine(label: 'Prix de la course', value: formatFcfa(estimate.totalAmount)),
+              if (estimate.referralDiscount > 0)
+                _PriceLine(label: 'Réduction parrainage (1re commande)', value: '− ${formatFcfa(estimate.referralDiscount)}', good: true),
+              if (estimate.creditUsed > 0)
+                _PriceLine(label: 'Crédit utilisé', value: '− ${formatFcfa(estimate.creditUsed)}', good: true),
+            ],
+            if (estimate != null && estimate.creditBalance > 0)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _useCredit,
+                activeTrackColor: BnColors.brand,
+                title: Text('Utiliser mon crédit (${formatFcfa(estimate.creditBalance)})',
+                    style: const TextStyle(color: BnColors.textStrong, fontSize: 14)),
+                onChanged: _busy
+                    ? null
+                    : (value) async {
+                        setState(() => _useCredit = value);
+                        try {
+                          final next = await context.read<ClientRepository>().estimate(_payload());
+                          if (mounted) setState(() => _estimate = next);
+                        } on ApiException catch (error) {
+                          if (mounted) setState(() => _error = error.message);
+                        }
+                      },
+              ),
           ],
         ),
       ),
@@ -366,6 +397,27 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         icon: Icons.lock_outline,
       ),
     ];
+  }
+}
+
+class _PriceLine extends StatelessWidget {
+  const _PriceLine({required this.label, required this.value, this.good = false});
+
+  final String label;
+  final String value;
+  final bool good;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(color: BnColors.text2, fontSize: 13))),
+          Text(value, style: TextStyle(color: good ? BnColors.success : BnColors.textStrong, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
   }
 }
 

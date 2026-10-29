@@ -5,9 +5,16 @@ import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/shell_screen.dart';
 
-/// Application client : connexion ou espace client selon la session.
-class ClientApp extends StatelessWidget {
+/// Application client : splash animé du camion (comme le web), puis connexion ou espace client selon la session.
+class ClientApp extends StatefulWidget {
   const ClientApp({super.key});
+
+  @override
+  State<ClientApp> createState() => _ClientAppState();
+}
+
+class _ClientAppState extends State<ClientApp> {
+  bool _splash = true;
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +23,16 @@ class ClientApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: bennegoTheme(),
       home: const _AuthGate(),
+      builder: (context, child) {
+        // Animations réduites dans les réglages du téléphone : pas de splash
+        final show = _splash && !MediaQuery.disableAnimationsOf(context);
+        return Stack(
+          children: [
+            child ?? const SizedBox.shrink(),
+            if (show) Positioned.fill(child: TruckSplash(onDone: () => setState(() => _splash = false))),
+          ],
+        );
+      },
     );
   }
 }

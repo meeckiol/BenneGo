@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Écran de lancement : fond noir uni, sans image ; l'application enchaîne sur son propre écran -->
+<!-- Écran de lancement : fond blanc uni, sans image ; l'application enchaîne sur son propre écran -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/bn_launch" />
 </layer-list>

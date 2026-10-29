@@ -191,3 +191,15 @@ cp $B/driver/ProfilePage.jsx frontend-driver/src/pages/
 cp $B/driver/App.jsx frontend-driver/src/
 ```
 Les règles côté serveur (`backend/src/services/referral.service.js`) restent : l'ancienne interface affiche alors d'anciens textes.
+
+## flutter-parrainage-avant-regles (29 octobre 2026)
+
+Avant : splash animé du camion dans l'app client Flutter (`TruckSplash`), lancement natif blanc pour le client,
+écran « Mes filleuls » commun (`bennego_core/lib/src/profile/referral_screen.dart`), nouveaux textes de parrainage,
+réduction et crédit au prix, code parrain à l'inscription.
+
+```bash
+B=sauvegarde/flutter-parrainage-avant-regles
+for f in $(cd $B && find . -type f); do cp "$B/$f" "flutter/$f"; done
+git rm flutter/bennego_core/lib/src/splash/truck_splash.dart flutter/bennego_core/lib/src/profile/referral_screen.dart
+```
