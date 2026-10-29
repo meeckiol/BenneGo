@@ -12,6 +12,8 @@ class Estimate {
     this.referralDiscount = 0,
     this.creditBalance = 0,
     this.creditUsed = 0,
+    this.pricePerKm,
+    this.breakdown = const {},
   });
 
   factory Estimate.fromJson(Map<String, dynamic> json) => Estimate(
@@ -22,6 +24,8 @@ class Estimate {
         referralDiscount: parseNum(json['referral_discount']),
         creditBalance: parseNum(json['credit_balance']),
         creditUsed: parseNum(json['credit_used']),
+        pricePerKm: parseNumOrNull(json['price_per_km']),
+        breakdown: json['breakdown'] is Map ? Map<String, dynamic>.from(json['breakdown'] as Map) : const {},
       );
 
   final double totalAmount;
@@ -35,6 +39,10 @@ class Estimate {
   double get toPay => amountDue ?? totalAmount;
   final double? distanceKm;
   final double? durationMin;
+
+  /// Prix au km appliqué (coefficient du camion compris) et détail du prix calculé par le serveur.
+  final double? pricePerKm;
+  final Map<String, dynamic> breakdown;
 }
 
 /// Paramètres du widget de paiement KKiaPay d'une commande.

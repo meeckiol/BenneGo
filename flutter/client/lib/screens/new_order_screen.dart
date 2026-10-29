@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../data/client_repository.dart';
+import '../domain/quote_lines.dart';
 import 'order_detail_screen.dart';
 import 'payment_screen.dart';
 
@@ -358,11 +359,22 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               style: const TextStyle(color: BnColors.brand, fontSize: 28, fontWeight: FontWeight.w800),
             ),
             if (estimate?.distanceKm != null)
-              Text('${estimate!.distanceKm!.toStringAsFixed(1)} km', style: const TextStyle(color: BnColors.text2)),
-            // Réductions : bienvenue du filleul (d'office) et crédit BenneGo (au choix)
-            if (estimate != null && (estimate.referralDiscount > 0 || estimate.creditBalance > 0)) ...[
+              Text(
+                '${formatKm(estimate!.distanceKm!)}${estimate.durationMin != null ? ' · ~${estimate.durationMin!.round()} min' : ''}',
+                style: const TextStyle(color: BnColors.text2),
+              ),
+            // Détail du prix : la somme des lignes donne le prix de la course
+            if (estimate != null && estimate.breakdown.isNotEmpty) ...[
               const Divider(height: 24, color: BnColors.border),
-              _PriceLine(label: 'Prix de la course', value: formatFcfa(estimate.totalAmount)),
+              for (final line in quoteLines(estimate.breakdown,
+                  distanceKm: estimate.distanceKm, pricePerKm: estimate.pricePerKm))
+                _PriceLine(label: line.label, hint: line.hint, value: formatFcfa(line.amount)),
+            ],
+            // Réductions : bienvenue du filleul (d'office) et crédit BenneGo (au choix)
+            if (estimate != null &&
+                (estimate.breakdown.isNotEmpty || estimate.referralDiscount > 0 || estimate.creditBalance > 0)) ...[
+              const Divider(height: 24, color: BnColors.border),
+              _PriceLine(label: 'Prix de la course', value: formatFcfa(estimate.totalAmount), strong: true),
               if (estimate.referralDiscount > 0)
                 _PriceLine(label: 'Réduction parrainage (1re commande)', value: '− ${formatFcfa(estimate.referralDiscount)}', good: true),
               if (estimate.creditUsed > 0)
@@ -401,19 +413,35 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
 }
 
 class _PriceLine extends StatelessWidget {
-  const _PriceLine({required this.label, required this.value, this.good = false});
+  const _PriceLine({required this.label, required this.value, this.hint, this.good = false, this.strong = false});
 
   final String label;
+  final String? hint;
   final String value;
   final bool good;
+  final bool strong;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(label, style: const TextStyle(color: BnColors.text2, fontSize: 13))),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        color: strong ? BnColors.textStrong : BnColors.text2,
+                        fontSize: 13,
+                        fontWeight: strong ? FontWeight.w700 : FontWeight.w400)),
+                if (hint != null) Text(hint!, style: const TextStyle(color: BnColors.text3, fontSize: 11.5)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
           Text(value, style: TextStyle(color: good ? BnColors.success : BnColors.textStrong, fontWeight: FontWeight.w700)),
         ],
       ),

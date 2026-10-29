@@ -203,3 +203,15 @@ B=sauvegarde/flutter-parrainage-avant-regles
 for f in $(cd $B && find . -type f); do cp "$B/$f" "flutter/$f"; done
 git rm flutter/bennego_core/lib/src/splash/truck_splash.dart flutter/bennego_core/lib/src/profile/referral_screen.dart
 ```
+
+## flutter-devis-avant-detail (29 octobre 2026)
+
+Avant : détail ligne par ligne du devis dans l'app client Flutter (prise en charge, transport avec type de camion,
+chargement, matériau, arrondi ou complément au prix minimum), distances au format français.
+
+```bash
+B=sauvegarde/flutter-devis-avant-detail
+cp $B/new_order_screen.dart flutter/client/lib/screens/
+cp $B/client_repository.dart flutter/client/lib/data/
+git rm flutter/client/lib/domain/quote_lines.dart flutter/client/test/quote_lines_test.dart
+```
