@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 import SettingsView from '../../../shared/SettingsView';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 /** Réglages du client : notifications, confidentialité, sécurité, suppression du compte. */
 export default function SettingsPage() {
@@ -15,7 +16,7 @@ export default function SettingsPage() {
   // Compte supprimé : la session est déjà fermée côté serveur, on quitte l'application
   const onDeleted = (result) => {
     logout({ local: true });
-    toast.success(`Compte supprimé. Vous pouvez le reprendre jusqu'au ${new Date(result.restore_until).toLocaleDateString('fr-FR')} en vous reconnectant.`, { duration: 8000 });
+    toast.success(`Compte supprimé. Vous pouvez le reprendre jusqu'au ${new Date(result.restore_until).toLocaleDateString(dateLocale())} en vous reconnectant.`, { duration: 8000 });
     navigate('/login', { replace: true });
   };
 

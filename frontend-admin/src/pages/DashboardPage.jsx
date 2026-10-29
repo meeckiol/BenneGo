@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import api from '../services/api';
 import { Banknote, ChartColumn, CheckCircle2, IdCard, Package, Users } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const JOURS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
@@ -63,7 +64,7 @@ export default function DashboardPage() {
           icon={<IdCard size={22} aria-hidden="true" />}
           label="Chauffeurs actifs"
           value={stats?.drivers?.available || 0}
-          sub={`/ ${stats?.drivers?.total || 0} inscrits`}
+          sub={`sur ${stats?.drivers?.total || 0} inscrits`}
           color="#8B5CF6"
         />
         <KPICard
@@ -153,7 +154,7 @@ export default function DashboardPage() {
                   <StatusBadge status={order.status} />
                 </td>
                 <td style={{ ...s.td, color: 'var(--text-2)' }}>
-                  {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                  {new Date(order.created_at).toLocaleDateString(dateLocale())}
                 </td>
               </tr>
             ))}

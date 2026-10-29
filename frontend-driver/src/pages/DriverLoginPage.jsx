@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import useDriverAuthStore from '../store/authStore';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 export default function DriverLoginPage() {
   const [phone, setPhone] = useState('');
@@ -24,7 +25,7 @@ export default function DriverLoginPage() {
         toast.error(err.message);
       } else if (data?.code === 'ACCOUNT_DELETION_PENDING') {
         // Compte supprimé il y a moins de 60 jours : on propose de le reprendre
-        const until = new Date(data.restore_until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        const until = new Date(data.restore_until).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' });
         if (window.confirm(`Votre compte est en cours de suppression. Vous pouvez le reprendre jusqu'au ${until}.\n\nReprendre mon compte ?`)) {
           try {
             const user = await restore(phone, password);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Banknote, ChartColumn, Lock, Wallet } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR');
 
@@ -85,7 +86,7 @@ export default function PaymentsPage() {
                   <td style={s.td}>{p.momo_number || '—'} {p.momo_provider ? `(${p.momo_provider.toUpperCase()})` : ''}</td>
                   <td style={{ ...s.td, color: 'var(--violet)', fontWeight: '700' }}>{fcfa(p.driver_amount)}</td>
                   <td style={{ ...s.td, color: 'var(--success)' }}>{fcfa(p.commission_amount)}</td>
-                  <td style={{ ...s.td, color: 'var(--text-2)' }}>{p.validated_at ? new Date(p.validated_at).toLocaleString('fr-FR') : '—'}</td>
+                  <td style={{ ...s.td, color: 'var(--text-2)' }}>{p.validated_at ? new Date(p.validated_at).toLocaleString(dateLocale()) : '—'}</td>
                   <td style={s.td}>
                     <button disabled={busyId === p.order_id} onClick={() => markPaid(p)} style={s.actionBtn}>
                       Marquer payé
@@ -152,8 +153,8 @@ export default function PaymentsPage() {
                   </td>
                   <td style={{ ...s.td, color: 'var(--text-2)', whiteSpace: 'nowrap' }}>
                     {order.payment_at
-                      ? new Date(order.payment_at).toLocaleDateString('fr-FR')
-                      : new Date(order.created_at).toLocaleDateString('fr-FR')}
+                      ? new Date(order.payment_at).toLocaleDateString(dateLocale())
+                      : new Date(order.created_at).toLocaleDateString(dateLocale())}
                   </td>
                 </tr>
               ))}

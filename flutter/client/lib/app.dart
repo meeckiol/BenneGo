@@ -19,6 +19,7 @@ class _ClientAppState extends State<ClientApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: bnLocalizationsDelegates,
       title: 'BenneGo',
       debugShowCheckedModeBanner: false,
       theme: bennegoTheme(),

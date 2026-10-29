@@ -6,17 +6,18 @@ import 'api_exception.dart';
 import '../i18n/lang.dart';
 
 /// Libellé de l'appareil pour la liste des appareils connectés (ex. « Application BenneGo · Android »).
+/// Envoyé en français (texte de référence) : l'écran des appareils le traduit dans la langue de chacun.
 String deviceLabel() {
   final os = kIsWeb
-      ? tr('Navigateur')
+      ? 'Navigateur'
       : switch (defaultTargetPlatform) {
-          TargetPlatform.android => tr('Android'),
+          TargetPlatform.android => 'Android',
           TargetPlatform.iOS => 'iPhone',
-          TargetPlatform.macOS => tr('Mac'),
-          TargetPlatform.windows => tr('Windows'),
-          _ => tr('Linux'),
+          TargetPlatform.macOS => 'Mac',
+          TargetPlatform.windows => 'Windows',
+          _ => 'Linux',
         };
-  return tr('Application BenneGo · $os');
+  return 'Application BenneGo · $os';
 }
 
 /// Client HTTP de l'API : joint le jeton de session et convertit les erreurs en [ApiException].

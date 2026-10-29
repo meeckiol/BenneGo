@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Copy, Gift, Share2, Wallet } from 'lucide-react';
 import './referral.css';
+import { dateLocale } from './i18n/dom';
 
 const fcfa = (n) => `${Math.round(Number(n) || 0).toLocaleString('fr-FR')} FCFA`;
-const day = (d) => (d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '');
+const day = (d) => (d ? new Date(d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' }) : '');
 const ROLE = { client: 'Client', driver: 'Camionneur' };
 const PAYOUT = { requested: 'En cours', paid: 'Versé', rejected: 'Refusé' };
 
@@ -162,7 +163,7 @@ export default function ReferralView({ api, role, onBack }) {
           )}
 
           <section className="bn-referees" aria-label="Vos filleuls">
-            <h2>{data.total_referrals || 0} filleul(s)</h2>
+            <h2>{`${data.total_referrals || 0} filleul(s)`}</h2>
             {(data.referees || []).length === 0 ? (
               <p className="bn-subtitle">Partagez votre code : vos filleuls apparaîtront ici avec l'avancement de votre prime.</p>
             ) : (

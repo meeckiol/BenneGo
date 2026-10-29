@@ -19,14 +19,20 @@ const build = (dict) => {
     if (!value) continue;
     if (/\{\d+\}/.test(key)) {
       const order = [];
-      const source = key.split(/(\{\d+\})/).map((part) => {
+      const parts = key.split(/(\{\d+\})/);
+      const source = parts.map((part, i) => {
         const m = part.match(/^\{(\d+)\}$/);
-        if (m) { order.push(Number(m[1])); return '(.+?)'; }
-        return escape(part);
+        if (!m) return escape(part);
+        order.push(Number(m[1]));
+        // Variable collée à la fin d'un mot, en fin de texte (« étoile{1} » : marque du pluriel) : elle peut être vide
+        const suffix = i === parts.length - 2 && parts[i + 1] === '' && /\p{L}$/u.test(parts[i - 1] || '');
+        return suffix ? '(.*?)' : '(.+?)';
       }).join('');
       const fixed = key.replace(/\{\d+\}/g, '');
       // Gabarit « faible » (peu de texte fixe, ex. « {0} sur {1} ») : il ne doit pas avaler une phrase entière
-      const weak = (fixed.match(/\p{L}/gu) || []).length < 8;
+      // sauf s'il commence par un mot et ne garde qu'une variable finale (« Appeler {0} », « Statut : {0} »)
+      const prefixed = /^\p{L}{4,}[^{]*\{\d+\}$/u.test(key) && order.length === 1;
+      const weak = (fixed.match(/\p{L}/gu) || []).length < 8 && !prefixed;
       templates.push({ re: new RegExp(`^${source}$`, 's'), order, value, weight: fixed.length, weak });
     } else {
       exact.set(key, value);
@@ -40,7 +46,9 @@ const build = (dict) => {
     for (const t of templates) {
       const m = core.match(t.re);
       if (!m) continue;
-      if (t.weak && m.slice(1).some((v) => /\s/.test(v.trim()) && /\p{L}/u.test(v.replace(/FCFA|XOF|km|kg|m³|min|h\b/g, '')))) continue;
+      // … sauf quand ce texte figure tel quel dans le dictionnaire (« Note du chauffeur : 4 sur 5 »)
+      if (t.weak && m.slice(1).some((v) => /\s/.test(v.trim()) && /\p{L}/u.test(v.replace(/FCFA|XOF|km|kg|m³|min|h\b/g, ''))
+        && !exact.has(v.replace(/\s+/g, ' ').trim()))) continue;
       const values = {};
       t.order.forEach((n, i) => { values[n] = m[i + 1]; });
       return t.value.replace(/\{(\d+)\}/g, (_, n) => translate(values[n] ?? ''));

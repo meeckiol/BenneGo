@@ -44,7 +44,7 @@ const _payoutLabels = {'requested': 'En cours', 'paid': 'Versé', 'rejected': 'R
 
 String _day(Object? value) {
   final date = DateTime.tryParse(value?.toString() ?? '');
-  return date == null ? '' : DateFormat('d MMM', 'fr_FR').format(date.toLocal());
+  return date == null ? '' : DateFormat('d MMM', dateLocale()).format(date.toLocal());
 }
 
 String _firstStep(String? role) => role == 'driver' ? tr('sa 1re course livrée') : tr('sa 1re commande livrée');

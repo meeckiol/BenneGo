@@ -99,7 +99,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       (_Filter.done, 'Terminées'),
                     ])
                       ChoiceChip(
-                        label: Text('$label  ${counts[filter]}'),
+                        label: Text('${tr(label)}  ${counts[filter]}'),
                         selected: _filter == filter,
                         onSelected: (_) => setState(() => _filter = filter),
                         showCheckmark: false,
@@ -198,9 +198,9 @@ class _CourseCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _Leg(label: 'DEPUIS', address: order.pickupAddress, sub: formatDateTime(order.createdAt))),
+              Expanded(child: _Leg(label: 'Depuis', address: order.pickupAddress, sub: formatDateTime(order.createdAt))),
               const SizedBox(width: 12),
-              Expanded(child: _Leg(label: 'VERS', address: order.deliveryAddress, sub: order.statusLabel)),
+              Expanded(child: _Leg(label: 'Vers', address: order.deliveryAddress, sub: order.statusLabel)),
             ],
           ),
           if (isActive) ...[
@@ -225,7 +225,7 @@ class _Leg extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: BnColors.text3, fontSize: 11, fontWeight: FontWeight.w700)),
+        Text(tr(label).toUpperCase(), style: const TextStyle(color: BnColors.text3, fontSize: 11, fontWeight: FontWeight.w700)),
         Text(address.isEmpty ? '—' : address,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

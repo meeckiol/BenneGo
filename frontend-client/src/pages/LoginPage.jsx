@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Eye, EyeOff, Lock, Phone } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import AuthShell from '../components/AuthShell';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const ACCOUNT_TYPES = [
   { key: 'particulier', label: 'Client', hint: 'Commandes à l\'unité, pour vous ou un proche.' },
@@ -48,7 +49,7 @@ export default function LoginPage() {
       // Compte supprimé il y a moins de 60 jours : on propose de le reprendre (autres erreurs : intercepteur axios)
       const data = err.response?.data;
       if (data?.code === 'ACCOUNT_DELETION_PENDING') {
-        const until = new Date(data.restore_until).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        const until = new Date(data.restore_until).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' });
         if (window.confirm(`Votre compte est en cours de suppression. Vous pouvez le reprendre jusqu'au ${until}.\n\nReprendre mon compte ?`)) {
           try {
             const user = await restore(phone, password);

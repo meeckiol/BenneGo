@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 import { X } from 'lucide-react';
 import { km, money, quoteLines } from '../../../shared/quoteLines';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const STATUSES = [
   { value: '', label: 'Toutes' },
@@ -202,7 +203,7 @@ export default function OrdersPage() {
                 <h4 style={s.podTitle}>Preuves de Livraison (PoD)</h4>
                 {selectedOrder.pod_submitted_at && (
                   <p style={s.podMeta}>
-                    Soumis le : {new Date(selectedOrder.pod_submitted_at).toLocaleString('fr-FR')}
+                    Soumis le : {new Date(selectedOrder.pod_submitted_at).toLocaleString(dateLocale())}
                   </p>
                 )}
                 {selectedOrder.pod_notes && (
@@ -277,6 +278,7 @@ function PriceDetail({ order }) {
 const PAYMENT_STYLES = {
   unpaid:       { label: 'Non payé',   color: 'var(--warning)' },
   escrow_held:  { label: 'Escrow',     color: 'var(--info)' },
+  payout_pending: { label: 'À reverser', color: 'var(--warning)' },
   released:     { label: 'Libéré',     color: 'var(--success)' },
   refunded:     { label: 'Remboursé',  color: 'var(--danger)' },
 };

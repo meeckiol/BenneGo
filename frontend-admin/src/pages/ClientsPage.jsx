@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { X } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString(dateLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
@@ -52,7 +53,7 @@ export default function ClientsPage() {
     <div style={s.page}>
       <div style={s.tableCard}>
         <div style={s.tableHeader}>
-          <h3 style={s.tableTitle}>{clients.length} clients inscrits</h3>
+          <h3 style={s.tableTitle}>{`${clients.length} clients inscrits`}</h3>
           <input
             placeholder="Nom, prénom, téléphone, adresse..."
             value={search}

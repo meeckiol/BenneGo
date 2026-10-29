@@ -9,7 +9,7 @@ import '../data/admin_repository.dart';
 
 const _who = {'client': 'Client', 'driver': 'Chauffeur', 'admin': 'Assistance BenneGo'};
 
-String _when(DateTime? d) => d == null ? '' : DateFormat('d MMM HH:mm', 'fr_FR').format(d);
+String _when(DateTime? d) => d == null ? '' : DateFormat('d MMM HH:mm', dateLocale()).format(d);
 
 /// Messagerie client ↔ chauffeur côté administration : discussions en cours, en litige ou toutes
 /// (y compris terminées), lecture et message de l'assistance BenneGo reçu par le client et le chauffeur.

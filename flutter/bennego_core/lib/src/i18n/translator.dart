@@ -12,13 +12,17 @@ class Translator {
           _var,
           onMatch: (m) {
             order.add(int.parse(m.group(1)!));
-            return '(.+?)';
+            // Variable collée à la fin d'un mot, en fin de texte (« étoile{1} » : marque du pluriel) : elle peut être vide
+            final suffix = m.end == key.length && m.start > 0 && _letter.hasMatch(key[m.start - 1]);
+            return suffix ? '(.*?)' : '(.+?)';
           },
           onNonMatch: RegExp.escape,
         );
         final fixed = key.replaceAll(_var, '');
-        // Gabarit « faible » (peu de texte fixe, ex. « {0} sur {1} ») : il ne doit pas avaler une phrase entière
-        final weak = RegExp(r'\p{L}', unicode: true).allMatches(fixed).length < 8;
+        // Gabarit « faible » (peu de texte fixe, ex. « {0} sur {1} ») : il ne doit pas avaler une phrase entière,
+        // sauf s'il commence par un mot et ne garde qu'une variable finale (« Appeler {0} », « Statut : {0} »)
+        final prefixed = _prefixed.hasMatch(key) && order.length == 1;
+        final weak = _letter.allMatches(fixed).length < 8 && !prefixed;
         _templates.add(_Template(RegExp('^$source\$', dotAll: true), order, value, fixed.length, weak));
       } else {
         _exact[key] = value;
@@ -31,6 +35,7 @@ class Translator {
   static final _space = RegExp(r'\s+');
   static final _letter = RegExp(r'\p{L}', unicode: true);
   static final _units = RegExp(r'FCFA|XOF|km|kg|m³|min|h\b');
+  static final _prefixed = RegExp(r'^\p{L}{4,}[^{]*\{\d+\}$', unicode: true);
 
   final Map<String, String> _exact = {};
   final List<_Template> _templates = [];
@@ -52,7 +57,14 @@ class Translator {
           final m = t.re.firstMatch(core);
           if (m == null) continue;
           final values = [for (var i = 1; i <= m.groupCount; i++) m.group(i) ?? ''];
-          if (t.weak && values.any((v) => v.trim().contains(' ') && _letter.hasMatch(v.replaceAll(_units, '')))) continue;
+          // … sauf quand ce texte figure tel quel dans le dictionnaire (« Note du chauffeur : 4 sur 5 »)
+          if (t.weak &&
+              values.any((v) =>
+                  v.trim().contains(' ') &&
+                  _letter.hasMatch(v.replaceAll(_units, '')) &&
+                  !_exact.containsKey(v.replaceAll(_space, ' ').trim()))) {
+            continue;
+          }
           final byIndex = {for (var i = 0; i < t.order.length; i++) t.order[i]: values[i]};
           out = t.value.replaceAllMapped(_var, (v) => translate(byIndex[int.parse(v.group(1)!)] ?? ''));
           break;

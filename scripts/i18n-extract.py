@@ -55,7 +55,7 @@ def keep(text):
     if CODE_LIKE.search(t) and not FRENCH_HINT.search(t):
         return False
     # Texte français : accent, mot outil, ou mot en capitale (« Annuler », « Valider »)
-    return bool(FRENCH_HINT.search(t) or re.match(r"^[A-ZÉÈÀÂÎÔ][a-zà-ÿ]", t) or ' ' in t)
+    return bool(FRENCH_HINT.search(t) or re.match(r"^[A-ZÉÈÀÂÎÔ][’']?[a-zà-ÿ]", t) or ' ' in t)
 
 
 def norm(text):

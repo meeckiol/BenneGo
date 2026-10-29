@@ -373,7 +373,7 @@ class _DaySeparator extends StatelessWidget {
         ? tr("Aujourd'hui")
         : _sameDay(date, yesterday)
         ? tr('Hier')
-        : DateFormat('EEEE d MMMM', 'fr_FR').format(date);
+        : DateFormat('EEEE d MMMM', dateLocale()).format(date);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Container(

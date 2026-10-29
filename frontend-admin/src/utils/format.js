@@ -1,3 +1,4 @@
+import { dateLocale } from '../../../shared/i18n/dom';
 // Formatage commun (français, FCFA)
 
 const NUM = new Intl.NumberFormat('fr-FR');
@@ -6,11 +7,11 @@ export const num = (n) => NUM.format(Number(n || 0));
 export const fcfa = (n) => `${num(n)} FCFA`;
 
 export const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString(dateLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
 export const fmtDateTime = (d) =>
   d
-    ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    ? new Date(d).toLocaleString(dateLocale(), { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     : '—';
 
 export const fullName = (u) =>

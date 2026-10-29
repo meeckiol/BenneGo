@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { X } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const EMPTY_FORM = {
   code: '',
@@ -181,7 +182,7 @@ export default function PromoCodesAdminPage() {
                   </td>
                   <td style={s.td}>
                     {promo.expires_at
-                      ? new Date(promo.expires_at).toLocaleDateString('fr-FR')
+                      ? new Date(promo.expires_at).toLocaleDateString(dateLocale())
                       : <span style={s.none}>Sans limite</span>}
                   </td>
                   <td style={s.td}>

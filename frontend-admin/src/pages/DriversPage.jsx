@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { IdCard, Star, X } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const fmtDate = (d) =>
-  d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  d ? new Date(d).toLocaleDateString(dateLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState([]);

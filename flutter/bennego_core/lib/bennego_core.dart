@@ -10,6 +10,7 @@ export 'src/config/app_config.dart';
 export 'src/format/format.dart';
 export 'src/format/quote_lines.dart';
 export 'src/i18n/lang.dart';
+export 'src/l10n/material_localizations.dart';
 export 'src/i18n/text.dart';
 export 'src/i18n/translator.dart';
 export 'src/messaging/chat_alerts.dart';

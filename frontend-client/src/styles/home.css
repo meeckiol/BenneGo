@@ -393,6 +393,8 @@
   color: var(--text-3);
 }
 
+.bn-dcard__leg { text-transform: uppercase; }
+
 .bn-dcard__legs strong {
   display: block;
   margin: 2px 0;

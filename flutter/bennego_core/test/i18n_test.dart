@@ -19,6 +19,11 @@ void main() {
     expect(t.translate('2/3 types · calme 22:00–06:00'), '2/3 types · quiet 22:00–06:00');
     expect(t.translate('Kofi sur la route du chantier'), 'Kofi sur la route du chantier');
     expect(t.translate('Texte inconnu'), 'Texte inconnu');
+    // Gabarit court commençant par un mot, pluriel collé, texte connu dans un gabarit vague
+    expect(t.translate('Appeler Rodrigue Dossou'), 'Call Rodrigue Dossou');
+    expect(t.translate('1 étoile'), '1 star');
+    expect(t.translate('3 étoiles'), '3 stars');
+    expect(t.translate('Note du chauffeur : 4 sur 5'), 'Driver rating: 4 out of 5');
   });
 
   test('les dictionnaires embarqués dans l\'application sont à jour', () {

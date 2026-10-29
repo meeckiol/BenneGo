@@ -49,11 +49,11 @@ export default function ReviewCard({ order, onDone }) {
       <div style={s.tabs} role="tablist">
         <button role="tab" aria-selected={tab === 'driver'} onClick={() => setTab('driver')}
           style={{ ...s.tab, ...(tab === 'driver' ? s.tabOn : {}) }}>
-          Le chauffeur {driverDone && <Check size={14} aria-hidden="true" />}
+          <span>Le chauffeur</span> {driverDone && <Check size={14} aria-hidden="true" />}
         </button>
         <button role="tab" aria-selected={tab === 'platform'} onClick={() => setTab('platform')}
           style={{ ...s.tab, ...(tab === 'platform' ? s.tabOn : {}) }}>
-          La plateforme {platformDone && <Check size={14} aria-hidden="true" />}
+          <span>La plateforme</span> {platformDone && <Check size={14} aria-hidden="true" />}
         </button>
       </div>
 

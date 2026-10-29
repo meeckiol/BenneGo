@@ -5,6 +5,7 @@ import api from '../services/api';
 import { STATUS } from '../components/delivery';
 import { useUnread, badgeText } from '../../../shared/messaging';
 import '../styles/messages.css';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 // Une discussion disparaît de l'application quand la commande est terminée ou annulée.
 // Les messages restent en base : seul l'affichage s'arrête.
@@ -16,8 +17,8 @@ const timeOf = (d) => {
   if (!d) return '';
   const date = new Date(d);
   return date.toDateString() === new Date().toDateString()
-    ? date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    : date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    ? date.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' })
+    : date.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 };
 
 /** Onglet « Messages » : une conversation par commande en cours avec un chauffeur. */

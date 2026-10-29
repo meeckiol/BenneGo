@@ -5,7 +5,7 @@ import {
   Smartphone, Trash2, UserRound, Volume2, Vibrate, Languages, Check,
 } from 'lucide-react';
 import { LANGUAGES } from './i18n/engine';
-import { currentLanguage, setLanguage } from './i18n/dom';
+import { currentLanguage, setLanguage, dateLocale } from './i18n/dom';
 import { pushState, enablePush, disablePush } from './messaging';
 import { useAccountSettings } from './accountSettings';
 import './settings.css';
@@ -42,13 +42,13 @@ const DEVICE_PUSH_TEXT = {
   loading: '…',
 };
 
-const day = (d) => (d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+const day = (d) => (d ? new Date(d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) : '');
 const ago = (d) => {
   const minutes = Math.round((Date.now() - new Date(d).getTime()) / 60000);
   if (minutes < 5) return 'Actif maintenant';
   if (minutes < 60) return `Actif il y a ${minutes} min`;
   if (minutes < 1440) return `Actif il y a ${Math.round(minutes / 60)} h`;
-  return `Actif le ${new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}`;
+  return `Actif le ${new Date(d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' })}`;
 };
 
 // Liste des réglages modifiés (chemins « notifications.messages », « notifications.quiet_hours.start »…)
@@ -157,7 +157,7 @@ function Preview({ role, n }) {
     <div className={`bn-set-preview${muted ? ' is-muted' : ''}`} aria-hidden="true">
       <span className="bn-set-preview__logo">B</span>
       <div>
-        <strong>BenneGo <small>maintenant</small></strong>
+        <strong>BenneGo <small>à l'instant</small></strong>
         <span>{muted ? 'Notifications en pause' : `${sample[0]} · ${sample[1]}`}</span>
         <em>
           <span>{n.sound ? <Volume2 size={12} /> : <BellOff size={12} />} {n.sound ? 'Son' : 'Silencieux'}</span>

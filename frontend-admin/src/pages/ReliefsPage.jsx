@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const REASON_LABELS = { crevaison: 'Crevaison', panne_moteur: 'Panne moteur', accident: 'Accident', autre: 'Autre' };
-const dateFr = (d) => (d ? new Date(d).toLocaleString('fr-FR') : '—');
+const dateFr = (d) => (d ? new Date(d).toLocaleString(dateLocale()) : '—');
 
 export default function ReliefsPage() {
   const [requests, setRequests] = useState([]);

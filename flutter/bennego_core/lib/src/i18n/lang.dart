@@ -8,9 +8,12 @@ import 'translator.dart';
 
 /// Une langue proposée dans Réglages > Langue.
 class AppLanguage {
-  const AppLanguage(this.code, this.name, this.english, this.hello);
+  const AppLanguage(this.code, this.locale, this.name, this.english, this.hello);
 
   final String code;
+
+  /// Paramètre régional des dates (noms des jours et des mois), au format du paquet intl.
+  final String locale;
   final String name;
   final String english;
   final String hello;
@@ -18,17 +21,20 @@ class AppLanguage {
 
 /// Mêmes langues que le web (shared/i18n/engine.js).
 const appLanguages = [
-  AppLanguage('fr', 'Français', 'French', 'Bonjour'),
-  AppLanguage('en', 'English', 'English', 'Hello'),
-  AppLanguage('es', 'Español', 'Spanish', 'Hola'),
-  AppLanguage('pt', 'Português', 'Portuguese', 'Olá'),
-  AppLanguage('de', 'Deutsch', 'German', 'Hallo'),
-  AppLanguage('zh', '简体中文', 'Chinese, Simplified', '你好'),
-  AppLanguage('ja', '日本語', 'Japanese', 'こんにちは'),
-  AppLanguage('ko', '한국어', 'Korean', '안녕하세요'),
-  AppLanguage('hi', 'हिन्दी', 'Hindi', 'नमस्ते'),
-  AppLanguage('ms', 'Bahasa Melayu', 'Malay', 'Helo'),
+  AppLanguage('fr', 'fr_FR', 'Français', 'French', 'Bonjour'),
+  AppLanguage('en', 'en_GB', 'English', 'English', 'Hello'),
+  AppLanguage('es', 'es_ES', 'Español', 'Spanish', 'Hola'),
+  AppLanguage('pt', 'pt_BR', 'Português', 'Portuguese', 'Olá'),
+  AppLanguage('de', 'de_DE', 'Deutsch', 'German', 'Hallo'),
+  AppLanguage('zh', 'zh_CN', '简体中文', 'Chinese, Simplified', '你好'),
+  AppLanguage('ja', 'ja_JP', '日本語', 'Japanese', 'こんにちは'),
+  AppLanguage('ko', 'ko_KR', '한국어', 'Korean', '안녕하세요'),
+  AppLanguage('hi', 'hi_IN', 'हिन्दी', 'Hindi', 'नमस्ते'),
+  AppLanguage('ms', 'ms_MY', 'Bahasa Melayu', 'Malay', 'Helo'),
 ];
+
+/// Paramètre régional des dates dans la langue choisie (« 29 oct. », « 29 Oct », « 10月29日 »…).
+String dateLocale() => appLanguages.firstWhere((l) => l.code == Lang.instance.code, orElse: () => appLanguages.first).locale;
 
 /// Langue de l'application : dictionnaire chargé depuis les fichiers partagés, choix gardé sur le téléphone.
 class Lang extends ChangeNotifier {

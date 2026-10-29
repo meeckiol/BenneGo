@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Trash2 } from 'lucide-react';
 import '../styles/home.css';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 /*
  * Briques communes des écrans de commandes : statuts, dessins des matériaux,
@@ -22,7 +23,7 @@ export const STATUS = {
   cancelled: { label: 'Annulée', tag: 'Annulée', short: 'Annulée', stage: 0, ribbon: 'cancelled', group: 'done' },
 };
 
-export const shortDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '—');
+export const shortDate = (d) => (d ? new Date(d).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' }) : '—');
 
 /** Petit dessin du matériau ou du service, comme sur les maquettes. */
 export function Glyph({ kind, size = 28 }) {
@@ -124,8 +125,8 @@ export function DeliveryCard({ order, index, to, extra }) {
       <Track status={order.status} />
       {extra}
       <div className="bn-dcard__legs">
-        <div>DEPUIS<strong>{order.pickup_address || '—'}</strong>{shortDate(order.created_at)}</div>
-        <div>VERS<strong>{order.delivery_address || '—'}</strong>{order.delivered_at ? shortDate(order.delivered_at) : order.status === 'awaiting_payment' ? 'Paiement à finaliser' : info.label}</div>
+        <div><span className="bn-dcard__leg">Depuis</span><strong>{order.pickup_address || '—'}</strong>{shortDate(order.created_at)}</div>
+        <div><span className="bn-dcard__leg">Vers</span><strong>{order.delivery_address || '—'}</strong>{order.delivered_at ? shortDate(order.delivered_at) : order.status === 'awaiting_payment' ? 'Paiement à finaliser' : info.label}</div>
       </div>
     </Link>
   );

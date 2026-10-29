@@ -40,6 +40,9 @@ export const hasSavedLanguage = () => {
 export const currentLanguage = () => current;
 export const onLanguageChange = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 
+/** Paramètre régional des dates (noms des jours et des mois) dans la langue choisie. */
+export const dateLocale = () => LANGUAGES.find((l) => l.code === current)?.locale || 'fr-FR';
+
 /** Traduction d'un texte dans la langue choisie (pour window.confirm, titres de page…). */
 export const t = (text) => (translator ? translator.translate(text) : text);
 
@@ -62,8 +65,13 @@ const translateText = (node) => {
   if (next !== value) node.nodeValue = next;
 };
 
+// Le contenu d'une zone de saisie n'est jamais traduit, mais son indication (placeholder) l'est
+const attrsSkipped = (el) => (el.tagName === 'TEXTAREA'
+  ? el.getAttribute('translate') === 'no' || el.classList.contains('notranslate') || skipped(el.parentElement)
+  : skipped(el));
+
 const translateAttrs = (el) => {
-  if (skipped(el)) return;
+  if (attrsSkipped(el)) return;
   let map = attrSource.get(el);
   for (const attr of ATTRS) {
     if (!el.hasAttribute(attr)) continue;

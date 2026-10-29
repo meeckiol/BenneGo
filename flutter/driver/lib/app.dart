@@ -19,6 +19,7 @@ class _DriverAppState extends State<DriverApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: bnLocalizationsDelegates,
       title: 'BenneGo Chauffeur',
       debugShowCheckedModeBanner: false,
       theme: bennegoTheme(),

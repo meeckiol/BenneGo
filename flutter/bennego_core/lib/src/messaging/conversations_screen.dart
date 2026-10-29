@@ -297,7 +297,7 @@ class _ThreadRow extends StatelessWidget {
 String _timeOf(DateTime d) {
   final now = DateTime.now();
   final sameDay = d.year == now.year && d.month == now.month && d.day == now.day;
-  return sameDay ? DateFormat('HH:mm', 'fr_FR').format(d) : DateFormat('d MMM', 'fr_FR').format(d);
+  return sameDay ? DateFormat('HH:mm', 'fr_FR').format(d) : DateFormat('d MMM', dateLocale()).format(d);
 }
 
 /// Pastille sable du nombre de messages non lus (au-delà de 9 : « 9+ »).

@@ -5,16 +5,16 @@
  */
 
 export const LANGUAGES = [
-  { code: 'fr', name: 'Français', english: 'French', hello: 'Bonjour' },
-  { code: 'en', name: 'English', english: 'English', hello: 'Hello' },
-  { code: 'es', name: 'Español', english: 'Spanish', hello: 'Hola' },
-  { code: 'pt', name: 'Português', english: 'Portuguese', hello: 'Olá' },
-  { code: 'de', name: 'Deutsch', english: 'German', hello: 'Hallo' },
-  { code: 'zh', name: '简体中文', english: 'Chinese, Simplified', hello: '你好' },
-  { code: 'ja', name: '日本語', english: 'Japanese', hello: 'こんにちは' },
-  { code: 'ko', name: '한국어', english: 'Korean', hello: '안녕하세요' },
-  { code: 'hi', name: 'हिन्दी', english: 'Hindi', hello: 'नमस्ते' },
-  { code: 'ms', name: 'Bahasa Melayu', english: 'Malay', hello: 'Helo' },
+  { code: 'fr', locale: 'fr-FR', name: 'Français', english: 'French', hello: 'Bonjour' },
+  { code: 'en', locale: 'en-GB', name: 'English', english: 'English', hello: 'Hello' },
+  { code: 'es', locale: 'es-ES', name: 'Español', english: 'Spanish', hello: 'Hola' },
+  { code: 'pt', locale: 'pt-BR', name: 'Português', english: 'Portuguese', hello: 'Olá' },
+  { code: 'de', locale: 'de-DE', name: 'Deutsch', english: 'German', hello: 'Hallo' },
+  { code: 'zh', locale: 'zh-CN', name: '简体中文', english: 'Chinese, Simplified', hello: '你好' },
+  { code: 'ja', locale: 'ja-JP', name: '日本語', english: 'Japanese', hello: 'こんにちは' },
+  { code: 'ko', locale: 'ko-KR', name: '한국어', english: 'Korean', hello: '안녕하세요' },
+  { code: 'hi', locale: 'hi-IN', name: 'हिन्दी', english: 'Hindi', hello: 'नमस्ते' },
+  { code: 'ms', locale: 'ms-MY', name: 'Bahasa Melayu', english: 'Malay', hello: 'Helo' },
 ];
 
 const escape = (s) => s.replace(/[.*+?^$()|[\]\\]/g, '\\$&');
@@ -27,15 +27,21 @@ export function createTranslator(dict = {}) {
     if (!value) continue;
     if (/\{\d+\}/.test(key)) {
       const order = [];
-      const source = key.split(/(\{\d+\})/).map((part) => {
+      const parts = key.split(/(\{\d+\})/);
+      const source = parts.map((part, i) => {
         const m = part.match(/^\{(\d+)\}$/);
-        if (m) { order.push(Number(m[1])); return '(.+?)'; }
-        return escape(part);
+        if (!m) return escape(part);
+        order.push(Number(m[1]));
+        // Variable collée à la fin d'un mot, en fin de texte (« étoile{1} » : marque du pluriel) : elle peut être vide
+        const suffix = i === parts.length - 2 && parts[i + 1] === '' && /\p{L}$/u.test(parts[i - 1] || '');
+        return suffix ? '(.*?)' : '(.+?)';
       }).join('');
       // Le gabarit le plus précis (le plus de texte fixe) est essayé en premier
       const fixed = key.replace(/\{\d+\}/g, '');
       // Gabarit « faible » (peu de texte fixe, ex. « {0} sur {1} ») : il ne doit pas avaler une phrase entière
-      const weak = (fixed.match(/\p{L}/gu) || []).length < 8;
+      // sauf s'il commence par un mot et ne garde qu'une variable finale (« Appeler {0} », « Statut : {0} »)
+      const prefixed = /^\p{L}{4,}[^{]*\{\d+\}$/u.test(key) && order.length === 1;
+      const weak = (fixed.match(/\p{L}/gu) || []).length < 8 && !prefixed;
       templates.push({ re: new RegExp(`^${source}$`, 's'), order, value, weight: fixed.length, weak });
     } else {
       exact.set(key, value);
@@ -56,7 +62,9 @@ export function createTranslator(dict = {}) {
         for (const t of templates) {
           const m = core.match(t.re);
           if (!m) continue;
-          if (t.weak && m.slice(1).some((v) => /\s/.test(v.trim()) && /\p{L}/u.test(v.replace(/FCFA|XOF|km|kg|m³|min|h\b/g, '')))) continue;
+          // … sauf quand ce texte figure tel quel dans le dictionnaire (« Note du chauffeur : 4 sur 5 »)
+          if (t.weak && m.slice(1).some((v) => /\s/.test(v.trim()) && /\p{L}/u.test(v.replace(/FCFA|XOF|km|kg|m³|min|h\b/g, ''))
+            && !exact.has(v.replace(/\s+/g, ' ').trim()))) continue;
           const values = {};
           t.order.forEach((n, i) => { values[n] = m[i + 1]; });
           // Les valeurs recopiées sont elles-mêmes traduites quand ce sont des textes connus

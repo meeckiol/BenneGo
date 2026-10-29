@@ -128,7 +128,7 @@ export default function ProfilePage() {
           <button type="button" className="bn-refer__share" onClick={shareCode} disabled={!code}>
             <Share2 size={16} aria-hidden="true" /> Partager
           </button>
-          <Link to="/profil/parrainage" className="bn-refer__more">Mes filleuls ({referral?.total_referrals ?? 0})</Link>
+          <Link to="/profil/parrainage" className="bn-refer__more">{`Mes filleuls (${referral?.total_referrals ?? 0})`}</Link>
         </div>
       </section>
 

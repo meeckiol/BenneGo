@@ -70,7 +70,7 @@ export default function B2BEnterprisePage() {
           onClick={() => setActiveTab('companies')}
           style={{ ...styles.tab, ...(activeTab === 'companies' ? styles.tabActive : {}) }}
         >
-          Entreprises BTP Partenaires ({companies.length})
+          {`Entreprises BTP Partenaires (${companies.length})`}
         </button>
         <button
           onClick={() => setActiveTab('deviations')}

@@ -15,6 +15,12 @@ test('textes exacts, gabarits et textes composés', () => {
   // Gabarit trop vague : ne doit pas avaler une phrase entière
   expect(translate('Kofi sur la route du chantier', 'en')).toBe('Kofi sur la route du chantier');
   expect(translate('Texte inconnu', 'en')).toBe('Texte inconnu');
+  // Gabarit court commençant par un mot, pluriel collé, texte connu dans un gabarit vague
+  expect(translate('Appeler Rodrigue Dossou', 'en')).toBe('Call Rodrigue Dossou');
+  expect(translate('Statut : En route', 'en')).toBe(`Status: ${translate('En route', 'en')}`);
+  expect(translate('1 étoile', 'en')).toBe('1 star');
+  expect(translate('3 étoiles', 'en')).toBe('3 stars');
+  expect(translate('Note du chauffeur : 4 sur 5', 'en')).toBe('Driver rating: 4 out of 5');
   expect(translate('Annuler', 'fr')).toBe('Annuler');
 });
 

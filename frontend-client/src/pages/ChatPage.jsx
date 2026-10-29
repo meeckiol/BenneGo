@@ -9,8 +9,9 @@ import { STATUS, describe } from '../components/delivery';
 import { CHAT_CLOSED, initialsOf } from './MessagesPage';
 import { markChatRead } from '../../../shared/messaging';
 import '../styles/messages.css';
+import { dateLocale } from '../../../shared/i18n/dom';
 
-const hour = (d) => (d ? new Date(d).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '');
+const hour = (d) => (d ? new Date(d).toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' }) : '');
 
 // Séparateur de jour entre les messages : « Aujourd'hui », « Hier » ou la date
 const dayOf = (d) => {
@@ -21,7 +22,7 @@ const dayOf = (d) => {
   yesterday.setDate(today.getDate() - 1);
   if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
   if (date.toDateString() === yesterday.toDateString()) return 'Hier';
-  return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return date.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
 // Réponses rapides proposées au-dessus du champ de saisie

@@ -2,8 +2,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import '../i18n/lang.dart';
 
-/// Charge les formats français (dates). À appeler une fois au démarrage de chaque application.
-Future<void> initFrenchFormats() => initializeDateFormatting('fr_FR');
+/// Charge les formats de date de toutes les langues proposées. À appeler une fois au démarrage de chaque application.
+Future<void> initFrenchFormats() => initializeDateFormatting();
 
 final NumberFormat _amountFormat = NumberFormat('#,##0', 'fr_FR');
 final DateFormat _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm', 'fr_FR');

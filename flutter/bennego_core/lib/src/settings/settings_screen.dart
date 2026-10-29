@@ -695,7 +695,7 @@ class _Preview extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('BenneGo  ·  maintenant',
+                  const Text("BenneGo  ·  à l'instant",
                       style: TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w700, fontSize: 13.5)),
                   const SizedBox(height: 2),
                   Text(muted ? tr('Notifications en pause') : sample, style: const TextStyle(color: BnColors.text2, fontSize: 13)),

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { Star } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const stars = (n) => (n ? Array.from({ length: 5 }, (_, i) => (
   <Star key={i} size={14} fill={i < n ? 'currentColor' : 'none'} aria-hidden="true" />
@@ -46,7 +47,7 @@ const Row = ({ who, rating, comment, date, sub }) => (
       <span style={{ color: 'var(--warning)', display: 'flex', gap: 2 }}>{stars(rating)}</span>
     </div>
     {comment && <p style={s.comment}>{comment}</p>}
-    <div style={s.meta}>{sub ? `${sub} · ` : ''}{new Date(date).toLocaleString('fr-FR')}</div>
+    <div style={s.meta}>{sub ? `${sub} · ` : ''}{new Date(date).toLocaleString(dateLocale())}</div>
   </div>
 );
 

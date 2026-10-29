@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { Glyph, STATUS, glyphFor } from './delivery';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 // Date de la dernière ouverture du panneau : ce qui a changé depuis porte une pastille
 const SEEN_KEY = 'bennego-notifs-vues';
@@ -22,7 +23,7 @@ function ago(time) {
   if (minutes < 60) return `Il y a ${minutes} min`;
   const hours = Math.round(minutes / 60);
   if (hours < 24) return `Il y a ${hours} h`;
-  return new Date(time).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  return new Date(time).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
 }
 
 /**

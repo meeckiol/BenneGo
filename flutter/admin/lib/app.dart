@@ -12,6 +12,7 @@ class AdminApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: bnLocalizationsDelegates,
       title: 'BenneGo Admin',
       debugShowCheckedModeBanner: false,
       theme: bennegoTheme(),

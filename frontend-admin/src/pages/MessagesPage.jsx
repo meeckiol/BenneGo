@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { MessageCircle, Phone, Search, SendHorizontal } from 'lucide-react';
 import api from '../services/api';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const STATUS_LABELS = {
   pending: 'Payée · en attente',
@@ -28,7 +29,7 @@ const WHO = {
   admin: { label: 'Assistance BenneGo', color: 'var(--success)' },
 };
 
-const timeOf = (d) => (d ? new Date(d).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '');
+const timeOf = (d) => (d ? new Date(d).toLocaleString(dateLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '');
 
 /**
  * Messagerie client ↔ chauffeur, côté administration : lecture des discussions (y compris terminées,
@@ -118,7 +119,7 @@ export default function MessagesPage() {
                 <span style={s.tags}>
                   <span style={s.tag}>{STATUS_LABELS[c.status] || c.status}</span>
                   {c.dispute_status === 'open' && <span style={{ ...s.tag, ...s.tagDanger }}>Litige</span>}
-                  <span style={s.tag}>{c.message_count} message(s)</span>
+                  <span style={s.tag}>{`${c.message_count} message(s)`}</span>
                 </span>
               </button>
             ))}

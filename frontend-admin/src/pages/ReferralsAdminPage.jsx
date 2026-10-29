@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { Banknote, CheckCircle2, Users } from 'lucide-react';
+import { dateLocale } from '../../../shared/i18n/dom';
 
 const STATUS_FILTER = [
   { value: '', label: 'Tous' },
@@ -49,7 +50,7 @@ function CreditPayouts() {
           <div style={{ flex: 1, minWidth: 220 }}>
             <div style={{ fontWeight: 700 }}>{p.full_name} · {Number(p.amount).toLocaleString('fr-FR')} FCFA</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)' }}>
-              {(p.momo_provider || '').toUpperCase()} {p.momo_number} · demandé le {new Date(p.requested_at).toLocaleDateString('fr-FR')}
+              {(p.momo_provider || '').toUpperCase()} {p.momo_number} · demandé le {new Date(p.requested_at).toLocaleDateString(dateLocale())}
               {p.reference ? ` · réf. ${p.reference}` : ''}
             </div>
           </div>
@@ -193,7 +194,7 @@ export default function ReferralsAdminPage() {
                       {ref.referee_phone && <div style={s.userSub}>{ref.referee_phone}</div>}
                     </td>
                     <td style={s.td}>
-                      {ref.created_at ? new Date(ref.created_at).toLocaleDateString('fr-FR') : '—'}
+                      {ref.created_at ? new Date(ref.created_at).toLocaleDateString(dateLocale()) : '—'}
                     </td>
                     <td style={s.td}>
                       <span style={{ ...s.badge, color: st.color, background: `${st.color}20` }}>
