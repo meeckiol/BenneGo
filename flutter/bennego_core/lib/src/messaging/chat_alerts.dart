@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../format/format.dart';
+import '../settings/account_prefs.dart';
 import 'chat_center.dart';
 import 'chat_message.dart';
 
@@ -29,6 +30,8 @@ class _ChatAlertHostState extends State<ChatAlertHost> {
   void initState() {
     super.initState();
     _sub = widget.center.incoming.listen(_show);
+    // Réglages du compte : son, vibration, heures calmes et type « Messages »
+    unawaited(AccountPrefs.instance.load(widget.center.api));
   }
 
   @override
@@ -40,8 +43,11 @@ class _ChatAlertHostState extends State<ChatAlertHost> {
 
   void _show(ChatMessage message) {
     if (!mounted) return;
-    unawaited(SystemSound.play(SystemSoundType.alert));
-    unawaited(HapticFeedback.mediumImpact());
+    // Messages coupés : pastille seulement ; heures calmes ou son coupé : bandeau sans son
+    final policy = AccountPrefs.instance.policy('messages');
+    if (!policy.show) return;
+    if (policy.sound) unawaited(SystemSound.play(SystemSoundType.alert));
+    if (policy.vibrate) unawaited(HapticFeedback.mediumImpact());
     setState(() => _shown = message);
     _hide?.cancel();
     _hide = Timer(const Duration(seconds: 5), () {

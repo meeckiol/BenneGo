@@ -117,6 +117,16 @@ class _AccountScreenState extends State<AccountScreen> {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            ProfileGroup(title: 'Réglages', children: [
+              ProfileRow(
+                icon: Icons.settings_outlined,
+                color: const Color(0xFF94A3B8),
+                title: 'Réglages',
+                subtitle: 'Notifications, confidentialité, sécurité, suppression',
+                onTap: () => openAccountSettings(context, context.read<Session>()),
+              ),
+            ]),
             if (supportWhatsApp.isNotEmpty) ...[
               const SizedBox(height: 16),
               ProfileGroup(title: 'Aide', children: [

@@ -29,6 +29,8 @@ class _AuthGate extends StatelessWidget {
     if (session.isRestoring) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return session.user == null ? const LoginScreen() : const ShellScreen();
+    if (session.user == null) return const LoginScreen();
+    // Code PIN / empreinte demandés à l'ouverture et au retour d'arrière-plan, si activés dans les réglages
+    return AppLockGate(onTooManyAttempts: session.logoutLocal, child: const ShellScreen());
   }
 }

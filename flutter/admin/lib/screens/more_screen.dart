@@ -1,5 +1,6 @@
 import 'package:bennego_core/bennego_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'barometer_screen.dart';
 import 'messages_screen.dart';
@@ -48,6 +49,33 @@ class MoreScreen extends StatelessWidget {
             title: 'Avis',
             subtitle: 'Avis clients sur la plateforme et les chauffeurs',
             page: const ReviewsScreen(),
+          ),
+          const SizedBox(height: 8),
+          // Réglages du compte administrateur (alertes, sécurité, code PIN) et déconnexion
+          BnCard(
+            onTap: () => openAccountSettings(context, context.read<Session>()),
+            child: const Row(
+              children: [
+                Icon(Icons.settings_outlined, color: BnColors.brand),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Réglages', style: TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w700)),
+                      Text('Alertes, mot de passe, code PIN, appareils', style: TextStyle(color: BnColors.text2, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: BnColors.text3),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            onPressed: () => context.read<Session>().logout(),
+            icon: const Icon(Icons.logout, color: BnColors.danger),
+            label: const Text('Se déconnecter', style: TextStyle(color: BnColors.danger)),
           ),
         ],
       ),

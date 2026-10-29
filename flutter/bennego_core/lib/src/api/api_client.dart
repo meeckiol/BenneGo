@@ -1,7 +1,22 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../config/app_config.dart';
 import 'api_exception.dart';
+
+/// Libellé de l'appareil pour la liste des appareils connectés (ex. « Application BenneGo · Android »).
+String deviceLabel() {
+  final os = kIsWeb
+      ? 'Navigateur'
+      : switch (defaultTargetPlatform) {
+          TargetPlatform.android => 'Android',
+          TargetPlatform.iOS => 'iPhone',
+          TargetPlatform.macOS => 'Mac',
+          TargetPlatform.windows => 'Windows',
+          _ => 'Linux',
+        };
+  return 'Application BenneGo · $os';
+}
 
 /// Client HTTP de l'API : joint le jeton de session et convertit les erreurs en [ApiException].
 class ApiClient {
@@ -11,7 +26,8 @@ class ApiClient {
             baseUrl: '$baseUrl/api',
             connectTimeout: const Duration(seconds: 15),
             receiveTimeout: const Duration(seconds: 30),
-            headers: const {'Accept': 'application/json'},
+            // Nom de l'appareil affiché dans « Appareils connectés » des réglages
+            headers: {'Accept': 'application/json', 'X-Device-Label': deviceLabel()},
           ),
         ) {
     dio.interceptors.add(
@@ -85,6 +101,11 @@ class ApiClient {
       DioExceptionType.connectionError => 'Connexion impossible. Vérifiez votre réseau.',
       _ => 'Une erreur est survenue. Réessayez.',
     };
-    return ApiException(message, statusCode: status);
+    return ApiException(
+      message,
+      statusCode: status,
+      code: data is Map ? data['code'] as String? : null,
+      details: data is Map ? Map<String, dynamic>.from(data) : const {},
+    );
   }
 }

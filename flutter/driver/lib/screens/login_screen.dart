@@ -31,13 +31,20 @@ class _LoginScreenState extends State<LoginScreen> {
       _busy = true;
       _error = null;
     });
+    final session = context.read<Session>();
     try {
-      await context.read<Session>().login(
-            phone: _phone.text.trim(),
-            password: _password.text,
-            requiredRole: 'driver',
-          );
+      await session.login(phone: _phone.text.trim(), password: _password.text, requiredRole: 'driver');
     } on ApiException catch (error) {
+      // Compte supprimé il y a moins de 60 jours : on propose de le reprendre
+      if (error.code == 'ACCOUNT_DELETION_PENDING' && mounted && await confirmAccountRestore(context, error)) {
+        try {
+          await session.restoreAccount(phone: _phone.text.trim(), password: _password.text, requiredRole: 'driver');
+          return;
+        } on ApiException catch (restoreError) {
+          if (mounted) setState(() => _error = restoreError.message);
+          return;
+        }
+      }
       if (mounted) setState(() => _error = error.message);
     } finally {
       if (mounted) setState(() => _busy = false);

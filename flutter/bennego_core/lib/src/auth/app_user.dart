@@ -16,6 +16,9 @@ class AppUser {
   final String phone;
   final String role;
 
+  AppUser copyWith({String? phone, String? fullName}) =>
+      AppUser(id: id, fullName: fullName ?? this.fullName, phone: phone ?? this.phone, role: role);
+
   String get firstName => fullName.trim().split(RegExp(r'\s+')).first;
 
   String get initials => initialsOf(fullName);
