@@ -28,7 +28,8 @@ const LOCAL_TRANSACTION_PREFIXES = ['TEST_', 'DEV_', 'KKIA-DEV-'];
  * valider un paiement sans l'avoir vérifié auprès de KKiaPay.
  */
 const isLocalBypass = (transactionId) => {
-  const allowed = process.env.NODE_ENV === 'test'
+  // NODE_ENV=test seul ne suffit pas : il faut être réellement dans la suite Jest (serveur mal configuré = pas de faux paiement)
+  const allowed = (process.env.NODE_ENV === 'test' && Boolean(process.env.JEST_WORKER_ID))
     || (process.env.NODE_ENV === 'development' && process.env.KKIAPAY_DEV_BYPASS === 'true');
   return allowed && LOCAL_TRANSACTION_PREFIXES.some((prefix) => transactionId.startsWith(prefix));
 };

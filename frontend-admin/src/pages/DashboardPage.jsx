@@ -624,7 +624,10 @@ function LiveMap({ points, theme, alerts }) {
         iconAnchor: [14, 28],
       });
       const label = driver ? `${p.label} · ${t('En ligne')}` : `${p.label} · ${t(ORDER_STATUS[p.status]?.label || p.status)}`;
-      L.marker([p.lat, p.lng], { icon, title: label }).bindTooltip(label).addTo(layer.current);
+      // Texte (et non HTML) : le nom du chauffeur est saisi par l'utilisateur
+      const tooltip = document.createElement('span');
+      tooltip.textContent = label;
+      L.marker([p.lat, p.lng], { icon, title: label }).bindTooltip(tooltip).addTo(layer.current);
       bounds.push([p.lat, p.lng]);
     });
     if (bounds.length > 1) map.current.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
