@@ -13,7 +13,8 @@ for (const [name, app] of Object.entries(APPS)) {
 }
 
 test('client : la vitrine publique s\'affiche aux visiteurs', async ({ page }) => {
-  await page.goto(`http://localhost:${APPS.client.port}/`);
+  // La vitrine n'est plus l'accueil (qui mène à la connexion) : elle reste sur /vitrine
+  await page.goto(`http://localhost:${APPS.client.port}/vitrine`);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('livré sur le chantier');
   await expect(page.getByRole('link', { name: 'Obtenir un devis' }).first()).toBeVisible();
 });

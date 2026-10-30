@@ -102,10 +102,12 @@ export default function ProfilePage() {
   return (
     <main className="bn-page bn-profile2">
       <header className="bn-profile2__head">
-        <button type="button" className="bn-profile2__photo" onClick={() => fileInput.current?.click()} disabled={uploading} aria-label="Changer la photo de profil">
+        {/* Nom accessible qui contient les initiales affichées */}
+        <button type="button" className="bn-profile2__photo" onClick={() => fileInput.current?.click()} disabled={uploading}
+          aria-label={user?.profile_photo_url ? 'Changer la photo de profil' : `Changer la photo de profil, ${initialsOf(user?.full_name)}`}>
           {user?.profile_photo_url
             ? <img src={mediaUrl(user.profile_photo_url)} alt="" />
-            : <span aria-hidden="true">{initialsOf(user?.full_name)}</span>}
+            : <span>{initialsOf(user?.full_name)}</span>}
           <span className="bn-profile2__cam" aria-hidden="true"><Camera size={14} /></span>
         </button>
         <input ref={fileInput} type="file" accept={PHOTO_TYPES.join(',')} onChange={handlePhoto} hidden />

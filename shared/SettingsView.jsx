@@ -442,6 +442,8 @@ export default function SettingsView({ api, role, phone, onPhone, onBack, onDele
 
   useEffect(() => {
     api.get('/account/settings').then(({ data: d }) => {
+      // Réponse incomplète : message d'erreur plutôt qu'un écran planté
+      if (!d?.settings || !Array.isArray(d.categories)) return setData({ error: true });
       // La langue affichée est celle de cet appareil
       const settings = { ...d.settings, language: currentLanguage() };
       setData({ ...d, settings });

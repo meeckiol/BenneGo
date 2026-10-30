@@ -44,8 +44,10 @@ export default function DriverHomePage() {
       <header className="bn-home__head">
         <div className="bn-home__hello">
           <span>Bonjour{firstName ? ` ${firstName}` : ''} 👋</span>
-          <Link to="/profil" className="bn-dhome__avatar" aria-label="Mon profil">
-            {user?.profile_photo_url ? <img src={mediaUrl(user.profile_photo_url)} alt="" /> : <span aria-hidden="true">{initialsOf(user?.full_name)}</span>}
+          {/* Nom accessible qui contient les initiales affichées (règle « le texte visible fait partie du nom ») */}
+          <Link to="/profil" className="bn-dhome__avatar"
+            aria-label={user?.profile_photo_url ? 'Mon profil' : `Mon profil, ${initialsOf(user?.full_name)}`}>
+            {user?.profile_photo_url ? <img src={mediaUrl(user.profile_photo_url)} alt="" /> : <span>{initialsOf(user?.full_name)}</span>}
           </Link>
         </div>
         <h1 className="bn-home__title">Prêt pour la<br /><span>prochaine course ?</span></h1>

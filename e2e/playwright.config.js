@@ -27,6 +27,8 @@ module.exports = defineConfig({
   use: {
     // Les applications suivent la langue du navigateur : les tests sont écrits pour le français
     locale: 'fr-FR',
+    // Animations réduites : l'écran de démarrage animé est passé (sinon les contrôles le prennent en plein fondu)
+    reducedMotion: 'reduce',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
