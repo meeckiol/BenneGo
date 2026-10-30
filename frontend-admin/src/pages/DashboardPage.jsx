@@ -81,7 +81,8 @@ export default function DashboardPage() {
   daysRef.current = days;
 
   const load = useCallback((period = daysRef.current) => api.get(`/admin/dashboard?days=${period}`)
-    .then(({ data: d }) => { setData(d); setFailed(false); })
+    // Réponse incomplète (serveur ancien ou en erreur) : « indisponible » plutôt qu'un écran planté
+    .then(({ data: d }) => { if (d?.kpis && d?.monthly) { setData(d); setFailed(false); } else setFailed(true); })
     .catch(() => setFailed(true)), []);
 
   useEffect(() => { load(days); }, [days, load]);

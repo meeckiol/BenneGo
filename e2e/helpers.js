@@ -30,4 +30,4 @@ const mockEmptyApi = (page) => page.route('**/api/**', (route) => route.fulfill(
   body: EMPTY_RESPONSE,
 }));
 
-module.exports = { formatViolations, seedSession, mockEmptyApi };
+module.exports = { formatViolations, seedSession, mockEmptyApi, EMPTY_RESPONSE };

@@ -22,7 +22,9 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "seed:demo": "npm run seed-demo -w backend",
-    "e2e": "playwright test -c e2e/playwright.config.js"
+    "e2e": "playwright test -c e2e/playwright.config.js",
+    "test:web": "node --test e2e/unit/*.test.mjs",
+    "test:all": "npm test && npm run test:web && npm run e2e"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

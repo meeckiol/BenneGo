@@ -10,7 +10,7 @@ const APPS = {
   admin: {
     dir: 'frontend-admin', port: 4174,
     storageKey: 'bennego-admin-auth', role: 'admin', fullName: 'Superviseur BenneGo',
-    routes: ['/', '/orders', '/messages', '/b2b', '/drivers', '/clients', '/payments', '/reviews', '/report', '/referrals', '/promos', '/disputes', '/reliefs', '/barometer'],
+    routes: ['/', '/orders', '/messages', '/b2b', '/drivers', '/clients', '/payments', '/reviews', '/report', '/referrals', '/promos', '/disputes', '/reliefs', '/barometer', '/analytics', '/settings'],
   },
   driver: {
     dir: 'frontend-driver', port: 4175,

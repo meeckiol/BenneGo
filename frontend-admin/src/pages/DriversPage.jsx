@@ -244,7 +244,8 @@ function InfoRow({ label, value }) {
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' },
+  // Cartes qui passent à la ligne sur petit écran au lieu d'être coupées
+  summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: '12px' },
   summaryCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center' },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },
   tableHeader: { padding: '16px 20px', borderBottom: '1px solid var(--border-2)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' },

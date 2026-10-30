@@ -320,7 +320,7 @@ const s = {
   modalTitle: { margin: 0, color: 'var(--text-strong)', fontSize: '16px', fontWeight: '700' },
   modalCloseBtn: { background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '18px', cursor: 'pointer' },
   modalBody: { padding: '20px' },
-  detailGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', fontSize: '13px', color: 'var(--text-2)' },
+  detailGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: '12px', marginBottom: '20px', fontSize: '13px', color: 'var(--text-2)' },
   detailLabel: { color: 'var(--text-3)' },
   podBox: { background: 'var(--bg)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '16px' },
   podTitle: { margin: '0 0 10px', color: 'var(--text-strong)', fontSize: '14px', fontWeight: '700' },

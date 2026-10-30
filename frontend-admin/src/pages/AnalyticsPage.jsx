@@ -64,7 +64,8 @@ export default function AnalyticsPage() {
   const load = useCallback((period = daysRef.current, { quiet = false } = {}) => {
     if (!quiet) setLoading(true);
     return api.get(`/admin/analytics?days=${period}`)
-      .then(({ data: d }) => { setData(d); setUpdatedAt(new Date()); })
+      // Réponse incomplète (serveur ancien ou en erreur) : la page affiche « indisponible » au lieu de planter
+      .then(({ data: d }) => { if (d?.kpis && d?.series) { setData(d); setUpdatedAt(new Date()); } })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

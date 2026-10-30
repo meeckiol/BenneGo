@@ -198,7 +198,8 @@ function PayBadge({ status }) {
 
 const s = {
   page: { display: 'flex', flexDirection: 'column', gap: '24px' },
-  kpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' },
+  // Cartes qui passent à la ligne sur petit écran au lieu d'être coupées
+  kpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: '16px' },
   kpiCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'center' },
   kpiIcon: { width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 },
   tableCard: { background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: '12px', overflow: 'hidden' },

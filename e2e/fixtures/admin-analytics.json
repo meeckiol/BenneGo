@@ -1,0 +1,704 @@
+{
+ "period": {
+  "days": 30,
+  "from": "2026-10-01",
+  "to": "2026-10-30",
+  "previous_from": "2026-09-01"
+ },
+ "generated_at": "2026-10-30T09:59:13.312Z",
+ "kpis": {
+  "orders": 79,
+  "paid_orders": 74,
+  "delivery_rate": 0.8108108108108109,
+  "cancellation_rate": 0.10126582278481013,
+  "avg_basket": 111458,
+  "avg_delivery_hours": 3.2,
+  "avg_accept_minutes": 23,
+  "avg_rating": 4.57,
+  "active_clients": 16,
+  "active_drivers": 8,
+  "new_clients": 17,
+  "repeat_rate": 0.4375
+ },
+ "revenue": {
+  "total": 7913500,
+  "previous": 6317000,
+  "change": 0.2527307266107329,
+  "commission": 791350,
+  "commission_previous": 631700,
+  "orders_change": 0.46296296296296297
+ },
+ "projection": {
+  "next_7_days": 2665979,
+  "trend": 0.02354657769985064,
+  "month_to_date": 7913500,
+  "month_end": 8275302,
+  "days_in_month": 31,
+  "days_remaining": 1
+ },
+ "objective": {
+  "amount": 10000000,
+  "reached": 7913500,
+  "progress": 0.79135,
+  "projected_progress": 0.8275301587301588
+ },
+ "series": [
+  {
+   "day": "2026-10-01",
+   "orders": 1,
+   "revenue": 35000,
+   "commission": 3500,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-02",
+   "orders": 2,
+   "revenue": 326500,
+   "commission": 32650,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-03",
+   "orders": 1,
+   "revenue": 0,
+   "commission": 0,
+   "delivered": 0,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-04",
+   "orders": 1,
+   "revenue": 209500,
+   "commission": 20950,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-05",
+   "orders": 3,
+   "revenue": 401500,
+   "commission": 40150,
+   "delivered": 3,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-06",
+   "orders": 3,
+   "revenue": 242000,
+   "commission": 24200,
+   "delivered": 2,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-07",
+   "orders": 1,
+   "revenue": 90500,
+   "commission": 9050,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-08",
+   "orders": 2,
+   "revenue": 143500,
+   "commission": 14350,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-09",
+   "orders": 4,
+   "revenue": 572000,
+   "commission": 57200,
+   "delivered": 4,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-10",
+   "orders": 2,
+   "revenue": 146500,
+   "commission": 14650,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-11",
+   "orders": 0,
+   "revenue": 0,
+   "commission": 0,
+   "delivered": 0,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-12",
+   "orders": 3,
+   "revenue": 458000,
+   "commission": 45800,
+   "delivered": 3,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-13",
+   "orders": 1,
+   "revenue": 140500,
+   "commission": 14050,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-14",
+   "orders": 2,
+   "revenue": 277000,
+   "commission": 27700,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-15",
+   "orders": 4,
+   "revenue": 473000,
+   "commission": 47300,
+   "delivered": 4,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-16",
+   "orders": 2,
+   "revenue": 308000,
+   "commission": 30800,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-17",
+   "orders": 2,
+   "revenue": 151500,
+   "commission": 15150,
+   "delivered": 1,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-18",
+   "orders": 1,
+   "revenue": 108500,
+   "commission": 10850,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-19",
+   "orders": 4,
+   "revenue": 307000,
+   "commission": 30700,
+   "delivered": 4,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-20",
+   "orders": 2,
+   "revenue": 186500,
+   "commission": 18650,
+   "delivered": 1,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-21",
+   "orders": 3,
+   "revenue": 242000,
+   "commission": 24200,
+   "delivered": 2,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-22",
+   "orders": 4,
+   "revenue": 454500,
+   "commission": 45450,
+   "delivered": 4,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-23",
+   "orders": 3,
+   "revenue": 424000,
+   "commission": 42400,
+   "delivered": 3,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-24",
+   "orders": 3,
+   "revenue": 301500,
+   "commission": 30150,
+   "delivered": 2,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-25",
+   "orders": 1,
+   "revenue": 96500,
+   "commission": 9650,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-26",
+   "orders": 1,
+   "revenue": 154500,
+   "commission": 15450,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-27",
+   "orders": 3,
+   "revenue": 386500,
+   "commission": 38650,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-28",
+   "orders": 3,
+   "revenue": 433500,
+   "commission": 43350,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-29",
+   "orders": 3,
+   "revenue": 173000,
+   "commission": 17300,
+   "delivered": 1,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-30",
+   "orders": 14,
+   "revenue": 670500,
+   "commission": 67050,
+   "delivered": 4,
+   "cancelled": 1
+  }
+ ],
+ "forecast": [
+  {
+   "day": "2026-10-31",
+   "revenue": 361802
+  },
+  {
+   "day": "2026-11-01",
+   "revenue": 368152
+  },
+  {
+   "day": "2026-11-02",
+   "revenue": 374503
+  },
+  {
+   "day": "2026-11-03",
+   "revenue": 380854
+  },
+  {
+   "day": "2026-11-04",
+   "revenue": 387205
+  },
+  {
+   "day": "2026-11-05",
+   "revenue": 393556
+  },
+  {
+   "day": "2026-11-06",
+   "revenue": 399907
+  }
+ ],
+ "funnel": {
+  "created": 79,
+  "paid": 74,
+  "accepted": 71,
+  "delivered": 60,
+  "confirmed": 57
+ },
+ "top_clients": [
+  {
+   "id": "924cb360-886f-442d-b8fa-26174918cc02",
+   "name": "Ing. Jean-Luc Agossou",
+   "orders": 13,
+   "revenue": 1516000,
+   "returning": true
+  },
+  {
+   "id": "ce8b0513-3826-4c95-ad87-26b798b1ca0a",
+   "name": "Victoire Gbaguidi",
+   "orders": 10,
+   "revenue": 1478000,
+   "returning": true
+  },
+  {
+   "id": "8b470f00-d4f9-4537-b01d-8fa62476405e",
+   "name": "Fatou Bio",
+   "orders": 12,
+   "revenue": 1441500,
+   "returning": true
+  },
+  {
+   "id": "9783139a-92f8-49fb-ae5a-55d1451ed6d8",
+   "name": "Estelle Ahouansou",
+   "orders": 8,
+   "revenue": 961000,
+   "returning": true
+  },
+  {
+   "id": "6741b3b3-05ea-4176-bc09-fb032abeca77",
+   "name": "Romuald Tchibozo",
+   "orders": 8,
+   "revenue": 948000,
+   "returning": true
+  }
+ ],
+ "top_drivers": [
+  {
+   "id": "5839d58d-5de4-454e-b9c7-eade239a9bdb",
+   "name": "Bernard Zinsou",
+   "deliveries": 16,
+   "earnings": 2027250,
+   "rating": 4.7,
+   "avg_hours": 3
+  },
+  {
+   "id": "7268beed-0531-458d-8f10-5f4f8046ce49",
+   "name": "Rodrigue Dossou",
+   "deliveries": 15,
+   "earnings": 1441800,
+   "rating": 4.5,
+   "avg_hours": 4.9
+  },
+  {
+   "id": "06e7d79f-4494-4b62-b868-2854bbf9a166",
+   "name": "Grégoire Hounkpatin",
+   "deliveries": 10,
+   "earnings": 1041750,
+   "rating": 4.3,
+   "avg_hours": 4.1
+  },
+  {
+   "id": "d5f2c5a6-345a-4dbb-ab38-1505895f3d59",
+   "name": "Prudence Adjovi",
+   "deliveries": 10,
+   "earnings": 969750,
+   "rating": 4.7,
+   "avg_hours": 4
+  },
+  {
+   "id": "6c6d055a-2785-4ef3-8676-655b15ab6c6e",
+   "name": "Sylvain Kpossou",
+   "deliveries": 6,
+   "earnings": 673650,
+   "rating": 4.7,
+   "avg_hours": 3.6
+  }
+ ],
+ "categories": [
+  {
+   "label": "Ciment",
+   "orders": 15,
+   "revenue": 2147000
+  },
+  {
+   "label": "Terre rouge",
+   "orders": 12,
+   "revenue": 1451500
+  },
+  {
+   "label": "Sable",
+   "orders": 12,
+   "revenue": 1299000
+  },
+  {
+   "label": "Location d'engins",
+   "orders": 8,
+   "revenue": 1140000
+  },
+  {
+   "label": "Gravier",
+   "orders": 7,
+   "revenue": 943000
+  },
+  {
+   "label": "Évacuation de gravats",
+   "orders": 8,
+   "revenue": 508000
+  },
+  {
+   "label": "Matériaux",
+   "orders": 9,
+   "revenue": 425000
+  }
+ ],
+ "types": [
+  {
+   "type": "MATERIAL",
+   "orders": 55,
+   "revenue": 6265500,
+   "label": "Matériaux"
+  },
+  {
+   "type": "RENTAL",
+   "orders": 8,
+   "revenue": 1140000,
+   "label": "Location d'engins"
+  },
+  {
+   "type": "EVACUATION",
+   "orders": 8,
+   "revenue": 508000,
+   "label": "Évacuation de gravats"
+  }
+ ],
+ "heatmap": [
+  {
+   "dow": 7,
+   "hour": 17,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 13,
+   "orders": 1
+  },
+  {
+   "dow": 1,
+   "hour": 8,
+   "orders": 2
+  },
+  {
+   "dow": 2,
+   "hour": 13,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 15,
+   "orders": 1
+  },
+  {
+   "dow": 7,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 9,
+   "orders": 3
+  },
+  {
+   "dow": 5,
+   "hour": 8,
+   "orders": 2
+  },
+  {
+   "dow": 4,
+   "hour": 8,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 6,
+   "orders": 2
+  },
+  {
+   "dow": 6,
+   "hour": 9,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 13,
+   "orders": 4
+  },
+  {
+   "dow": 6,
+   "hour": 8,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 6,
+   "orders": 1
+  },
+  {
+   "dow": 1,
+   "hour": 9,
+   "orders": 2
+  },
+  {
+   "dow": 3,
+   "hour": 10,
+   "orders": 1
+  },
+  {
+   "dow": 6,
+   "hour": 10,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 10,
+   "orders": 13
+  },
+  {
+   "dow": 5,
+   "hour": 14,
+   "orders": 1
+  },
+  {
+   "dow": 7,
+   "hour": 10,
+   "orders": 1
+  },
+  {
+   "dow": 2,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 16,
+   "orders": 1
+  },
+  {
+   "dow": 1,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 2,
+   "hour": 15,
+   "orders": 1
+  },
+  {
+   "dow": 6,
+   "hour": 7,
+   "orders": 2
+  },
+  {
+   "dow": 1,
+   "hour": 16,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 14,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 17,
+   "orders": 2
+  },
+  {
+   "dow": 3,
+   "hour": 8,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 9,
+   "orders": 1
+  },
+  {
+   "dow": 1,
+   "hour": 7,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 14,
+   "orders": 1
+  },
+  {
+   "dow": 2,
+   "hour": 10,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 16,
+   "orders": 1
+  },
+  {
+   "dow": 2,
+   "hour": 14,
+   "orders": 1
+  },
+  {
+   "dow": 1,
+   "hour": 6,
+   "orders": 4
+  },
+  {
+   "dow": 5,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 2,
+   "hour": 7,
+   "orders": 2
+  },
+  {
+   "dow": 6,
+   "hour": 6,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 9,
+   "orders": 3
+  },
+  {
+   "dow": 4,
+   "hour": 7,
+   "orders": 4
+  }
+ ],
+ "zones": [
+  {
+   "zone": "Abomey-Calavi",
+   "orders": 17,
+   "revenue": 1850000
+  },
+  {
+   "zone": "Sèmè-Kpodji",
+   "orders": 13,
+   "revenue": 1798000
+  },
+  {
+   "zone": "Ouidah",
+   "orders": 12,
+   "revenue": 1466000
+  },
+  {
+   "zone": "Porto-Novo",
+   "orders": 9,
+   "revenue": 1192500
+  },
+  {
+   "zone": "Cotonou",
+   "orders": 9,
+   "revenue": 1037000
+  },
+  {
+   "zone": "Chantier Akpakpa",
+   "orders": 9,
+   "revenue": 405000
+  }
+ ]
+}

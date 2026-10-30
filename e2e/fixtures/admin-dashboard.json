@@ -1,0 +1,1313 @@
+{
+ "period": {
+  "days": 7,
+  "from": "2026-10-24",
+  "to": "2026-10-30",
+  "previous_from": "2026-10-17"
+ },
+ "generated_at": "2026-10-30T09:59:13.279Z",
+ "kpis": {
+  "orders": 28,
+  "paid_orders": 27,
+  "delivery_rate": 0.5185185185185185,
+  "cancellation_rate": 0.10714285714285714,
+  "avg_basket": 88640,
+  "avg_delivery_hours": -0.4,
+  "avg_accept_minutes": 14,
+  "avg_rating": 5,
+  "active_clients": 15,
+  "active_drivers": 7,
+  "new_clients": 16,
+  "repeat_rate": 0.26666666666666666
+ },
+ "revenue": {
+  "total": 2216000,
+  "previous": 1874000,
+  "change": 0.1824973319103522,
+  "commission": 221600,
+  "commission_previous": 187400,
+  "orders_change": 0.47368421052631576
+ },
+ "projection": {
+  "next_7_days": 2665979,
+  "trend": 0.02354657769985064,
+  "month_to_date": 7552000,
+  "month_end": 7913802,
+  "days_in_month": 31,
+  "days_remaining": 1
+ },
+ "objective": {
+  "amount": 10000000,
+  "reached": 7552000,
+  "progress": 0.7552,
+  "projected_progress": 0.7913801587301588
+ },
+ "series": [
+  {
+   "day": "2026-10-24",
+   "orders": 3,
+   "revenue": 301500,
+   "commission": 30150,
+   "delivered": 2,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-25",
+   "orders": 1,
+   "revenue": 96500,
+   "commission": 9650,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-26",
+   "orders": 1,
+   "revenue": 154500,
+   "commission": 15450,
+   "delivered": 1,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-27",
+   "orders": 3,
+   "revenue": 386500,
+   "commission": 38650,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-28",
+   "orders": 3,
+   "revenue": 433500,
+   "commission": 43350,
+   "delivered": 2,
+   "cancelled": 0
+  },
+  {
+   "day": "2026-10-29",
+   "orders": 3,
+   "revenue": 173000,
+   "commission": 17300,
+   "delivered": 1,
+   "cancelled": 1
+  },
+  {
+   "day": "2026-10-30",
+   "orders": 14,
+   "revenue": 670500,
+   "commission": 67050,
+   "delivered": 4,
+   "cancelled": 1
+  }
+ ],
+ "forecast": [
+  {
+   "day": "2026-10-31",
+   "revenue": 361802
+  },
+  {
+   "day": "2026-11-01",
+   "revenue": 368152
+  },
+  {
+   "day": "2026-11-02",
+   "revenue": 374503
+  },
+  {
+   "day": "2026-11-03",
+   "revenue": 380854
+  },
+  {
+   "day": "2026-11-04",
+   "revenue": 387205
+  },
+  {
+   "day": "2026-11-05",
+   "revenue": 393556
+  },
+  {
+   "day": "2026-11-06",
+   "revenue": 399907
+  }
+ ],
+ "funnel": {
+  "created": 28,
+  "paid": 27,
+  "accepted": 25,
+  "delivered": 14,
+  "confirmed": 11
+ },
+ "top_clients": [
+  {
+   "id": "924cb360-886f-442d-b8fa-26174918cc02",
+   "name": "Ing. Jean-Luc Agossou",
+   "orders": 6,
+   "revenue": 632500,
+   "returning": true
+  },
+  {
+   "id": "8b470f00-d4f9-4537-b01d-8fa62476405e",
+   "name": "Fatou Bio",
+   "orders": 3,
+   "revenue": 351500,
+   "returning": true
+  },
+  {
+   "id": "9783139a-92f8-49fb-ae5a-55d1451ed6d8",
+   "name": "Estelle Ahouansou",
+   "orders": 2,
+   "revenue": 291500,
+   "returning": true
+  },
+  {
+   "id": "6741b3b3-05ea-4176-bc09-fb032abeca77",
+   "name": "Romuald Tchibozo",
+   "orders": 3,
+   "revenue": 271000,
+   "returning": true
+  },
+  {
+   "id": "ce8b0513-3826-4c95-ad87-26b798b1ca0a",
+   "name": "Victoire Gbaguidi",
+   "orders": 1,
+   "revenue": 141500,
+   "returning": true
+  }
+ ],
+ "top_drivers": [
+  {
+   "id": "06e7d79f-4494-4b62-b868-2854bbf9a166",
+   "name": "Grégoire Hounkpatin",
+   "deliveries": 4,
+   "earnings": 341100,
+   "rating": 5,
+   "avg_hours": 4.4
+  },
+  {
+   "id": "7268beed-0531-458d-8f10-5f4f8046ce49",
+   "name": "Rodrigue Dossou",
+   "deliveries": 3,
+   "earnings": 200250,
+   "rating": 5,
+   "avg_hours": 6.7
+  },
+  {
+   "id": "5839d58d-5de4-454e-b9c7-eade239a9bdb",
+   "name": "Bernard Zinsou",
+   "deliveries": 2,
+   "earnings": 256950,
+   "rating": 5,
+   "avg_hours": 3.6
+  },
+  {
+   "id": "d5f2c5a6-345a-4dbb-ab38-1505895f3d59",
+   "name": "Prudence Adjovi",
+   "deliveries": 2,
+   "earnings": 228150,
+   "rating": null,
+   "avg_hours": 3.7
+  },
+  {
+   "id": "9f8112cf-dd2a-40a1-a1d3-79a1358f3fd0",
+   "name": "Chauffeur Litige 3 Test",
+   "deliveries": 1,
+   "earnings": 40500,
+   "rating": null,
+   "avg_hours": 0
+  }
+ ],
+ "categories": [
+  {
+   "label": "Location d'engins",
+   "orders": 5,
+   "revenue": 573000
+  },
+  {
+   "label": "Terre rouge",
+   "orders": 5,
+   "revenue": 472500
+  },
+  {
+   "label": "Matériaux",
+   "orders": 9,
+   "revenue": 425000
+  },
+  {
+   "label": "Sable",
+   "orders": 3,
+   "revenue": 372500
+  },
+  {
+   "label": "Ciment",
+   "orders": 2,
+   "revenue": 328000
+  },
+  {
+   "label": "Évacuation de gravats",
+   "orders": 1,
+   "revenue": 45000
+  }
+ ],
+ "types": [
+  {
+   "type": "MATERIAL",
+   "orders": 19,
+   "revenue": 1598000,
+   "label": "Matériaux"
+  },
+  {
+   "type": "RENTAL",
+   "orders": 5,
+   "revenue": 573000,
+   "label": "Location d'engins"
+  },
+  {
+   "type": "EVACUATION",
+   "orders": 1,
+   "revenue": 45000,
+   "label": "Évacuation de gravats"
+  }
+ ],
+ "heatmap": [
+  {
+   "dow": 2,
+   "hour": 13,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 15,
+   "orders": 1
+  },
+  {
+   "dow": 7,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 9,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 6,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 13,
+   "orders": 1
+  },
+  {
+   "dow": 6,
+   "hour": 8,
+   "orders": 1
+  },
+  {
+   "dow": 5,
+   "hour": 10,
+   "orders": 13
+  },
+  {
+   "dow": 2,
+   "hour": 12,
+   "orders": 1
+  },
+  {
+   "dow": 2,
+   "hour": 15,
+   "orders": 1
+  },
+  {
+   "dow": 6,
+   "hour": 7,
+   "orders": 1
+  },
+  {
+   "dow": 1,
+   "hour": 16,
+   "orders": 1
+  },
+  {
+   "dow": 3,
+   "hour": 14,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 9,
+   "orders": 1
+  },
+  {
+   "dow": 4,
+   "hour": 7,
+   "orders": 1
+  }
+ ],
+ "zones": [
+  {
+   "zone": "Porto-Novo",
+   "orders": 4,
+   "revenue": 440500
+  },
+  {
+   "zone": "Abomey-Calavi",
+   "orders": 4,
+   "revenue": 438500
+  },
+  {
+   "zone": "Chantier Akpakpa",
+   "orders": 9,
+   "revenue": 405000
+  },
+  {
+   "zone": "Ouidah",
+   "orders": 3,
+   "revenue": 358500
+  },
+  {
+   "zone": "Sèmè-Kpodji",
+   "orders": 2,
+   "revenue": 343500
+  },
+  {
+   "zone": "Chantier Fidjrossè Plage",
+   "orders": 1,
+   "revenue": 120000
+  }
+ ],
+ "comparisons": {
+  "new_clients_previous": 0,
+  "new_clients_change": null,
+  "delivery_rate_previous": 0.9411764705882353
+ },
+ "live": {
+  "active_orders": 14,
+  "awaiting_payment": 0,
+  "drivers_online": 4,
+  "drivers_total": 18
+ },
+ "map": [
+  {
+   "kind": "order",
+   "id": "455a09d6-630b-41b0-9163-53cbd088313c",
+   "label": "LT-2026-954051",
+   "type": "MATERIAL",
+   "status": "loading",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "101589a6-adef-4411-bf8b-ffd3b90891b6",
+   "label": "BG-2026-8802",
+   "type": "RENTAL",
+   "status": "driver_en_route_delivery",
+   "lat": 6.3562,
+   "lng": 2.3789,
+   "address": "Chantier Fidjrossè Plage"
+  },
+  {
+   "kind": "order",
+   "id": "ba7a104b-9861-4598-8119-789a0986ee05",
+   "label": "LT-2026-990195",
+   "type": "MATERIAL",
+   "status": "loading",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "a5b2d63c-4b10-4082-9bf7-d8e2efe803f9",
+   "label": "LT-2026-901876",
+   "type": "MATERIAL",
+   "status": "driver_en_route_delivery",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "97782eea-ff49-4544-b128-6736a0832adb",
+   "label": "LT-2026-192669",
+   "type": "MATERIAL",
+   "status": "delivered",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "d39b5230-0fd5-4915-a1ff-7cf0a735dcd8",
+   "label": "LT-2026-987594",
+   "type": "MATERIAL",
+   "status": "driver_en_route_pickup",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "46f068d0-d674-49b8-adbe-52551d130b1d",
+   "label": "LT-2026-786239",
+   "type": "MATERIAL",
+   "status": "accepted",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "900b277a-b8e5-4542-b97d-6c32a940523f",
+   "label": "LT-2026-508886",
+   "type": "MATERIAL",
+   "status": "driver_en_route_pickup",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "d909f18d-3e2d-4e4f-8b2f-4b5320286312",
+   "label": "LT-2026-853219",
+   "type": "RENTAL",
+   "status": "delivered",
+   "lat": 6.36,
+   "lng": 2.41,
+   "address": "Chantier Akpakpa"
+  },
+  {
+   "kind": "order",
+   "id": "7f1ae329-fcbe-4181-bfcc-48f094d3da42",
+   "label": "BG-H-0148",
+   "type": "MATERIAL",
+   "status": "accepted",
+   "lat": 6.37,
+   "lng": 2.39,
+   "address": "Chantier Godomey, Abomey-Calavi"
+  },
+  {
+   "kind": "order",
+   "id": "1d802209-15ad-49d8-9ace-2f9906a77c04",
+   "label": "BG-H-0152",
+   "type": "MATERIAL",
+   "status": "pending",
+   "lat": 6.37,
+   "lng": 2.39,
+   "address": "Villa Pahou, Ouidah"
+  },
+  {
+   "kind": "order",
+   "id": "55d0a3f9-ddff-4501-86ee-f2baf2d20304",
+   "label": "BG-H-0153",
+   "type": "MATERIAL",
+   "status": "driver_en_route_delivery",
+   "lat": 6.37,
+   "lng": 2.39,
+   "address": "Lotissement Togba, Abomey-Calavi"
+  },
+  {
+   "kind": "order",
+   "id": "5968ab74-2cbf-4bf9-813f-c41694a9cd14",
+   "label": "BG-H-0155",
+   "type": "MATERIAL",
+   "status": "accepted",
+   "lat": 6.37,
+   "lng": 2.39,
+   "address": "Villa Pahou, Ouidah"
+  },
+  {
+   "kind": "order",
+   "id": "e8b39628-9dea-4837-a532-a36a7aaffe2b",
+   "label": "BG-H-0157",
+   "type": "MATERIAL",
+   "status": "delivered",
+   "lat": 6.37,
+   "lng": 2.39,
+   "address": "Chantier Godomey, Abomey-Calavi"
+  },
+  {
+   "kind": "driver",
+   "id": "7268beed-0531-458d-8f10-5f4f8046ce49",
+   "label": "Rodrigue Dossou",
+   "type": "double_benne",
+   "status": "online",
+   "lat": 6.36536,
+   "lng": 2.41833,
+   "address": null
+  }
+ ],
+ "monthly": [
+  {
+   "month": "2025-11",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2025-12",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-01",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-02",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-03",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-04",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-05",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-06",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-07",
+   "orders": 0,
+   "delivered": 0,
+   "revenue": 0
+  },
+  {
+   "month": "2026-08",
+   "orders": 37,
+   "delivered": 33,
+   "revenue": 3259000
+  },
+  {
+   "month": "2026-09",
+   "orders": 54,
+   "delivered": 50,
+   "revenue": 6317000
+  },
+  {
+   "month": "2026-10",
+   "orders": 79,
+   "delivered": 60,
+   "revenue": 7913500
+  }
+ ],
+ "week": [
+  {
+   "day": "2026-10-26",
+   "orders": 1,
+   "revenue": 154500,
+   "future": false
+  },
+  {
+   "day": "2026-10-27",
+   "orders": 3,
+   "revenue": 386500,
+   "future": false
+  },
+  {
+   "day": "2026-10-28",
+   "orders": 3,
+   "revenue": 433500,
+   "future": false
+  },
+  {
+   "day": "2026-10-29",
+   "orders": 3,
+   "revenue": 173000,
+   "future": false
+  },
+  {
+   "day": "2026-10-30",
+   "orders": 14,
+   "revenue": 670500,
+   "future": false
+  },
+  {
+   "day": "2026-10-31",
+   "orders": 0,
+   "revenue": 0,
+   "future": true
+  },
+  {
+   "day": "2026-11-01",
+   "orders": 0,
+   "revenue": 0,
+   "future": true
+  }
+ ],
+ "recent_orders": [
+  {
+   "id": "a17add07-ba69-4f6e-8722-da73045d9ae7",
+   "order_number": "BG-2026-8803",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Évacuation de gravats",
+   "created_at": "2026-10-30T09:59:12.891Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 45000
+  },
+  {
+   "id": "101589a6-adef-4411-bf8b-ffd3b90891b6",
+   "order_number": "BG-2026-8802",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Location d'engins",
+   "created_at": "2026-10-30T09:59:12.890Z",
+   "status": "driver_en_route_delivery",
+   "payment_status": "escrow_held",
+   "amount": 120000
+  },
+  {
+   "id": "96041fb7-d379-4a99-869f-1526d7300c04",
+   "order_number": "BG-2026-8801",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:59:12.887Z",
+   "status": "validated",
+   "payment_status": "escrow_held",
+   "amount": 65000
+  },
+  {
+   "id": "d909f18d-3e2d-4e4f-8b2f-4b5320286312",
+   "order_number": "LT-2026-853219",
+   "client": "Client Location Test",
+   "service": "Location d'engins",
+   "created_at": "2026-10-30T09:50:44.362Z",
+   "status": "delivered",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "900b277a-b8e5-4542-b97d-6c32a940523f",
+   "order_number": "LT-2026-508886",
+   "client": "Client Événement Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:43.558Z",
+   "status": "driver_en_route_pickup",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "46f068d0-d674-49b8-adbe-52551d130b1d",
+   "order_number": "LT-2026-786239",
+   "client": "Client Panne Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:41.856Z",
+   "status": "accepted",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "d39b5230-0fd5-4915-a1ff-7cf0a735dcd8",
+   "order_number": "LT-2026-987594",
+   "client": "Client Relève Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:40.710Z",
+   "status": "driver_en_route_pickup",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "97782eea-ff49-4544-b128-6736a0832adb",
+   "order_number": "LT-2026-192669",
+   "client": "Client Litige 3 Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:39.529Z",
+   "status": "delivered",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "32d1cbac-b7d2-49fc-aaaf-57a5d08317ae",
+   "order_number": "LT-2026-121441",
+   "client": "Client Litige 2 Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:38.706Z",
+   "status": "validated",
+   "payment_status": "payout_pending",
+   "amount": 45000
+  },
+  {
+   "id": "922a16c6-dadb-41ed-b9b0-88f055157a78",
+   "order_number": "LT-2026-227220",
+   "client": "Client Litige Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:37.863Z",
+   "status": "cancelled",
+   "payment_status": "refunded",
+   "amount": 45000
+  },
+  {
+   "id": "a5b2d63c-4b10-4082-9bf7-d8e2efe803f9",
+   "order_number": "LT-2026-901876",
+   "client": "Client Photo Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:36.953Z",
+   "status": "driver_en_route_delivery",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "455a09d6-630b-41b0-9163-53cbd088313c",
+   "order_number": "LT-2026-954051",
+   "client": "Client Fichier Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:36.136Z",
+   "status": "loading",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "ba7a104b-9861-4598-8119-789a0986ee05",
+   "order_number": "LT-2026-990195",
+   "client": "Client Charge Test",
+   "service": "Matériaux",
+   "created_at": "2026-10-30T09:50:35.299Z",
+   "status": "loading",
+   "payment_status": "escrow_held",
+   "amount": 45000
+  },
+  {
+   "id": "e8b39628-9dea-4837-a532-a36a7aaffe2b",
+   "order_number": "BG-H-0157",
+   "client": "Romuald Tchibozo",
+   "service": "Terre rouge",
+   "created_at": "2026-10-30T08:08:00.000Z",
+   "status": "delivered",
+   "payment_status": "escrow_held",
+   "amount": 35500
+  },
+  {
+   "id": "7efcfec6-3a5d-42ab-a5d5-ca52047aefc0",
+   "order_number": "BG-H-0156",
+   "client": "Romuald Tchibozo",
+   "service": "Terre rouge",
+   "created_at": "2026-10-29T12:37:00.000Z",
+   "status": "cancelled",
+   "payment_status": "refunded",
+   "amount": 91000
+  },
+  {
+   "id": "5968ab74-2cbf-4bf9-813f-c41694a9cd14",
+   "order_number": "BG-H-0155",
+   "client": "Koffi Mensah",
+   "service": "Sable",
+   "created_at": "2026-10-29T08:31:00.000Z",
+   "status": "accepted",
+   "payment_status": "escrow_held",
+   "amount": 123000
+  },
+  {
+   "id": "3c824981-31ae-4c5c-a4d2-4f3071880aed",
+   "order_number": "BG-H-0154",
+   "client": "Fatou Bio",
+   "service": "Terre rouge",
+   "created_at": "2026-10-29T06:37:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 50000
+  },
+  {
+   "id": "02ba70f2-b79f-4422-980c-eb5f7788208a",
+   "order_number": "BG-H-0151",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Location d'engins",
+   "created_at": "2026-10-28T14:45:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 155000
+  },
+  {
+   "id": "55d0a3f9-ddff-4501-86ee-f2baf2d20304",
+   "order_number": "BG-H-0153",
+   "client": "Victoire Gbaguidi",
+   "service": "Terre rouge",
+   "created_at": "2026-10-28T13:16:00.000Z",
+   "status": "driver_en_route_delivery",
+   "payment_status": "escrow_held",
+   "amount": 141500
+  },
+  {
+   "id": "1d802209-15ad-49d8-9ace-2f9906a77c04",
+   "order_number": "BG-H-0152",
+   "client": "Estelle Ahouansou",
+   "service": "Sable",
+   "created_at": "2026-10-28T05:40:00.000Z",
+   "status": "pending",
+   "payment_status": "escrow_held",
+   "amount": 137000
+  },
+  {
+   "id": "d69c54c9-de74-4988-b01d-26ef2b745935",
+   "order_number": "BG-H-0150",
+   "client": "Romuald Tchibozo",
+   "service": "Ciment",
+   "created_at": "2026-10-27T14:18:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 139000
+  },
+  {
+   "id": "7f1ae329-fcbe-4181-bfcc-48f094d3da42",
+   "order_number": "BG-H-0148",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Terre rouge",
+   "created_at": "2026-10-27T12:03:00.000Z",
+   "status": "accepted",
+   "payment_status": "escrow_held",
+   "amount": 149000
+  },
+  {
+   "id": "14855739-c504-414e-a9f3-e9c63eff6ba5",
+   "order_number": "BG-H-0149",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Location d'engins",
+   "created_at": "2026-10-27T11:26:00.000Z",
+   "status": "validated",
+   "payment_status": "payout_pending",
+   "amount": 98500
+  },
+  {
+   "id": "757d5e44-2146-437a-b25c-e5730dad11f0",
+   "order_number": "BG-H-0147",
+   "client": "Estelle Ahouansou",
+   "service": "Location d'engins",
+   "created_at": "2026-10-26T15:04:00.000Z",
+   "status": "validated",
+   "payment_status": "payout_pending",
+   "amount": 154500
+  },
+  {
+   "id": "5b38f0dd-a9a6-42fa-bcbf-246e60224fa0",
+   "order_number": "BG-H-0146",
+   "client": "Romuald Tchibozo",
+   "service": "Terre rouge",
+   "created_at": "2026-10-25T11:33:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 96500
+  },
+  {
+   "id": "560a054e-ba48-4ad5-a455-d32ccf81849c",
+   "order_number": "BG-H-0145",
+   "client": "Arnaud Houngbédji",
+   "service": "Terre rouge",
+   "created_at": "2026-10-24T15:14:00.000Z",
+   "status": "cancelled",
+   "payment_status": "unpaid",
+   "amount": 186500
+  },
+  {
+   "id": "3f2566d3-eabe-4b12-b780-f1e8a951a9aa",
+   "order_number": "BG-H-0144",
+   "client": "Fatou Bio",
+   "service": "Sable",
+   "created_at": "2026-10-24T07:52:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 112500
+  },
+  {
+   "id": "061249ca-5e15-454b-98aa-fbd0f45a3389",
+   "order_number": "BG-H-0143",
+   "client": "Fatou Bio",
+   "service": "Ciment",
+   "created_at": "2026-10-24T06:54:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 189000
+  },
+  {
+   "id": "27f884c6-ce3f-4da8-9bda-83cf6d51d36a",
+   "order_number": "BG-H-0141",
+   "client": "Estelle Ahouansou",
+   "service": "Évacuation de gravats",
+   "created_at": "2026-10-23T16:15:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 84000
+  },
+  {
+   "id": "d4ca7b5b-5a67-4bcd-8728-bba07069a915",
+   "order_number": "BG-H-0142",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Gravier",
+   "created_at": "2026-10-23T15:00:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 175000
+  },
+  {
+   "id": "86c1a19e-d7b7-46c0-ae19-a3d16653827f",
+   "order_number": "BG-H-0140",
+   "client": "Romuald Tchibozo",
+   "service": "Ciment",
+   "created_at": "2026-10-23T13:30:00.000Z",
+   "status": "validated",
+   "payment_status": "payout_pending",
+   "amount": 165000
+  },
+  {
+   "id": "fe05d969-4c7f-4a6f-8ebc-abcc3b75e307",
+   "order_number": "BG-H-0136",
+   "client": "Fatou Bio",
+   "service": "Location d'engins",
+   "created_at": "2026-10-22T12:21:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 168000
+  },
+  {
+   "id": "25003fcf-cd8d-4caa-802f-835360368fe2",
+   "order_number": "BG-H-0137",
+   "client": "Victoire Gbaguidi",
+   "service": "Ciment",
+   "created_at": "2026-10-22T12:06:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 140000
+  },
+  {
+   "id": "2cd29e24-0bb7-4526-bc74-df0bf0fb8055",
+   "order_number": "BG-H-0138",
+   "client": "Koffi Mensah",
+   "service": "Évacuation de gravats",
+   "created_at": "2026-10-22T08:17:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 67000
+  },
+  {
+   "id": "931af13d-2811-47fb-9560-acc71be71319",
+   "order_number": "BG-H-0139",
+   "client": "Fatou Bio",
+   "service": "Sable",
+   "created_at": "2026-10-22T06:03:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 79500
+  },
+  {
+   "id": "4327847c-bef0-4483-8e3f-8bc84a6beedf",
+   "order_number": "BG-H-0135",
+   "client": "Romuald Tchibozo",
+   "service": "Évacuation de gravats",
+   "created_at": "2026-10-21T09:24:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 89500
+  },
+  {
+   "id": "69eb6658-4afe-47a6-9303-38f3b73c1db7",
+   "order_number": "BG-H-0134",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Location d'engins",
+   "created_at": "2026-10-21T05:31:00.000Z",
+   "status": "cancelled",
+   "payment_status": "unpaid",
+   "amount": 96000
+  },
+  {
+   "id": "b835138a-6a79-4714-891e-9899ac51d5d9",
+   "order_number": "BG-H-0133",
+   "client": "Romuald Tchibozo",
+   "service": "Sable",
+   "created_at": "2026-10-21T05:09:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 152500
+  },
+  {
+   "id": "f20e535d-8bed-4809-a7ca-97361e5cf603",
+   "order_number": "BG-H-0131",
+   "client": "Ing. Jean-Luc Agossou",
+   "service": "Location d'engins",
+   "created_at": "2026-10-20T11:49:00.000Z",
+   "status": "cancelled",
+   "payment_status": "unpaid",
+   "amount": 200500
+  },
+  {
+   "id": "c7311a71-1e0c-4f84-a753-efe8ad120ced",
+   "order_number": "BG-H-0132",
+   "client": "Estelle Ahouansou",
+   "service": "Gravier",
+   "created_at": "2026-10-20T09:09:00.000Z",
+   "status": "completed",
+   "payment_status": "released",
+   "amount": 186500
+  }
+ ],
+ "recent_clients": [
+  {
+   "id": "924cb360-886f-442d-b8fa-26174918cc02",
+   "name": "Ing. Jean-Luc Agossou",
+   "phone": "+22990000000",
+   "orders": 28,
+   "spent": 3085500,
+   "last_order": "2026-10-30T09:59:12.891Z"
+  },
+  {
+   "id": "f77dcb54-b06b-4da6-a94a-c09d0dd312d0",
+   "name": "Client Location Test",
+   "phone": "+22990000000",
+   "orders": 1,
+   "spent": 45000,
+   "last_order": "2026-10-30T09:50:44.362Z"
+  },
+  {
+   "id": "79ed2ac2-d6e6-42d9-8f3b-1c5471c0fa31",
+   "name": "Client Événement Test",
+   "phone": "+22990000000",
+   "orders": 1,
+   "spent": 45000,
+   "last_order": "2026-10-30T09:50:43.558Z"
+  },
+  {
+   "id": "23bdeeb7-3cac-4b68-b997-dc1e50599f8c",
+   "name": "Client Panne Test",
+   "phone": "+22990000000",
+   "orders": 1,
+   "spent": 45000,
+   "last_order": "2026-10-30T09:50:41.856Z"
+  },
+  {
+   "id": "76a94ac4-8757-4f0f-b18a-bbb71a00afe5",
+   "name": "Client Relève Test",
+   "phone": "+22990000000",
+   "orders": 1,
+   "spent": 45000,
+   "last_order": "2026-10-30T09:50:40.710Z"
+  },
+  {
+   "id": "1fde93ac-5379-473a-97cf-2d7414ce75f1",
+   "name": "Client Litige 3 Test",
+   "phone": "+22990000000",
+   "orders": 1,
+   "spent": 45000,
+   "last_order": "2026-10-30T09:50:39.529Z"
+  }
+ ],
+ "drivers": [
+  {
+   "id": "7268beed-0531-458d-8f10-5f4f8046ce49",
+   "name": "Rodrigue Dossou",
+   "truck_type": "double_benne",
+   "truck_plate": "RB-8921-BA",
+   "is_available": true,
+   "verification_status": "verified",
+   "rating": 4.9,
+   "deliveries": 35,
+   "current_order": "BG-2026-8802"
+  },
+  {
+   "id": "5839d58d-5de4-454e-b9c7-eade239a9bdb",
+   "name": "Bernard Zinsou",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB-7031-BA",
+   "is_available": false,
+   "verification_status": "verified",
+   "rating": null,
+   "deliveries": 35,
+   "current_order": "BG-H-0153"
+  },
+  {
+   "id": "06e7d79f-4494-4b62-b868-2854bbf9a166",
+   "name": "Grégoire Hounkpatin",
+   "truck_type": "double_benne",
+   "truck_plate": "RB-7001-BA",
+   "is_available": false,
+   "verification_status": "verified",
+   "rating": null,
+   "deliveries": 27,
+   "current_order": "BG-H-0157"
+  },
+  {
+   "id": "d5f2c5a6-345a-4dbb-ab38-1505895f3d59",
+   "name": "Prudence Adjovi",
+   "truck_type": "double_benne",
+   "truck_plate": "RB-7021-BA",
+   "is_available": false,
+   "verification_status": "verified",
+   "rating": null,
+   "deliveries": 24,
+   "current_order": "BG-H-0148"
+  },
+  {
+   "id": "6c6d055a-2785-4ef3-8676-655b15ab6c6e",
+   "name": "Sylvain Kpossou",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB-7011-BA",
+   "is_available": false,
+   "verification_status": "verified",
+   "rating": null,
+   "deliveries": 19,
+   "current_order": null
+  }
+ ],
+ "payments": [
+  {
+   "id": "d909f18d-3e2d-4e4f-8b2f-4b5320286312",
+   "order_number": "LT-2026-853219",
+   "client": "Client Location Test",
+   "payment_at": "2026-10-30T09:50:44.375Z",
+   "amount": 45000,
+   "payment_status": "escrow_held",
+   "payment_method": null
+  },
+  {
+   "id": "900b277a-b8e5-4542-b97d-6c32a940523f",
+   "order_number": "LT-2026-508886",
+   "client": "Client Événement Test",
+   "payment_at": "2026-10-30T09:50:43.566Z",
+   "amount": 45000,
+   "payment_status": "escrow_held",
+   "payment_method": null
+  },
+  {
+   "id": "46f068d0-d674-49b8-adbe-52551d130b1d",
+   "order_number": "LT-2026-786239",
+   "client": "Client Panne Test",
+   "payment_at": "2026-10-30T09:50:41.866Z",
+   "amount": 45000,
+   "payment_status": "escrow_held",
+   "payment_method": null
+  },
+  {
+   "id": "d39b5230-0fd5-4915-a1ff-7cf0a735dcd8",
+   "order_number": "LT-2026-987594",
+   "client": "Client Relève Test",
+   "payment_at": "2026-10-30T09:50:40.719Z",
+   "amount": 45000,
+   "payment_status": "escrow_held",
+   "payment_method": null
+  },
+  {
+   "id": "97782eea-ff49-4544-b128-6736a0832adb",
+   "order_number": "LT-2026-192669",
+   "client": "Client Litige 3 Test",
+   "payment_at": "2026-10-30T09:50:39.536Z",
+   "amount": 45000,
+   "payment_status": "escrow_held",
+   "payment_method": null
+  },
+  {
+   "id": "32d1cbac-b7d2-49fc-aaaf-57a5d08317ae",
+   "order_number": "LT-2026-121441",
+   "client": "Client Litige 2 Test",
+   "payment_at": "2026-10-30T09:50:38.717Z",
+   "amount": 45000,
+   "payment_status": "payout_pending",
+   "payment_method": null
+  }
+ ],
+ "reviews": [
+  {
+   "id": "3c824981-31ae-4c5c-a4d2-4f3071880aed",
+   "client": "Fatou Bio",
+   "rating": 5,
+   "review": null,
+   "rated_at": "2026-10-29T15:53:25.849Z"
+  },
+  {
+   "id": "5b38f0dd-a9a6-42fa-bcbf-246e60224fa0",
+   "client": "Romuald Tchibozo",
+   "rating": 5,
+   "review": null,
+   "rated_at": "2026-10-25T20:06:58.747Z"
+  },
+  {
+   "id": "3f2566d3-eabe-4b12-b780-f1e8a951a9aa",
+   "client": "Fatou Bio",
+   "rating": 5,
+   "review": null,
+   "rated_at": "2026-10-24T15:26:44.551Z"
+  },
+  {
+   "id": "061249ca-5e15-454b-98aa-fbd0f45a3389",
+   "client": "Fatou Bio",
+   "rating": 5,
+   "review": null,
+   "rated_at": "2026-10-24T14:55:01.545Z"
+  }
+ ],
+ "alerts": {
+  "disputes": 2,
+  "reliefs": 0,
+  "payouts": 11,
+  "payouts_amount": 1242450,
+  "credit_payouts": 0,
+  "unassigned": 1
+ },
+ "approvals": [
+  {
+   "id": "71e61feb-fc51-4fa8-8fcc-c8a3c961ba96",
+   "name": "Chauffeur Location Test",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB 29",
+   "created_at": "2026-10-30T09:50:44.341Z"
+  },
+  {
+   "id": "de8efc56-ed06-4d80-996c-d1fa4aeda71f",
+   "name": "Réserve Événement Test",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB 27",
+   "created_at": "2026-10-30T09:50:43.541Z"
+  },
+  {
+   "id": "2e011b33-1510-46b8-8c86-272eb691a466",
+   "name": "Chauffeur Événement Test",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB 26",
+   "created_at": "2026-10-30T09:50:43.157Z"
+  },
+  {
+   "id": "3ef05483-2c20-48bf-b1f2-bfffca2930bc",
+   "name": "Autre Chauffeur Test",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB 23",
+   "created_at": "2026-10-30T09:50:41.838Z"
+  },
+  {
+   "id": "252c8a52-054e-42b6-aea8-4f5b092e444e",
+   "name": "Chauffeur Titulaire Test",
+   "truck_type": "simple_benne",
+   "truck_plate": "RB 22",
+   "created_at": "2026-10-30T09:50:41.462Z"
+  }
+ ],
+ "totals": {
+  "clients": 21,
+  "clients_before_month": 4,
+  "companies": 1,
+  "pending_drivers": 13,
+  "clients_change": 4.25,
+  "repeat_rate": 0.26666666666666666
+ },
+ "range": {
+  "from": "2026-10-24",
+  "to": "2026-10-31"
+ }
+}
