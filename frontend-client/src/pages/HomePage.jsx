@@ -6,11 +6,12 @@ import api from '../services/api';
 import { WHATSAPP_URL as WHATSAPP } from '../constants/contact';
 import { Glyph, STATUS, describe, glyphFor, shortDate } from '../components/delivery';
 import NotificationBell from '../components/NotificationBell';
+import { MarketPricesCard } from '../components/market';
 
 const TILES = [
-  { name: 'Sable', hint: 'Lagunaire, de carrière', glyph: 'sand', params: { type: 'MATERIAL', matiere: 'Sable' }, hero: true },
-  { name: 'Gravier', hint: '5/15, 15/25', glyph: 'gravel', params: { type: 'MATERIAL', matiere: 'Gravier' } },
-  { name: 'Latérite', hint: 'Remblai, voirie', glyph: 'laterite', params: { type: 'MATERIAL', matiere: 'Latérite' } },
+  { name: 'Sable', hint: 'Lagunaire, de carrière', glyph: 'sand', params: { type: 'MATERIAL', matiere: 'Sable lagunaire' }, hero: true },
+  { name: 'Gravier', hint: '5/15, 15/25', glyph: 'gravel', params: { type: 'MATERIAL', matiere: 'Gravier 15/25' } },
+  { name: 'Latérite', hint: 'Remblai, voirie', glyph: 'laterite', params: { type: 'MATERIAL', matiere: 'Latérite (terre rouge)' } },
   { name: 'Engins', hint: 'Pelle, bulldozer', glyph: 'machine', params: { type: 'RENTAL' } },
 ];
 
@@ -94,6 +95,8 @@ export default function HomePage() {
           </div>
         </section>
       )}
+
+      <MarketPricesCard />
 
       <a className="bn-help" href={WHATSAPP} target="_blank" rel="noopener noreferrer">
         <MessageCircle size={18} aria-hidden="true" /> Une question ? Écrivez-nous sur WhatsApp

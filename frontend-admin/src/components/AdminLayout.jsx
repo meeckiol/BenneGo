@@ -37,7 +37,7 @@ const SECTIONS = [
   ] },
   { id: 'marche', title: 'Qualité & marché', items: [
     { path: '/reviews', Icon: Star, label: 'Avis' },
-    { path: '/barometer', Icon: TrendingUp, label: 'Baromètre BTP' },
+    { path: '/barometer', Icon: TrendingUp, label: 'Prix du marché' },
   ] },
   { id: 'compte', title: 'Compte', items: [
     { path: '/settings', Icon: Settings, label: 'Réglages' },

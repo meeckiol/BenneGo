@@ -164,9 +164,32 @@ class ClientRepository {
     await api.post('/referrals', body: {'referral_code': code});
   }
 
-  /// Indice hebdomadaire des prix BTP publié par BenneGo.
-  Future<List<Map<String, dynamic>>> barometer() async {
-    final data = await api.get('/barometer') as Map<String, dynamic>;
-    return (data['items'] as List? ?? const []).cast<Map<String, dynamic>>();
+  /// Prix du marché publiés chaque semaine par BenneGo (prix d'un voyage par taille de camion),
+  /// avec le catalogue des matériaux sous leurs noms d'ici.
+  Future<Market> market() async {
+    final results = await Future.wait([api.get('/barometer/catalog'), api.get('/barometer')]);
+    final catalog = results[0] as Map<String, dynamic>;
+    final prices = results[1] as Map<String, dynamic>;
+    return Market(
+      materials: (catalog['materials'] as List? ?? const []).cast<Map<String, dynamic>>(),
+      trucks: (catalog['trucks'] as List? ?? const []).cast<Map<String, dynamic>>(),
+      items: (prices['items'] as List? ?? const []).cast<Map<String, dynamic>>(),
+    );
   }
+}
+
+/// Prix du marché : catalogue (matériaux, camions) et derniers prix publiés.
+class Market {
+  const Market({this.materials = const [], this.trucks = const [], this.items = const []});
+
+  final List<Map<String, dynamic>> materials;
+  final List<Map<String, dynamic>> trucks;
+  final List<Map<String, dynamic>> items;
+
+  /// Matériau du catalogue portant ce nom, s'il existe.
+  Map<String, dynamic>? material(String? name) => materials.where((m) => m['name'] == name).firstOrNull;
+
+  /// Taille de camion (6, 10 ou 12 roues) qui correspond à une benne BenneGo.
+  Map<String, dynamic>? truckFor(String truckType) =>
+      trucks.where((t) => (t['truck_types'] as List? ?? const []).contains(truckType)).firstOrNull;
 }

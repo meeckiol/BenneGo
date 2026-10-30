@@ -5,10 +5,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/client_config.dart';
 import '../data/client_repository.dart';
+import 'market.dart';
 import 'new_order_screen.dart';
 import 'order_detail_screen.dart';
 
-/// Accueil client : nouvelle commande, services, commande en cours et indice des prix BTP.
+/// Accueil client : nouvelle commande, services, commande en cours et prix du marché.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -18,7 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Order>> _orders;
-  late Future<List<Map<String, dynamic>>> _barometer;
+  late Future<Market> _market;
 
   @override
   void initState() {
@@ -29,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _load() {
     final repo = context.read<ClientRepository>();
     _orders = repo.orders(limit: 20);
-    _barometer = repo.barometer().catchError((_) => <Map<String, dynamic>>[]);
+    _market = repo.market().catchError((_) => const Market());
   }
 
   Future<void> _reload() async {
@@ -37,8 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
     await _orders;
   }
 
-  Future<void> _newOrder(String type) async {
-    await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => NewOrderScreen(initialType: type)));
+  Future<void> _newOrder(String type, {String? material}) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => NewOrderScreen(initialType: type, initialMaterial: material)),
+    );
     if (mounted) await _reload();
   }
 
@@ -197,34 +200,12 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             const SizedBox(height: 12),
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: _barometer,
-              builder: (context, snapshot) {
-                final items = snapshot.data ?? const <Map<String, dynamic>>[];
-                if (items.isEmpty) return const SizedBox.shrink();
-                return BnCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BnSectionHead(title: 'Indice des prix BTP · semaine ${items.first['week_number'] ?? ''}'),
-                      const SizedBox(height: 8),
-                      for (final item in items.take(6))
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Row(
-                            children: [
-                              Expanded(child: Text('${item['material_name']}', style: const TextStyle(color: BnColors.text))),
-                              Text(
-                                '${formatFcfa(parseNum(item['avg_price_m3']))}/m³',
-                                style: const TextStyle(color: BnColors.textStrong, fontWeight: FontWeight.w700),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
+            FutureBuilder<Market>(
+              future: _market,
+              builder: (context, snapshot) => MarketPricesCard(
+                market: snapshot.data ?? const Market(),
+                onMaterial: (name) => _newOrder('MATERIAL', material: name),
+              ),
             ),
           ],
         ),

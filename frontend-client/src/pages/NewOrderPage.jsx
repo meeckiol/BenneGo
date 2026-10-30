@@ -8,6 +8,7 @@ import { getSocket } from '../services/socket';
 import OrderMap from '../components/OrderMap';
 import AddressSearch from '../components/AddressSearch';
 import { STATUS, Track, describe } from '../components/delivery';
+import { MarketPriceHint, MaterialPicker } from '../components/market';
 import { km, money, quoteLines } from '../../../shared/quoteLines';
 import '../styles/order.css';
 
@@ -437,13 +438,11 @@ export default function NewOrderPage() {
                   <>
                     <Section part={1} title="Matériaux & Camion">
                       <Field label="Matériau commandé">
-                        <input
+                        <MaterialPicker
                           name="material_description"
                           value={form.material_description}
                           onChange={handleChange}
-                          placeholder="Ex: Sable de mer, Gravier concassé 15/25, Latérite, Briques..."
                           style={styles.input}
-                          required
                         />
                       </Field>
                       <div style={styles.row}>
@@ -462,15 +461,16 @@ export default function NewOrderPage() {
                         </Field>
                         <Field label="Type de camion requis">
                           <select name="truck_type" value={form.truck_type} onChange={handleChange} style={styles.input}>
-                            <option value="simple_benne">Camion Benne 10m³</option>
+                            <option value="simple_benne">Camion 6 roues (benne 10 m³)</option>
                             <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
-                            <option value="double_benne">Camion Benne 16m³ (Double benne)</option>
-                            <option value="semi_remorque">Semi-remorque Benne (25m³)</option>
-                            <option value="plateau">Camion Plateau (Briques/Fer)</option>
+                            <option value="double_benne">Camion 10 roues (benne 16 m³)</option>
+                            <option value="semi_remorque">Camion 12 roues (semi-remorque 25 m³)</option>
+                            <option value="plateau">Camion plateau 10 roues (briques, fer)</option>
                             <option value="grue">Camion avec Grue embarquée</option>
                           </select>
                         </Field>
                       </div>
+                      <MarketPriceHint materialName={form.material_description} truckType={form.truck_type} />
                     </Section>
 
                     <Section part={2} title="Itinéraire de Livraison">

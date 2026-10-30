@@ -257,3 +257,19 @@ Avant : menu latéral de la console en liste simple (sans rubriques, compteurs, 
 cp sauvegarde/admin-menu-avant-sections/AdminLayout.jsx frontend-admin/src/components/
 rm frontend-admin/src/components/layout.css
 ```
+
+## indices-avant-voyage (30 octobre 2026)
+
+Avant : baromètre des prix au m³ par numéro de semaine (console admin web et Flutter, accueil Flutter du client)
+et champ « Matériau commandé » en saisie libre dans la commande web du client.
+La nouvelle version publie des prix au voyage par taille de camion (6, 10, 12 roues) avec des dates claires,
+et la commande propose un menu des matériaux sous leurs noms d'ici. Les anciennes lignes au m³ restent en base
+(week_start vide) mais ne sont plus servies par GET /api/barometer.
+
+```bash
+cp sauvegarde/indices-avant-voyage/BarometerAdminPage.jsx frontend-admin/src/pages/
+cp sauvegarde/indices-avant-voyage/NewOrderPage.jsx frontend-client/src/pages/
+cp sauvegarde/indices-avant-voyage/barometer_screen.dart flutter/admin/lib/screens/
+cp sauvegarde/indices-avant-voyage/home_screen.dart flutter/client/lib/screens/
+git checkout 217d7224 -- backend/src/routes/barometer.routes.js backend/src/routes/admin-ops.routes.js
+```

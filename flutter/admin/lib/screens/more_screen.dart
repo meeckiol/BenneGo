@@ -8,7 +8,7 @@ import 'promos_screen.dart';
 import 'reliefs_screen.dart';
 import 'reviews_screen.dart';
 
-/// Outils : messagerie, pannes et relèves, baromètre BTP, codes promo et avis.
+/// Outils : messagerie, pannes et relèves, prix du marché, codes promo et avis.
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
@@ -34,8 +34,8 @@ class MoreScreen extends StatelessWidget {
           ),
           _Tile(
             icon: Icons.trending_up,
-            title: 'Baromètre BTP',
-            subtitle: "Publier l'indice hebdomadaire",
+            title: 'Prix du marché',
+            subtitle: "Publier le prix d'un voyage de la semaine",
             page: const BarometerScreen(),
           ),
           _Tile(

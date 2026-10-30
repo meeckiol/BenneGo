@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../data/client_repository.dart';
+import 'market.dart';
 import 'order_detail_screen.dart';
 import 'payment_screen.dart';
 
@@ -25,15 +26,22 @@ const _machinery = {
 };
 
 const _trucks = {
-  'simple_benne': 'Benne 10 m³',
-  'double_benne': 'Double benne',
+  'simple_benne': 'Camion 6 roues (benne 10 m³)',
+  'double_benne': 'Camion 10 roues (benne 16 m³)',
+  'semi_remorque': 'Camion 12 roues (25 m³)',
 };
+
+// Choix « Autre » du menu des matériaux : le client écrit le matériau voulu
+const _otherMaterial = '__autre';
 
 /// Nouvelle commande en trois étapes : lieux, quantité, prix puis paiement séquestre.
 class NewOrderScreen extends StatefulWidget {
-  const NewOrderScreen({super.key, this.initialType = 'MATERIAL'});
+  const NewOrderScreen({super.key, this.initialType = 'MATERIAL', this.initialMaterial});
 
   final String initialType;
+
+  /// Matériau choisi depuis l'accueil (prix du marché), sous son nom du catalogue.
+  final String? initialMaterial;
 
   @override
   State<NewOrderScreen> createState() => _NewOrderScreenState();
@@ -50,6 +58,9 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   final _quantity = TextEditingController(text: '10');
   final _hours = TextEditingController(text: '4');
   String _truck = 'double_benne';
+  Market _market = const Market();
+  late String? _material = widget.initialMaterial;
+  final _otherText = TextEditingController();
   String _machine = 'excavatrice';
   Estimate? _estimate;
   // Crédit BenneGo (primes de parrainage) : le client choisit de l'utiliser sur cette commande
@@ -59,13 +70,24 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
 
   @override
   void dispose() {
-    for (final controller in [_pickupAddress, _deliveryAddress, _quantity, _hours]) {
+    for (final controller in [_pickupAddress, _deliveryAddress, _quantity, _hours, _otherText]) {
       controller.dispose();
     }
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    context.read<ClientRepository>().market().then((market) {
+      if (mounted) setState(() => _market = market);
+    }).catchError((_) {});
+  }
+
   bool get _isRental => _type == 'RENTAL';
+
+  /// Matériau commandé : nom du catalogue, ou texte libre après « Autre ».
+  String get _materialText => _material == _otherMaterial ? _otherText.text.trim() : (_material ?? '');
 
   /// Charge utile commune à l'estimation et à la création de la commande.
   Map<String, dynamic> _payload() => {
@@ -80,6 +102,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         'duration_hours': _isRental ? _parse(_hours.text) : null,
         'machinery_type': _isRental ? _machine : null,
         'truck_type': _truck,
+        if (_type == 'MATERIAL' && _materialText.isNotEmpty) 'material_description': _materialText,
         'use_credit': _useCredit,
       };
 
@@ -91,6 +114,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
       return tr('Renseignez les deux adresses.');
     }
     if (_step == 1) {
+      if (_type == 'MATERIAL' && _materialText.isEmpty) return tr('Choisissez le matériau.');
       try {
         final value = _isRental ? _parse(_hours.text) : _parse(_quantity.text);
         if (value <= 0) return tr('Quantité invalide.');
@@ -322,6 +346,30 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
             decoration: InputDecoration(labelText: tr('Durée (heures)')),
           ),
         ] else ...[
+          if (_type == 'MATERIAL') ...[
+            DropdownButtonFormField<String>(
+              initialValue: _market.material(_material) != null || _material == _otherMaterial ? _material : null,
+              key: ValueKey(_market.materials.length),
+              isExpanded: true,
+              decoration: InputDecoration(labelText: tr('Matériau commandé')),
+              hint: const Text('Choisir le matériau'),
+              items: [
+                for (final m in _market.materials)
+                  DropdownMenuItem(value: '${m['name']}', child: Text('${m['name']}')),
+                const DropdownMenuItem(value: _otherMaterial, child: Text('Autre (préciser)')),
+              ],
+              onChanged: (value) => setState(() => _material = value),
+            ),
+            if (_material == _otherMaterial || (_market.materials.isEmpty && _material == null)) ...[
+              const SizedBox(height: 10),
+              TextField(
+                controller: _otherText,
+                onChanged: (_) => setState(() => _material ??= _otherMaterial),
+                decoration: InputDecoration(labelText: tr('Préciser le matériau'), hintText: tr('Écrivez le matériau voulu')),
+              ),
+            ],
+            const SizedBox(height: 12),
+          ],
           TextField(
             controller: _quantity,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -339,6 +387,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 ),
             ],
           ),
+          if (_type == 'MATERIAL') MarketPriceHint(market: _market, materialName: _material, truckType: _truck),
         ],
       ];
 

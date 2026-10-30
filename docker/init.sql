@@ -826,3 +826,21 @@ CREATE TABLE IF NOT EXISTS platform_settings (
 );
 -- Analyses par période : commandes filtrées et regroupées par date de création
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
+
+-- =============================================
+-- Prix du marché au voyage (noms de matériaux d'ici, taille du camion, semaine du lundi au dimanche)
+-- Les anciens indices au m³ (semaine/année) restent en base mais ne sont plus affichés.
+-- =============================================
+ALTER TABLE btp_price_barometer ADD COLUMN IF NOT EXISTS material_key VARCHAR(40);
+ALTER TABLE btp_price_barometer ADD COLUMN IF NOT EXISTS truck_size VARCHAR(20);
+ALTER TABLE btp_price_barometer ADD COLUMN IF NOT EXISTS week_start DATE;
+ALTER TABLE btp_price_barometer ADD COLUMN IF NOT EXISTS price_min NUMERIC(12,0);
+ALTER TABLE btp_price_barometer ADD COLUMN IF NOT EXISTS price_avg NUMERIC(12,0);
+ALTER TABLE btp_price_barometer ADD COLUMN IF NOT EXISTS price_max NUMERIC(12,0);
+ALTER TABLE btp_price_barometer ALTER COLUMN avg_price_m3 DROP NOT NULL;
+ALTER TABLE btp_price_barometer ALTER COLUMN min_price_m3 DROP NOT NULL;
+ALTER TABLE btp_price_barometer ALTER COLUMN max_price_m3 DROP NOT NULL;
+ALTER TABLE btp_price_barometer ALTER COLUMN week_number DROP NOT NULL;
+ALTER TABLE btp_price_barometer ALTER COLUMN year DROP NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_btp_barometer_voyage ON btp_price_barometer(material_key, truck_size, week_start)
+  WHERE week_start IS NOT NULL;

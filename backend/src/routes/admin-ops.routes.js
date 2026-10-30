@@ -10,6 +10,7 @@ const { query } = require('../config/database');
 const payments = require('../services/payment.service');
 const relief = require('../services/sla-quarry.service');
 const { CHAT_CLOSED, postAdminMessage } = require('../services/chat.service');
+const market = require('../services/market.service');
 
 const router = express.Router();
 router.use(authenticate, requireRole('admin'));
@@ -149,31 +150,18 @@ router.post('/reliefs/:id/assign', [
   }
 });
 
-// POST /api/admin/barometer — publication hebdomadaire d'un indice (upsert par matériau et semaine)
+// POST /api/admin/barometer — prix du marché d'une semaine (au voyage), corrigeable en republiant la même semaine
 router.post('/barometer', [
-  body('material_name').trim().notEmpty().isLength({ max: 100 }),
-  body('min_price_m3').isFloat({ min: 0 }),
-  body('avg_price_m3').isFloat({ min: 0 }),
-  body('max_price_m3').isFloat({ min: 0 }),
-  body('trend').isIn(['up', 'down', 'stable']),
-  body('week_number').isInt({ min: 1, max: 53 }),
-  body('year').isInt({ min: 2024, max: 2100 }),
+  body('material_key').isString().notEmpty(),
+  body('truck_size').isString().notEmpty(),
+  body('price_min').isInt({ min: 1, max: 100000000 }).withMessage('Prix le plus bas invalide'),
+  body('price_avg').isInt({ min: 1, max: 100000000 }).withMessage('Prix courant invalide'),
+  body('price_max').isInt({ min: 1, max: 100000000 }).withMessage('Prix le plus haut invalide'),
+  body('week_start').isISO8601().withMessage('Semaine invalide'),
 ], validateRequest, async (req, res, next) => {
   try {
-    const { material_name, min_price_m3, avg_price_m3, max_price_m3, trend, week_number, year } = req.body;
-    if (!(Number(min_price_m3) <= Number(avg_price_m3) && Number(avg_price_m3) <= Number(max_price_m3))) {
-      throw new AppError('Prix : min ≤ moyen ≤ max', 400);
-    }
-    const { rows } = await query(
-      `INSERT INTO btp_price_barometer (material_name, avg_price_m3, min_price_m3, max_price_m3, week_number, year, trend)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       ON CONFLICT (material_name, week_number, year)
-       DO UPDATE SET avg_price_m3 = EXCLUDED.avg_price_m3, min_price_m3 = EXCLUDED.min_price_m3,
-                     max_price_m3 = EXCLUDED.max_price_m3, trend = EXCLUDED.trend
-       RETURNING *`,
-      [material_name, avg_price_m3, min_price_m3, max_price_m3, week_number, year, trend]
-    );
-    res.status(201).json({ message: 'Indice publié', barometer: rows[0] });
+    const barometer = await market.publish(req.body);
+    res.status(201).json({ message: 'Prix publié', barometer });
   } catch (error) {
     next(error);
   }

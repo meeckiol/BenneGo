@@ -29,6 +29,8 @@ module.exports = defineConfig({
     locale: 'fr-FR',
     // Animations réduites : l'écran de démarrage animé est passé (sinon les contrôles le prennent en plein fondu)
     reducedMotion: 'reduce',
+    // Le service worker (appli installable) relaierait les appels /api hors des interceptions des tests
+    serviceWorkers: 'block',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },

@@ -462,3 +462,22 @@
 @media (prefers-reduced-motion: reduce) {
   .bn-dcard, .bn-track__truck, .bn-loading__label svg, .bn-live, .bn-bell__panel { animation: none; }
 }
+
+/* Prix du marché (accueil et commande) : prix d'un voyage, flèche de tendance */
+.bn-market { display: grid; gap: 4px; }
+.bn-market__when { font-size: 12.5px; font-weight: 600; color: var(--text-3); }
+.bn-market__sub { margin: 0 0 4px; font-size: 13px; color: var(--text-3); }
+.bn-market__list { margin: 0; padding: 0 14px; list-style: none; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.bn-market__list li + li { border-top: 1px solid var(--border); }
+.bn-market__row { display: flex; align-items: center; gap: 10px; padding: 12px 0; color: var(--text-strong); text-decoration: none; }
+.bn-market__name { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; }
+.bn-market__name small { display: block; font-size: 12px; font-weight: 400; color: var(--text-3); }
+.bn-market__price { font-size: 15px; font-weight: 800; white-space: nowrap; }
+.bn-market__trend { flex: none; width: 22px; text-align: center; font-weight: 800; color: var(--text-3); }
+/* Pour l'acheteur : une hausse est une mauvaise nouvelle (rouge), une baisse une bonne (vert) */
+.bn-market__trend--up { color: var(--danger, #b42318); }
+.bn-market__trend--down { color: var(--success, #157a3c); }
+
+.bn-market-hint { display: grid; gap: 4px; margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--brand-soft); color: var(--brand-ink); font-size: 13.5px; }
+.bn-market-hint strong { font-size: 13px; }
+.bn-market-hint small { display: block; opacity: 0.8; }

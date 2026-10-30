@@ -142,6 +142,22 @@ async function seed() {
     ) ON CONFLICT (order_number) DO NOTHING
   `, [clientId, driverId]);
 
+  // 8 bis. Prix du marché au voyage : semaine dernière et semaine en cours (la tendance se calcule à la publication)
+  const market = require('../services/market.service');
+  const today = new Date().toISOString().slice(0, 10);
+  const lastWeek = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  for (const [key, prices] of Object.entries({
+    sable_lagunaire: [45000, 95000, 140000], sable_fin: [55000, 115000, 170000], sable_carriere: [50000, 105000, 155000],
+    gravier_5_15: [90000, 185000, 270000], gravier_15_25: [85000, 175000, 255000], caillou: [60000, 125000, 180000],
+    terre_de_barre: [30000, 60000, 90000], laterite: [35000, 70000, 100000],
+  })) {
+    for (const [i, truck] of ['6_roues', '10_roues', '12_roues'].entries()) {
+      const avg = prices[i];
+      await market.publish({ material_key: key, truck_size: truck, week_start: lastWeek, price_min: avg * 0.9, price_avg: avg * (key === 'gravier_15_25' ? 0.95 : 1), price_max: avg * 1.12 });
+      await market.publish({ material_key: key, truck_size: truck, week_start: today, price_min: avg * 0.92, price_avg: avg * (key === 'sable_lagunaire' ? 1.04 : 1), price_max: avg * 1.1 });
+    }
+  }
+
   // 9. Historique de démo sur 90 jours (console Analyses) : commandes datées, tendance en hausse, creux le dimanche
   await seedHistory({ clientId, driverId, driverPass, clientPass });
 

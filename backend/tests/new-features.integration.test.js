@@ -300,29 +300,45 @@ describe('Panne en cours de course et relève', () => {
   });
 });
 
-describe('Baromètre des prix BTP', () => {
-  test('l\'admin publie un indice ; le public voit la dernière semaine', async () => {
-    const published = await request(app).post('/api/admin/barometer').set(adminAuth).send({
-      material_name: 'Sable lavé de test', min_price_m3: 9000, avg_price_m3: 9500, max_price_m3: 10500,
-      trend: 'up', week_number: 44, year: 2026,
-    });
-    expect(published.status).toBe(201);
-    await request(app).post('/api/admin/barometer').set(adminAuth).send({
-      material_name: 'Sable lavé de test', min_price_m3: 9100, avg_price_m3: 9600, max_price_m3: 10600,
-      trend: 'stable', week_number: 45, year: 2026,
-    }).expect(201);
-
-    const board = await request(app).get('/api/barometer').expect(200);
-    const item = board.body.items.find((i) => i.material_name === 'Sable lavé de test');
-    expect(item).toMatchObject({ week_number: 45, avg_price_m3: 9600, trend: 'stable' });
+describe('Prix du marché au voyage', () => {
+  // Semaines futures : pas de croisement avec les données de démo, effacées ensuite (sinon ce serait « le dernier prix »)
+  afterAll(() => query(`DELETE FROM btp_price_barometer WHERE week_start >= '2031-01-01'`));
+  const indice = (week_start, price_avg, extra = {}) => request(app).post('/api/admin/barometer').set(adminAuth).send({
+    material_key: 'sable_lagunaire', truck_size: '10_roues', price_min: price_avg - 5000, price_avg, price_max: price_avg + 5000,
+    week_start, ...extra,
   });
 
-  test('prix incohérents refusés (min ≤ moyen ≤ max)', async () => {
-    const res = await request(app).post('/api/admin/barometer').set(adminAuth).send({
-      material_name: 'Gravier test', min_price_m3: 9000, avg_price_m3: 8000, max_price_m3: 10500,
-      trend: 'up', week_number: 46, year: 2026,
+  test('catalogue : noms d\'ici et tailles de camion pour les menus déroulants', async () => {
+    const { body } = await request(app).get('/api/barometer/catalog').expect(200);
+    expect(body.materials.map((m) => m.name)).toEqual(expect.arrayContaining(['Sable lagunaire', 'Terre de barre', 'Gravier 15/25']));
+    expect(body.materials.find((m) => m.key === 'ciment').voyage).toBe(false);
+    expect(body.trucks.map((t) => t.name)).toEqual(['Camion 6 roues', 'Camion 10 roues', 'Camion 12 roues']);
+  });
+
+  test('l\'admin publie ; semaine ramenée au lundi ; tendance calculée ; le public voit le dernier prix', async () => {
+    expect((await indice('2031-06-04', 100000)).status).toBe(201); // mercredi → semaine du lundi 2 juin
+    const second = await indice('2031-06-09', 110000);
+    expect(second.status).toBe(201);
+    expect(second.body.barometer).toMatchObject({
+      material_name: 'Sable lagunaire', truck_name: 'Camion 10 roues', week_start: '2031-06-09', week_end: '2031-06-15',
+      price_avg: 110000, trend: 'up', change: 0.1,
     });
-    expect(res.status).toBe(400);
+
+    const board = await request(app).get('/api/barometer').expect(200);
+    const item = board.body.items.find((i) => i.material_key === 'sable_lagunaire' && i.truck_size === '10_roues');
+    expect(item).toMatchObject({ week_start: '2031-06-09', price_avg: 110000, trend: 'up' });
+
+    // Correction de la même semaine : remplace l'indice, la tendance suit
+    const fixed = await indice('2031-06-11', 100500);
+    expect(fixed.body.barometer).toMatchObject({ week_start: '2031-06-09', price_avg: 100500, trend: 'stable' });
+  });
+
+  test('refus : prix incohérents, matériau non vendu au voyage, camion inconnu, non-admin', async () => {
+    expect((await indice('2031-07-07', 100000, { price_min: 120000 })).status).toBe(400);
+    expect((await indice('2031-07-07', 100000, { material_key: 'ciment' })).status).toBe(400);
+    expect((await indice('2031-07-07', 100000, { truck_size: '8_roues' })).status).toBe(400);
+    expect((await indice('2031-07-07', 100000, { week_start: 'pas-une-date' })).status).toBe(400);
+    await request(app).post('/api/admin/barometer').send({}).expect(401);
   });
 });
 

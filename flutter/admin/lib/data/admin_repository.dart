@@ -411,12 +411,16 @@ class AdminRepository {
     await api.post('/admin/reliefs/$requestId/assign', body: {'relief_driver_id': driverId});
   }
 
-  /// Publie l'indice hebdomadaire affiché sur l'accueil client.
-  Future<void> publishBarometer(Map<String, dynamic> body) async {
+  /// Publie (ou corrige) le prix d'un voyage pour une semaine, affiché sur l'accueil client et pendant la commande.
+  Future<void> publishMarketPrice(Map<String, dynamic> body) async {
     await api.post('/admin/barometer', body: body);
   }
 
-  Future<List<Map<String, dynamic>>> barometer() async {
+  /// Catalogue des prix du marché : matériaux sous leurs noms d'ici et tailles de camion.
+  Future<Map<String, dynamic>> marketCatalog() async => await api.get('/barometer/catalog') as Map<String, dynamic>;
+
+  /// Derniers prix publiés de chaque matériau et taille de camion.
+  Future<List<Map<String, dynamic>>> marketPrices() async {
     final data = await api.get('/barometer') as Map<String, dynamic>;
     return (data['items'] as List? ?? const []).cast<Map<String, dynamic>>();
   }

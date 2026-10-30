@@ -356,10 +356,10 @@ export default function EnterprisePage() {
                       onChange={(e) => setBulkForm({ ...bulkForm, truck_type: e.target.value })}
                       style={styles.input}
                     >
-                      <option value="simple_benne">Camion Benne 10m³</option>
+                      <option value="simple_benne">Camion 6 roues (benne 10 m³)</option>
                       <option value="pickup">Pick-up / camionnette (sacs, ciment, briques)</option>
-                      <option value="double_benne">Double Benne 16m³ (Recommandé)</option>
-                      <option value="semi_remorque">Semi-remorque Benne 25m³</option>
+                      <option value="double_benne">Camion 10 roues (benne 16 m³, recommandé)</option>
+                      <option value="semi_remorque">Camion 12 roues (semi-remorque 25 m³)</option>
                     </select>
                   </div>
                   <div style={styles.field}>
