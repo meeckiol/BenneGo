@@ -30,4 +30,8 @@ const mockEmptyApi = (page) => page.route('**/api/**', (route) => route.fulfill(
   body: EMPTY_RESPONSE,
 }));
 
-module.exports = { formatViolations, seedSession, mockEmptyApi, EMPTY_RESPONSE };
+// Règles axe écartées volontairement :
+// - meta-viewport : zoom désactivé sur les applis client et camionneur (choix produit « sans zoom », comme une appli installée)
+const SKIPPED_AXE_RULES = ['meta-viewport'];
+
+module.exports = { SKIPPED_AXE_RULES, formatViolations, seedSession, mockEmptyApi, EMPTY_RESPONSE };

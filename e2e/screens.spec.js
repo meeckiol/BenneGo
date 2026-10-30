@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 const { APPS } = require('./apps');
-const { formatViolations, seedSession, mockEmptyApi } = require('./helpers');
+const { formatViolations, seedSession, mockEmptyApi, SKIPPED_AXE_RULES } = require('./helpers');
 
 // Chaque écran statique de chaque application, en session connectée et sans données.
 for (const [name, app] of Object.entries(APPS)) {
@@ -41,6 +41,7 @@ for (const [name, app] of Object.entries(APPS)) {
 
         const results = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+          .disableRules(SKIPPED_AXE_RULES)
           .analyze();
 
         const summary = formatViolations(results.violations);

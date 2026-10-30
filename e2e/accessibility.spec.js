@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
 const { APPS } = require('./apps');
-const { formatViolations } = require('./helpers');
+const { formatViolations, SKIPPED_AXE_RULES } = require('./helpers');
 
 // Pages de connexion : première impression de chaque application, accessible à tous.
 for (const [name, app] of Object.entries(APPS)) {
@@ -11,6 +11,7 @@ for (const [name, app] of Object.entries(APPS)) {
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .disableRules(SKIPPED_AXE_RULES)
       .analyze();
 
     const summary = formatViolations(results.violations);
